@@ -1,0 +1,38 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  // ✅ This glob pattern correctly includes files in `app/` and `app/(tabs)/`
+  content: ["./app/**/*.{js,jsx,ts,tsx}", "./components/**/*.{js,jsx,ts,tsx}"],
+  presets: [require("nativewind/preset")],
+   theme: {
+    extend: {
+      colors: {
+        primary: "#2B7FFF",
+        secondary: "#7CB0FF",
+        white: {
+          DEFAULT: "#ffffff",
+          100: "#fafafa",
+          200: "#FE8C00",
+        },
+        gray: {
+          100: "#878787",
+          200: "#878787",
+        },
+        dark: {
+          100: "#181C2E",
+          primary:"#262626",
+          secondary:"#53565D"
+        },
+        error: "#F14141",
+        success: "#2F9B65",
+      },
+      fontFamily: {
+        quicksand: ["Quicksand-Regular", "sans-serif"],
+        "quicksand-bold": ["Quicksand-Bold", "sans-serif"],
+        "quicksand-semibold": ["Quicksand-SemiBold", "sans-serif"],
+        "quicksand-light": ["Quicksand-Light", "sans-serif"],
+        "quicksand-medium": ["Quicksand-Medium", "sans-serif"],
+      },
+    },
+  },
+  plugins: [],
+};

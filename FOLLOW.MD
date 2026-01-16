@@ -1,0 +1,149 @@
+⚙️ 1. Expo SDK Setup — The Golden Base
+Your package.json setup (Expo SDK 53 + React 19 + React Native 0.79.6) is stable and modern, so keep:
+"expo": "~53.0.23",
+"react": "19.0.0",
+"react-native": "0.79.6"
+
+
+npx expo prebuild --clean
+npm run android
+npx expo start
+npx expo start -c
+
+
+always use development build
+1. npx expo prebuild --clean
+2. npx expo run:android
+
+for real device:
+npm install -g eas-cli
+eas login
+eas whoami
+eas init
+
+eas build:configure
+All
+
+make sure git ignore
+/ios
+/android
+
+
+
+
+rm -rf android ios .expo node_modules
+npm install
+npx expo prebuild --clean
+cd android
+./gradlew clean
+./gradlew assembleDebug   # for debug APK
+./gradlew assembleRelease
+
+
+
+🧩 2. Install Only Compatible Packages
+npx expo install <package-name>
+✅ Why: It ensures the right version for your current SDK.
+❌ Avoid: npm install or yarn add for core React Native packages.
+
+
+
+🧱 4. Project Health Before Run
+Before starting any dev session or commit:
+
+npm run doctor     # check and fix Expo issues
+npm run fix        # ensure dependency sync
+npm run lint       # optional: check code quality
+
+Then start the project:
+npm run start
+
+
+
+🪄 10. Your Ideal Workflow
+Here’s your smooth daily workflow 💨
+# 1️⃣ Fix issues if any
+npm run doctor
+npm run fix
+
+# 2️⃣ Start development
+npm run start
+
+# 3️⃣ If errors persist
+npm run clean
+
+# 4️⃣ After new native libs
+npm run rebuild
+
+
+
+
+🧼 3. Clean & Reset Commands
+Run these if your app misbehaves (Metro/Babel/build/cache issues):
+
+# 🚫 Kill Metro, clear cache, rebuild
+npx expo start -c
+
+# 🧹 Deep clean: remove cache, node_modules, rebuild
+rm -rf node_modules .expo .expo-shared android/build ios/build
+npx expo install <package-name>
+
+# 🧽 Expo Doctor: fix version mismatches
+npx expo-doctor
+
+# 🔄 Fix dependency versions automatically
+npx expo install --fix
+
+# ♻️ Rebuild native projects (after native module updates)
+npx expo prebuild --clean
+
+
+
+🧑‍💻 5. Common Workflows
+Task	Command
+🧠 Start app	npx expo start
+📱 Run on Android	npx expo run:android
+🍎 Run on iOS	npx expo run:ios
+🌍 Run on web	npx expo start --web
+🚀 Build for store	npx expo build:android or npx expo build:ios
+📦 Prebuild native projects	npx expo prebuild
+🧾 Sync assets	npx expo export
+🔍 Lint	npm run lint
+
+
+
+🔄 6. Dependency Update Rules
+Never randomly update everything.
+Instead, follow this sequence:
+
+npx expo upgrade   # upgrades Expo SDK safely
+npx expo install --fix   # syncs dependent libraries
+npm run doctor     # check for missing/invalid deps
+
+💡 Run these every 2–3 months or when Expo releases a new SDK.
+
+
+📂 7. Git Hygiene (Before Commit)
+# Remove generated and cache files
+rm -rf .expo .expo-shared android/build ios/build
+# Check only clean source files
+git status
+
+💡 Add this .gitignore for Expo:
+.expo
+.expo-shared
+node_modules/
+dist/
+android/build/
+ios/build/
+.env
+
+🚫 9. Avoid These Mistakes
+❌ npm install instead of npx expo install
+❌ Mixing old React/React Native versions manually
+❌ Editing Android/iOS native files without prebuild knowledge
+❌ Upgrading Expo without checking SDK release notes
+
+❌ Forgetting .env file when building
+
+
