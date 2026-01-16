@@ -95,6 +95,27 @@ interface CustomInputProps {
         | "username"
         | "oneTimeCode";
         
+}
+interface CustomInputModifiedProps {
+    placeholder?: string;
+    value?: string;
+    onChangeText?: (text: string) => void;
+    label: string;
+    secureTextEntry?: boolean;
+    keyboardType?: "default" | "email-address" | "numeric" | "phone-pad";
+    showEye?: boolean;
+    onTogglePassword?: (visible: boolean) => void;
+    passwordVisible?: boolean;
+    autoCapitalize?: "none" | "sentences" | "words" | "characters";
+    autoCorrect?: boolean;
+    containerClassName?: string;
+    textContentType?:
+        | "none"
+        | "emailAddress"
+        | "password"
+        | "username"
+        | "oneTimeCode";
+        
         
 }
 
