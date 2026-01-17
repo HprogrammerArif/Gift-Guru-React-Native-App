@@ -16,6 +16,7 @@ import {
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Image as ExpoImage } from "expo-image";
 
 interface FormData {
   firstName: string;
@@ -240,7 +241,7 @@ const SignUp = () => {
               onTogglePassword={setShowConfirm}
             />
 
-            <View className="mt-4">
+            {/* <View className="mt-4">
               <GradientButton
                 title="Continue"
                 onPress={submit}
@@ -257,7 +258,49 @@ const SignUp = () => {
                   </TouchableOpacity>
                 </Link>
               </View>
-            </View>
+            </View> */}
+
+             <View className="mt-4 gap-3">
+                          <GradientButton
+                            title="Sign Up"
+                            onPress={submit}
+                            isLoading={isSubmitting}
+                          />
+            
+                          <Text className="text-center text-gray-400 font-normal">
+                            Or Continue With
+                          </Text>
+            
+                          <TouchableOpacity
+                            activeOpacity={0.8}
+                            className="w-full bg-[#e1e2e9] rounded-xl py-3.5 flex-row items-center justify-center gap-3"
+                            onPress={() =>
+                              Alert.alert("Google Login", "This feature is coming soon!")
+                            }
+                          >
+                            <ExpoImage
+                              source={{
+                                uri: "https://authjs.dev/img/providers/google.svg",
+                              }}
+                              style={{ width: 24, height: 24 }}
+                              contentFit="contain"
+                            />
+                            <Text className="text-lg font-medium text-black">
+                              Continue with Google
+                            </Text>
+                          </TouchableOpacity>
+            
+                          <View className="flex-row justify-center mt-2">
+                            <Text className="text-gray-600 text-sm">
+                              Don't have an account?{" "}
+                            </Text>
+                            <Link href="/(auth)/sign-up" asChild>
+                              <TouchableOpacity>
+                                <Text className="text-[#2B7FFF] font-bold">Sign Up</Text>
+                              </TouchableOpacity>
+                            </Link>
+                          </View>
+                        </View>
           </View>
         </View>
       </KeyboardAwareScrollView>
