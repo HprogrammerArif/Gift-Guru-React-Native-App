@@ -42,8 +42,8 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
       <SafeAreaView className="flex-1 px-6">
         {/* Header / Profile Section */}
         <View className="py-10">
-          <View className="w-20 h-20 bg-gray-100 rounded-full items-center justify-center border-2 border-[#FF4B3A]/10">
-            <Ionicons name="person" size={40} color="#9CA3AF" />
+          <View className="w-16 h-16 bg-gray-100 rounded-full items-center justify-center border-2 border-[#FF4B3A]/10">
+            <Ionicons name="person" size={32} color="#9CA3AF" />
           </View>
           <Text className="mt-4 text-xl font-bold text-gray-900">
             User Profile
