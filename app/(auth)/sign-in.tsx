@@ -117,7 +117,7 @@ const SignIn = () => {
 
               <TouchableOpacity
                 activeOpacity={0.8}
-                className="w-full bg-[#e1e2e9] rounded-xl py-4 flex-row items-center justify-center gap-3"
+                className="w-full bg-[#e1e2e9] rounded-xl py-3.5 flex-row items-center justify-center gap-3"
                 onPress={() =>
                   Alert.alert("Google Login", "This feature is coming soon!")
                 }
@@ -134,7 +134,7 @@ const SignIn = () => {
                 </Text>
               </TouchableOpacity>
 
-              <View className="flex-row justify-center mt-4">
+              <View className="flex-row justify-center mt-2">
                 <Text className="text-gray-600 text-sm">
                   Don't have an account?{" "}
                 </Text>
@@ -145,6 +145,11 @@ const SignIn = () => {
                 </Link>
               </View>
             </View>
+            <Link href="/(tabs)" asChild>
+              <TouchableOpacity>
+                <Text className="text-[#2B7FFF] font-bold">HOME</Text>
+              </TouchableOpacity>
+            </Link>
           </View>
         </View>
       </KeyboardAwareScrollView>
