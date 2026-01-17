@@ -292,11 +292,11 @@ const SignUp = () => {
             
                           <View className="flex-row justify-center mt-2">
                             <Text className="text-gray-600 text-sm">
-                              Don't have an account?{" "}
+                              Already have an account?{" "}
                             </Text>
-                            <Link href="/(auth)/sign-up" asChild>
+                            <Link href="/(auth)/sign-in" asChild>
                               <TouchableOpacity>
-                                <Text className="text-[#2B7FFF] font-bold">Sign Up</Text>
+                                <Text className="text-[#2B7FFF] font-bold">Sign In</Text>
                               </TouchableOpacity>
                             </Link>
                           </View>
