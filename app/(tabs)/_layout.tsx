@@ -1,35 +1,41 @@
 // app/(tabs)/_layout.tsx
-import { Tabs } from "expo-router";
-import { TouchableOpacity } from "react-native";
 import NoRippleTabButton from "@/components/no-rippler-pressable";
 import { TabBarIcon } from "@/components/TabBarIcon";
 import { tabIcons } from "@/constants";
+import { Tabs } from "expo-router";
+
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-
-        //   tabBarButton: (props) => (
-        //   <TouchableOpacity {...props} activeOpacity={1} />
-        // ),
-
         tabBarButton: (props) => <NoRippleTabButton {...props} />,
         tabBarHideOnKeyboard: true,
-
+        
         tabBarStyle: {
-          height: 105,
-          paddingBottom: 20,
-          paddingTop: 20,
+          height: 70 + insets.bottom,
+          paddingBottom: insets.bottom > 0 ? insets.bottom : 10,
+          paddingTop: 10,
           backgroundColor: "#FFFFFF",
           borderTopWidth: 0.5,
           borderTopColor: "#F2F2F2",
+          elevation: 0, // Remove shadow on Android
+          
+         
+          flexDirection: 'row',
+          justifyContent: "space-between",
+         width: "100%",
         },
         tabBarItemStyle: {
+           flex: 1, 
           padding: 0,
-          elevation: 0,
+           justifyContent: 'center',
+    alignItems: 'center',
         },
       }}
     >
@@ -47,40 +53,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="schedule"
+        name="create-post"
         options={{
-          title: "Schedule",
+          title: "Create Post",
           tabBarIcon: ({ focused }) => (
             <TabBarIcon
               focused={focused}
               icon={tabIcons.scheduleBlack}
-              title="Schedule"
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="message"
-        options={{
-          title: "Message",
-          tabBarIcon: ({ focused }) => (
-            <TabBarIcon
-              focused={focused}
-              icon={tabIcons.messageBlack}
-              title="Message"
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="expense"
-        options={{
-          title: "Expense",
-          tabBarIcon: ({ focused }) => (
-            <TabBarIcon
-              focused={focused}
-              icon={tabIcons.expenseBlack}
-              title="Expense"
+              title="Create Post"
             />
           ),
         }}
