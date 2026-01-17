@@ -1,11 +1,10 @@
 // app/(tabs)/notifications.tsx
-import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, Image } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
 import { notificationIcons } from "@/constants";
-
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React from "react";
+import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const notifications = [
   {
@@ -49,70 +48,53 @@ const notifications = [
   },
 ];
 
+import NotificationItem from "@/components/notifications/NotificationItem";
+
 export default function Notifications() {
   const router = useRouter();
-  const [filter, setFilter] = useState<"All" | "Unread">("All");
 
-
-  const filteredNotifications =
-    filter === "Unread" ? notifications.filter((n) => n.unread) : notifications;
-
-
-  const handleFilterChange = (newFilter: "All" | "Unread") => {
-    setFilter(newFilter);
-  };
-
-  // 🔥 Handle notification click with analytics
-  const handleNotificationClick = (notification: (typeof notifications)[0]) => {
-    // Navigate to relevant screen based on type
-    // (You can add navigation logic here)
+  const handleNotificationClick = (notification: any) => {
+    // Navigation logic based on notification.type
+    console.log("Clicked:", notification.type);
   };
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 pt-4 pb-3 ">
-        <TouchableOpacity onPress={() => router.back()}>
+      <View className="flex-row items-center justify-between px-5 pt-4 pb-3">
+        <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
           <Ionicons name="chevron-back" size={24} color="#171717" />
         </TouchableOpacity>
-        <Text className="text-2xl font-bold text-[#171717]">Notification</Text>
+        <Text className="text-2xl font-bold text-[#171717]">Notifications</Text>
         <View className="w-10" />
       </View>
 
       {/* Notifications List */}
-      <ScrollView
-        className="flex-1 px-5 mt-6"
+      <FlatList
+        data={notifications}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <NotificationItem item={item} onPress={handleNotificationClick} />
+        )}
+        contentContainerStyle={{
+          paddingHorizontal: 20,
+          paddingTop: 20,
+          paddingBottom: 100,
+        }}
         showsVerticalScrollIndicator={false}
-      >
-        {notifications.map((notif) => (
-          <TouchableOpacity
-            key={notif.id}
-            className={`mb-8 `}
-            activeOpacity={0.7}
-            onPress={() => handleNotificationClick(notif)}
-          >
-            <View className={`flex-row gap-4 bg-[#F8FAFC] p-3  rounded-2xl`}>
-              <View className="w-12 h-12 bg-[#DFF2FE] rounded-full justify-center items-center shadow-sm">
-                <Image
-                  source={notif.icon}
-                  className="w-6 h-6"
-                  resizeMode="contain"
-                />
-              </View>
-              <View className="flex-1">
-                <Text className="text-base font-semibold text-[#000000]">
-                  {notif.title}
-                </Text>
-                <Text className="text-sm text-[#737373] mt-1 leading-5">
-                  {notif.message}
-                </Text>
-              </View>
-            </View>
-            <Text className="text-sm text-[#454545] mt-3 ">• {notif.time}</Text>
-          </TouchableOpacity>
-        ))}
-        <View className="h-32" />
-      </ScrollView>
+        ListEmptyComponent={
+          <View className="flex-1 items-center justify-center pt-20">
+            <Ionicons
+              name="notifications-off-outline"
+              size={64}
+              color="#E5E7EB"
+            />
+            <Text className="text-gray-400 mt-4 font-medium">
+              No notifications yet
+            </Text>
+          </View>
+        }
+      />
     </SafeAreaView>
   );
 }

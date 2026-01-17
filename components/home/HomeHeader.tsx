@@ -31,25 +31,23 @@ const HomeHeader = ({
               autoCorrect={false}
               value={value}
               onChangeText={onSearch}
-              placeholder="Search"
-              placeholderTextColor="#888"
-              className={"input border-gray-300 pr-4 bg-white rounded-full"}
+              placeholder="Search products..."
+              placeholderTextColor="#9CA3AF"
+              className="bg-white rounded-full px-5 py-3 text-base text-black pr-12 shadow-sm"
+              style={{ height: 48 }}
             />
 
-            {/* ----- EYE ICON (only when showEye === true) ----- */}
-
-            <TouchableOpacity
-              onPress={onSearch}
-              className="absolute right-3 top-3.5"
-              activeOpacity={0.7}
-            >
+            <View className="absolute right-4 top-0 bottom-0 justify-center">
               <Ionicons name="search-outline" size={20} color="#9CA3AF" />
-            </TouchableOpacity>
+            </View>
           </View>
         </View>
 
         {/* Notification Icon */}
-        <TouchableOpacity onPress={() => router.push("/notifications")} activeOpacity={0.7}>
+        <TouchableOpacity
+          onPress={() => router.push("/notifications")}
+          activeOpacity={0.7}
+        >
           <View className="relative">
             <Ionicons name="notifications-outline" size={28} color="white" />
             <View className="absolute top-0 right-0 w-3 h-3 bg-yellow-400 rounded-full border-2 border-[#FF4B3A]" />
