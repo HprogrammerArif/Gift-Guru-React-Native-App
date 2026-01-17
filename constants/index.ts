@@ -19,6 +19,11 @@ import Ellipse from "@/assets/images/homeAsset/Ellipse.png";
 
 import back from "@/assets/images/notifications/back.png";
 
+import postLiked from "@/assets/icons/notification/postLiked.png";
+import linkClick from "@/assets/icons/notification/linkClick.png";
+import newComment from "@/assets/icons/notification/newComment.png";
+import postApprove from "@/assets/icons/notification/postApprove.png";
+
 export const homeAssets = {
   tabler_bulb,
   document,
@@ -30,7 +35,11 @@ export const homeAssets = {
 };
 
 export const notificationIcons = {
-  back
+  back,
+  postLiked,
+  linkClick,
+  newComment,
+  postApprove,
 }
 
 export const tabIcons = {
@@ -45,6 +54,86 @@ export const tabIcons = {
   scheduleBlack,
   scheduleWhite,
 };
+
+export const notificationTabs = [
+  postLiked,
+  linkClick,
+  newComment,
+  postApprove,
+];
+
+export const RECOMMENDED_DATA = [
+  {
+    id: "1",
+    title: "Precision Me..",
+    likes: "124 liked",
+    image: "https://picsum.photos/400/300?random=1",
+  },
+  {
+    id: "2",
+    title: "Wireless Hea..",
+    likes: "89 liked",
+    image: "https://picsum.photos/400/300?random=2",
+  },
+  {
+    id: "3",
+    title: "Smart Watch",
+    likes: "256 liked",
+    image: "https://picsum.photos/400/300?random=3",
+  },
+];
+
+export const TRENDING_DATA = [
+  {
+    id: "1",
+    title: "Ray-Ban Clas..",
+    engagement: "124 engagement",
+    image: "https://picsum.photos/400/400?random=10",
+  },
+  {
+    id: "2",
+    title: "Nike Air Ma..",
+    engagement: "450 engagement",
+    image: "https://picsum.photos/400/400?random=11",
+  },
+  {
+    id: "3",
+    title: "Polaroid Camera",
+    engagement: "98 engagement",
+    image: "https://picsum.photos/400/400?random=12",
+  },
+];
+
+export const POSTS_DATA = [
+  {
+    id: "1",
+    user: {
+      name: "Buffalo High School",
+      avatar: "https://i.pravatar.cc/150?u=buffalo",
+      date: "12 APR 09:28 PM",
+    },
+    title: "Precision Mechanical Keyboard",
+    description:
+      "Perfect for the office or home setup. Tactile, quiet, and beautiful backlight. Recommended Recommended Perfect for the office or home setup. Tactile, quiet, and beautiful backlight. Recommended Recommended.",
+    postImage: "https://picsum.photos/600/400?random=20",
+    likes: 124,
+    comments: 62,
+  },
+  {
+    id: "2",
+    user: {
+      name: "Tech Geek",
+      avatar: "https://i.pravatar.cc/150?u=tech",
+      date: "14 APR 10:00 AM",
+    },
+    title: "Next Gen VR Headset",
+    description:
+      "Experience reality like never before. The most immersive technology of the decade is finally here.",
+    postImage: "https://picsum.photos/600/400?random=21",
+    likes: 850,
+    comments: 120,
+  },
+];
 
 
 
