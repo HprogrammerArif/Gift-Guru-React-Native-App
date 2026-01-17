@@ -32,7 +32,7 @@ const SignIn = () => {
     try {
       // API call simulation
       await new Promise((resolve) => setTimeout(resolve, 2000));
-      router.replace("/(tabs)");
+      router.replace("/(drawer)/(tabs)/index");
     } catch (error: any) {
       Alert.alert("Error", error.message || "Something went wrong.");
     } finally {

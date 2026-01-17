@@ -7,11 +7,11 @@ import React, { useState } from "react";
 import { FlatList, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import SideMenu from "@/components/home/SideMenu";
+import { useNavigation } from "expo-router";
 
 export default function Home() {
   const [search, setSearch] = useState("");
-  const [isMenuVisible, setIsMenuVisible] = useState(false);
+  const navigation = useNavigation();
 
   const handleSearch = (text: string) => {
     setSearch(text);
@@ -19,15 +19,10 @@ export default function Home() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F8F9FA]" edges={["top"]}>
-      <SideMenu
-        isVisible={isMenuVisible}
-        onClose={() => setIsMenuVisible(false)}
-      />
-
       <HomeHeader
         value={search}
         onSearch={handleSearch}
-        onMenuPress={() => setIsMenuVisible(true)}
+        onMenuPress={() => (navigation as any).openDrawer()}
         onNotificationPress={() => console.log("Notif Pressed")}
       />
 

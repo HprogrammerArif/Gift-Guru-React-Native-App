@@ -14,7 +14,7 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: false,
-        tabBarButton: (props) => <NoRippleTabButton {...props} />,
+        tabBarButton: (props : any) => <NoRippleTabButton {...props} />,
         tabBarHideOnKeyboard: true,
         
         tabBarStyle: {

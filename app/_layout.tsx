@@ -57,17 +57,17 @@ export default function RootLayout() {
         <KeyboardProvider statusBarTranslucent={true}>
           {/* 3. Explicitly set your global status bar style */}
           <StatusBar style="dark" />
-          
+
           <Stack
             screenOptions={{
               headerShown: false,
               contentStyle: { backgroundColor: "white" },
               // Enable native stack animations
-              animation: 'fade_from_bottom' 
+              animation: "fade_from_bottom",
             }}
           >
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
           </Stack>
         </KeyboardProvider>
       </ActionSheetProvider>
