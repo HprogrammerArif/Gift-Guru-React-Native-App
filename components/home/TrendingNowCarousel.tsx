@@ -50,7 +50,7 @@ const TrendingNowCarousel = ({
   }, [currentIndex, infiniteData.length]);
 
   return (
-    <View className="mt-6">
+    <View className="mt-4">
       {/* Recommended Section */}
       <SectionHeader
         title="Trending Now"

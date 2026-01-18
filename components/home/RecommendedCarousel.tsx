@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 import SectionHeader from "./SectionHeader";
+import { LinearGradient } from "expo-linear-gradient";
 const { width } = Dimensions.get("window");
 
 const RecommendedCarousel = ({
@@ -50,7 +51,13 @@ const RecommendedCarousel = ({
   }, [currentIndex, infiniteData.length]);
 
   return (
-    <View className="bg-[#FF4B3A] ">
+    
+      <LinearGradient
+              colors={["#FF4B3A", "#FF8C42"]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              
+            >
       {/* Recommended Section */}
       <SectionHeader
         title="Recommended"
@@ -91,9 +98,9 @@ const RecommendedCarousel = ({
             <View style={{ width: CARD_WIDTH }} className="px-1 h-full">
               <TouchableOpacity
                 activeOpacity={0.9}
-                className="bg-white/20 rounded-[20px] overflow-hidden border border-white/10 w-full  h-[135px]"
+                className="bg-black/10 rounded-[20px] overflow-hidden border border-black/10 w-full  h-[135px]"
               >
-                <View className="w-full h-24 overflow-hidden bg-white/20">
+                <View className="w-full h-24 overflow-hidden bg-black/10">
                   <Image
                     source={{ uri: item.image }}
                     style={{ width: "100%", height: "100%" }}
@@ -126,7 +133,8 @@ const RecommendedCarousel = ({
           }}
         />
       </View>
-    </View>
+      </LinearGradient>
+    
   );
 };
 

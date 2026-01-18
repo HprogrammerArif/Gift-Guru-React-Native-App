@@ -58,7 +58,7 @@ const HomeHeader = ({
   }, [currentIndex, infiniteData.length]);
 
   return (
-    <View className=" px-5 pt-4 pb-6 ">
+    <View className=" px-4 pt-4 pb-6 ">
       <View className="flex-row items-center justify-between gap-4">
         {/* Menu Icon */}
         <TouchableOpacity onPress={onMenuPress} activeOpacity={0.7}>
