@@ -49,13 +49,14 @@ const Recommended = ({
   }, [currentIndex, infiniteData.length]);
 
   return (
-    <View>
+    <View className="bg-[#FF4B3A] ">
       {/* Recommended Section */}
       <SectionHeader
         title="Recommended"
         onSeeAll={() => {}}
         icon="flame-sharp"
         iconColor="white"
+        textColor="text-white"
       />
 
       <View className="mt-2 h-[155px]">

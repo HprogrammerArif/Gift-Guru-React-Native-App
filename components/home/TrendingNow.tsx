@@ -43,7 +43,7 @@ const TrendingNow = ({
         viewOffset: 0,
       });
       setCurrentIndex(nextIndex);
-    }, 2000);
+    }, 1500);
 
     return () => clearInterval(interval);
   }, [currentIndex, infiniteData.length]);

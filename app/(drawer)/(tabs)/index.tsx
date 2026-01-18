@@ -1,15 +1,13 @@
 import HomeHeader from "@/components/home/HomeHeader";
-import ProductCard from "@/components/home/ProductCard";
-import SectionHeader from "@/components/home/SectionHeader";
 import SocialPost from "@/components/home/SocialPost";
 import { POSTS_DATA, RECOMMENDED_DATA, TRENDING_DATA } from "@/constants";
 import React, { useState } from "react";
-import { FlatList, ScrollView, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import TrendingNow from "@/components/home/TrendingNow";
 import { useNavigation } from "expo-router";
 import Recommended from "@/components/home/Recommended";
-import TrendingNow from "@/components/home/TrendingNow";
 
 export default function Home() {
   const [search, setSearch] = useState("");
@@ -21,6 +19,9 @@ export default function Home() {
 
   return (
     <SafeAreaView className="flex-1 bg-[#F8F9FA]" edges={["top"]}>
+      {/* Home Header AND RECOMANDED SECTION */}
+
+      <View className="bg-[#FF4B3A] ">
       <HomeHeader
         value={search}
         onSearch={handleSearch}
@@ -28,20 +29,22 @@ export default function Home() {
         onNotificationPress={() => console.log("Notif Pressed")}
       />
 
-      <TrendingNow TRENDING_DATA={TRENDING_DATA} />
-
-
-      <ScrollView
-        className="flex-1"
-        showsVerticalScrollIndicator={false}
-        stickyHeaderIndices={[]}
-      >
-       
-
       
 
-        {/* Social Feed Items */}
-        <View className="px-5 mt-8">
+       </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      >
+
+         <Recommended RECOMMENDED_DATA={RECOMMENDED_DATA} />
+         
+        {/* Trending Now SECTION */}
+        <TrendingNow TRENDING_DATA={TRENDING_DATA} />
+
+        {/* Social Feed SECTION OR POSTS SECTION */}
+        <View className="px-4 mt-6 pb-20">
           {POSTS_DATA.map((post) => (
             <SocialPost
               key={post.id}
@@ -54,9 +57,6 @@ export default function Home() {
             />
           ))}
         </View>
-
-        {/* Extra Space at bottom for tab bar padding */}
-        <View className="h-10" />
       </ScrollView>
     </SafeAreaView>
   );
