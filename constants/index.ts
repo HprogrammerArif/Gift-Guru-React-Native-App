@@ -174,6 +174,20 @@ export const POSTS_DATA = [
     likes: 850,
     comments: 120,
   },
+  {
+    id: "3",
+    user: {
+      name: "Tech Geek",
+      avatar: "https://i.pravatar.cc/150?u=tech",
+      date: "14 APR 10:00 AM",
+    },
+    title: "Next Gen VR Headset",
+    description:
+      "Experience reality like never before. The most immersive technology of the decade is finally here.",
+    postImage: "https://picsum.photos/600/400?random=21",
+    likes: 850,
+    comments: 120,
+  }
 ];
 
 

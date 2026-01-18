@@ -33,13 +33,14 @@ const SocialPost = ({
   const [isLiked, setIsLiked] = useState(false);
 
   return (
-    <View className="bg-white p-4 mb-4 border-b border-gray-100 pb-6">
+    <View className="bg-white p-2 mb-4 border-gray-100 pb-6">
       {/* User Header */}
       <View className="flex-row items-center justify-between mb-3">
         <View className="flex-row items-center gap-3">
           <Image
             source={{ uri: user.avatar }}
-            className="w-10 h-10 rounded-full bg-gray-200"
+            style={{ width: 40, height: 40 }}
+            className="rounded-full bg-gray-200"
             contentFit="cover"
           />
           <View>
@@ -52,12 +53,12 @@ const SocialPost = ({
               </Text>
 
               {/* Recommended Badge (Hardcoded for demo as per design) */}
-              <View className="bg-[#FFF0ED] px-2 py-0.5 rounded-full flex-row items-center gap-1">
+              {/* <View className="bg-[#FFF0ED] px-2 py-0.5 rounded-full flex-row items-center gap-1">
                 <Ionicons name="flame" size={10} color="#FF4B3A" />
                 <Text className="text-[10px] text-[#FF4B3A] font-medium">
                   Recommended
                 </Text>
-              </View>
+              </View> */}
             </View>
           </View>
         </View>
@@ -97,7 +98,7 @@ const SocialPost = ({
       <View className="rounded-2xl overflow-hidden bg-gray-100 border border-gray-100">
         <Image
           source={{ uri: postImage }}
-          className="w-full h-[250px]"
+          style={{ width: "100%", height: 250 }}
           contentFit="cover"
         />
 
@@ -130,9 +131,9 @@ const SocialPost = ({
 
       {/* Engagement Footer */}
       <View className="flex-row items-center justify-between mt-4">
-        <View className="flex-row items-center gap-4">
+        <View className="flex-row items-center">
           <TouchableOpacity
-            className="flex-row items-center gap-1.5"
+            className="flex-row items-center gap-1.5 mr-2"
             onPress={() => setIsLiked(!isLiked)}
           >
             {isLiked ? (
@@ -146,22 +147,24 @@ const SocialPost = ({
           <Text className="text-xs text-gray-400 font-medium">
             {likes} People liked this
           </Text>
+        </View>
 
-          <TouchableOpacity className="flex-row items-center gap-1.5 ml-2">
+        <View className="flex-row items-center gap-2">
+          <TouchableOpacity className="flex-row items-center gap-1  ">
             <MaterialCommunityIcons
               name="message-reply-text-outline"
-              size={18}
+              size={16}
               color="#9CA3AF"
             />
             <Text className="text-sm text-gray-500 font-medium">
               {comments} comments
             </Text>
           </TouchableOpacity>
-        </View>
 
-        <TouchableOpacity>
-          <Ionicons name="bookmark-outline" size={20} color="#6B7280" />
-        </TouchableOpacity>
+          <TouchableOpacity>
+            <Ionicons name="bookmark-outline" size={20} color="#6B7280" />
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
