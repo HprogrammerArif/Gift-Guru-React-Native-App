@@ -187,6 +187,90 @@ export const POSTS_DATA = [
     postImage: "https://picsum.photos/600/400?random=21",
     likes: 850,
     comments: 120,
+  },
+  {
+    id: "4",
+    user: {
+      name: "Buffalo High School",
+      avatar: "https://i.pravatar.cc/150?u=buffalo",
+      date: "12 APR 09:28 PM",
+    },
+    title: "Precision Mechanical Keyboard",
+    description:
+      "Perfect for the office or home setup. Tactile, quiet, and beautiful backlight. Recommended Recommended Perfect for the office or home setup. Tactile, quiet, and beautiful backlight. Recommended Recommended.",
+    postImage: "https://picsum.photos/600/400?random=20",
+    likes: 124,
+    comments: 62,
+  },
+  {
+    id: "5",
+    user: {
+      name: "Tech Geek",
+      avatar: "https://i.pravatar.cc/150?u=tech",
+      date: "14 APR 10:00 AM",
+    },
+    title: "Next Gen VR Headset",
+    description:
+      "Experience reality like never before. The most immersive technology of the decade is finally here.",
+    postImage: "https://picsum.photos/600/400?random=21",
+    likes: 850,
+    comments: 120,
+  },
+  {
+    id: "6",
+    user: {
+      name: "Tech Geek",
+      avatar: "https://i.pravatar.cc/150?u=tech",
+      date: "14 APR 10:00 AM",
+    },
+    title: "Next Gen VR Headset",
+    description:
+      "Experience reality like never before. The most immersive technology of the decade is finally here.",
+    postImage: "https://picsum.photos/600/400?random=21",
+    likes: 850,
+    comments: 120,
+  },
+  {
+    id: "7",
+    user: {
+      name: "Buffalo High School",
+      avatar: "https://i.pravatar.cc/150?u=buffalo",
+      date: "12 APR 09:28 PM",
+    },
+    title: "Precision Mechanical Keyboard",
+    description:
+      "Perfect for the office or home setup. Tactile, quiet, and beautiful backlight. Recommended Recommended Perfect for the office or home setup. Tactile, quiet, and beautiful backlight. Recommended Recommended.",
+    postImage: "https://picsum.photos/600/400?random=20",
+    likes: 124,
+    comments: 62,
+  },
+  {
+    id: "8",
+    user: {
+      name: "Tech Geek",
+      avatar: "https://i.pravatar.cc/150?u=tech",
+      date: "14 APR 10:00 AM",
+    },
+    title: "Next Gen VR Headset",
+    description:
+      "Experience reality like never before. The most immersive technology of the decade is finally here.",
+    postImage: "https://picsum.photos/600/400?random=21",
+    likes: 850,
+    comments: 120,
+  },
+  {
+    id: "9",
+    user: {
+      name: "Tech Geek",
+      avatar: "https://i.pravatar.cc/150?u=tech",
+      date: "14 APR 10:00 AM",
+    },
+    title: "Next Gen VR Headset",
+    description:
+      "Experience reality like never before. The most immersive technology of the decade is finally here.",
+    postImage: "https://picsum.photos/600/400?random=21",
+    likes: 850,
+    comments: 120,
   }
 ];
 
