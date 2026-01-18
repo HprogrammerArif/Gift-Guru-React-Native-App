@@ -62,6 +62,8 @@ export const notificationTabs = [
   postApprove,
 ];
 
+export type RECOMMENDED_DATA_TYPE = typeof RECOMMENDED_DATA;
+
 export const RECOMMENDED_DATA = [
   {
     id: "1",
@@ -119,6 +121,8 @@ export const RECOMMENDED_DATA = [
     image: "https://plus.unsplash.com/premium_photo-1664392147011-2a720f214e01?q=80&w=878&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
   },
 ];
+
+export type TRENDING_DATA_TYPE = typeof TRENDING_DATA;
 
 export const TRENDING_DATA = [
   {

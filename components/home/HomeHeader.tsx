@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import SectionHeader from "./SectionHeader";
+import Recommended from "./Recommended";
 
 const { width } = Dimensions.get("window");
 
@@ -102,7 +103,7 @@ const HomeHeader = ({
       </View>
 
       {/* Recommended Section */}
-      <View>
+      {/* <View>
         <SectionHeader
           title="Recommended"
           onSeeAll={() => {}}
@@ -110,7 +111,7 @@ const HomeHeader = ({
           iconColor="white"
         />
 
-        <View className="mt-2 h-[180px]">
+        <View className="mt-2 h-[155px]">
           <FlatList
             ref={flatListRef}
             data={infiniteData}
@@ -176,7 +177,8 @@ const HomeHeader = ({
             }}
           />
         </View>
-      </View>
+      </View> */}
+      <Recommended RECOMMENDED_DATA={RECOMMENDED_DATA} />
     </View>
   );
 };

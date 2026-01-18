@@ -16,13 +16,13 @@ const SectionHeader = ({
   iconColor = "#FF4B3A",
 }: SectionHeaderProps) => {
   return (
-    <View className="flex-row items-center justify-between px-5 mb-4">
-      <View className="flex-row items-center gap-2">
+    <View className="flex-row items-center justify-between px-4 mb-1">
+      <View className="flex-row items-center gap-1">
         {icon && <Ionicons name={icon} size={20} color={iconColor} />}
-        <Text className="text-xl font-bold text-white">{title}</Text>
+        <Text className="text-xl font-bold text-black">{title}</Text>
       </View>
       <TouchableOpacity onPress={onSeeAll}>
-        <Text className="text-sm font-semibold text-white underline">
+        <Text className="text-md font-semibold text-black underline">
           See all
         </Text>
       </TouchableOpacity>
