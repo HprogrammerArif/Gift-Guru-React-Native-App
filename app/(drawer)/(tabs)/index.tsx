@@ -4,10 +4,9 @@ import { POSTS_DATA, RECOMMENDED_DATA, TRENDING_DATA } from "@/constants";
 import React, { useState } from "react";
 import { FlatList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-import Recommended from "@/components/home/Recommended";
-import TrendingNow from "@/components/home/TrendingNow";
 import { useNavigation } from "expo-router";
+import RecommendedCarousel from "@/components/home/RecommendedCarousel";
+import TrendingNowCarousel from "@/components/home/TrendingNowCarousel";
 
 export default function Home() {
   const [search, setSearch] = useState("");
@@ -19,9 +18,9 @@ export default function Home() {
 
   const renderHeader = () => (
     <View>
-      <Recommended RECOMMENDED_DATA={RECOMMENDED_DATA} />
+      <RecommendedCarousel RECOMMENDED_DATA={RECOMMENDED_DATA} />
       {/* Trending Now SECTION */}
-      <TrendingNow TRENDING_DATA={TRENDING_DATA} />
+      <TrendingNowCarousel TRENDING_DATA={TRENDING_DATA} />
       <View className="mt-6" />
     </View>
   );

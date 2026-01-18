@@ -159,6 +159,8 @@ export const POSTS_DATA = [
     postImage: "https://picsum.photos/600/400?random=20",
     likes: 124,
     comments: 62,
+    recommended: true,
+    trending: true,
   },
   {
     id: "2",
@@ -173,6 +175,8 @@ export const POSTS_DATA = [
     postImage: "https://picsum.photos/600/400?random=21",
     likes: 850,
     comments: 120,
+    recommended: false,
+    trending: false,
   },
   {
     id: "3",
@@ -187,6 +191,8 @@ export const POSTS_DATA = [
     postImage: "https://picsum.photos/600/400?random=21",
     likes: 850,
     comments: 120,
+    recommended: true,
+    trending: true,
   },
   {
     id: "4",
@@ -201,6 +207,8 @@ export const POSTS_DATA = [
     postImage: "https://picsum.photos/600/400?random=20",
     likes: 124,
     comments: 62,
+    recommended: false,
+    trending: false,
   },
   {
     id: "5",
@@ -215,6 +223,8 @@ export const POSTS_DATA = [
     postImage: "https://picsum.photos/600/400?random=21",
     likes: 850,
     comments: 120,
+    recommended: false,
+    trending: false,
   },
   {
     id: "6",
@@ -229,6 +239,8 @@ export const POSTS_DATA = [
     postImage: "https://picsum.photos/600/400?random=21",
     likes: 850,
     comments: 120,
+    recommended: false,
+    trending: false,
   },
   {
     id: "7",
@@ -243,6 +255,8 @@ export const POSTS_DATA = [
     postImage: "https://picsum.photos/600/400?random=20",
     likes: 124,
     comments: 62,
+    recommended: true,
+    trending: true,
   },
   {
     id: "8",
@@ -257,6 +271,8 @@ export const POSTS_DATA = [
     postImage: "https://picsum.photos/600/400?random=21",
     likes: 850,
     comments: 120,
+    recommended: false,
+    trending: false,
   },
   {
     id: "9",
@@ -271,6 +287,8 @@ export const POSTS_DATA = [
     postImage: "https://picsum.photos/600/400?random=21",
     likes: 850,
     comments: 120,
+    recommended: false,
+    trending: false,
   }
 ];
 

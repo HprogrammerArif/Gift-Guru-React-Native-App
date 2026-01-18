@@ -1,5 +1,6 @@
-import { RECOMMENDED_DATA_TYPE, TRENDING_DATA_TYPE } from "@/constants";
+import { RECOMMENDED_DATA_TYPE } from "@/constants";
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
@@ -11,10 +12,10 @@ import {
 import SectionHeader from "./SectionHeader";
 const { width } = Dimensions.get("window");
 
-const TrendingNow = ({
-  TRENDING_DATA,
+const RecommendedCarousel = ({
+  RECOMMENDED_DATA,
 }: {
-  TRENDING_DATA: TRENDING_DATA_TYPE;
+  RECOMMENDED_DATA: RECOMMENDED_DATA_TYPE;
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -23,7 +24,7 @@ const TrendingNow = ({
   // Create a large dataset for "infinite" scrolling simulation
   // This is a common high-performance pattern for React Native carousels
   const infiniteData = React.useMemo(
-    () => Array.from({ length: 1000 }).flatMap(() => TRENDING_DATA),
+    () => Array.from({ length: 1000 }).flatMap(() => RECOMMENDED_DATA),
     []
   );
 
@@ -43,19 +44,20 @@ const TrendingNow = ({
         viewOffset: 0,
       });
       setCurrentIndex(nextIndex);
-    }, 1500);
+    }, 2000);
 
     return () => clearInterval(interval);
   }, [currentIndex, infiniteData.length]);
 
   return (
-    <View className="mt-6">
+    <View className="bg-[#FF4B3A] ">
       {/* Recommended Section */}
       <SectionHeader
-        title="Trending Now"
-        onSeeAll={() => {}}
-        // icon="flame-sharp"
-        // iconColor="black"
+        title="Recommended"
+        onSeeAll={() => router.push("/recommended")}
+        icon="flame-sharp"
+        iconColor="white"
+        textColor="text-white"
       />
 
       <View className="mt-2 h-[155px]">
@@ -89,9 +91,9 @@ const TrendingNow = ({
             <View style={{ width: CARD_WIDTH }} className="px-1 h-full">
               <TouchableOpacity
                 activeOpacity={0.9}
-                className="bg-black/10 rounded-[20px] overflow-hidden border border-black/10 w-full  h-[135px]"
+                className="bg-white/20 rounded-[20px] overflow-hidden border border-white/10 w-full  h-[135px]"
               >
-                <View className="w-full h-24 overflow-hidden bg-black/10">
+                <View className="w-full h-24 overflow-hidden bg-white/20">
                   <Image
                     source={{ uri: item.image }}
                     style={{ width: "100%", height: "100%" }}
@@ -101,15 +103,15 @@ const TrendingNow = ({
                 </View>
                 <View className="p-2 flex-1 justify-between">
                   <Text
-                    className="text-black text-[11px] font-bold"
+                    className="text-white text-[11px] font-bold"
                     numberOfLines={1}
                   >
                     {item.title}
                   </Text>
                   <View className="flex-row items-center gap-1">
-                    <View className="w-1 h-1 rounded-full bg-black/80" />
-                    <Text className="text-black/80 text-[9px] font-medium">
-                      {item.engagement}
+                    <View className="w-1 h-1 rounded-full bg-white/80" />
+                    <Text className="text-white/80 text-[9px] font-medium">
+                      {item.likes}
                     </Text>
                   </View>
                 </View>
@@ -128,4 +130,4 @@ const TrendingNow = ({
   );
 };
 
-export default TrendingNow;
+export default RecommendedCarousel;

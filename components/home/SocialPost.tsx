@@ -18,6 +18,8 @@ interface SocialPostProps {
   postImage: string;
   likes: number;
   comments: number;
+  recommended?: boolean;
+  trending?: boolean;
 }
 
 const SocialPost = ({
@@ -27,6 +29,8 @@ const SocialPost = ({
   postImage,
   likes,
   comments,
+  trending,
+  recommended,
 }: SocialPostProps) => {
   const [isFollowed, setIsFollowed] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -53,12 +57,24 @@ const SocialPost = ({
               </Text>
 
               {/* Recommended Badge (Hardcoded for demo as per design) */}
-              {/* <View className="bg-[#FFF0ED] px-2 py-0.5 rounded-full flex-row items-center gap-1">
-                <Ionicons name="flame" size={10} color="#FF4B3A" />
-                <Text className="text-[10px] text-[#FF4B3A] font-medium">
-                  Recommended
-                </Text>
-              </View> */}
+              {recommended && (
+                <View className="bg-[#FFF0ED] px-2 py-0.5 rounded-full flex-row items-center gap-1">
+                  <Ionicons name="flame" size={10} color="#FF4B3A" />
+                  <Text className="text-[10px] text-[#FF4B3A] font-medium">
+                    Recommended
+                  </Text>
+                </View>
+              )}
+
+              {/* Trending Badge (Hardcoded for demo as per design) */}
+              {trending && (
+                <View className="bg-[#EFF6FF] px-2 py-0.5 rounded-full flex-row items-center gap-1">
+                  <Ionicons name="trending-up" size={10} color="#2B7FFF" />
+                  <Text className="text-[10px] text-[#2B7FFF] font-medium">
+                    Trending
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
         </View>
