@@ -101,8 +101,8 @@ const ProfileSocialPost = ({
 
         {/* Three dot icon for profile post update delete */}
         <View ref={iconRef} collapsable={false}>
-          <TouchableOpacity onPress={openMenu} className="p-2">
-            <Ionicons name="ellipsis-vertical" size={20} color="black" />
+          <TouchableOpacity onPress={openMenu} className="p-3">
+            <Ionicons name="ellipsis-vertical" size={16} color="black" />
           </TouchableOpacity>
 
           <Modal
