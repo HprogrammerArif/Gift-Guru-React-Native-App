@@ -42,7 +42,7 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
       <SafeAreaView className="flex-1 px-6">
         {/* Header / Profile Section */}
         <View className="py-10">
-          <View className="w-16 h-16 bg-gray-100 rounded-full items-center justify-center border-2 border-[#FF4B3A]/10">
+          <View className="w-16 h-16 bg-gray-200 rounded-full items-center justify-center border-2 border-[#FF4B3A]/10">
             <Ionicons name="person" size={32} color="#9CA3AF" />
           </View>
           <Text className="mt-4 text-xl font-bold text-gray-900">
@@ -54,7 +54,7 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
         {/* Navigation Items */}
         <View className="flex-1">
           <MenuItem
-            icon="medal-outline"
+            icon="diamond-sharp"
             label="Membership"
             badge="pro"
             onPress={() =>
@@ -62,19 +62,19 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
             }
           />
           <MenuItem
-            icon="bookmark-outline"
+            icon="bookmark-sharp"
             label="My wish list"
             onPress={() => {}}
           />
-          <MenuItem icon="grid-outline" label="Dashboard" onPress={() => {}} />
+          <MenuItem icon="bar-chart-sharp" label="Dashboard" onPress={() => {}} />
           <MenuItem
-            icon="settings-outline"
+            icon="settings-sharp"
             label="Profile setting"
             onPress={() => {}}
           />
 
           <MenuItem
-            icon="log-out-outline"
+            icon="log-out-sharp"
             label="Log out"
             isLast
             onPress={() => {}}
