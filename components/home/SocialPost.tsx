@@ -186,4 +186,4 @@ const SocialPost = ({
   );
 };
 
-export default SocialPost;
+export default React.memo(SocialPost);

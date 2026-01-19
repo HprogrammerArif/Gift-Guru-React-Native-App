@@ -12,6 +12,21 @@ export default function Home() {
   const [search, setSearch] = useState("");
   const navigation = useNavigation();
 
+  const renderItem = React.useCallback(({ item }: {item: (typeof POSTS_DATA)[0]}) => (
+          <View className="px-4">
+            <SocialPost
+              user={item.user}
+              title={item.title}
+              description={item.description}
+              postImage={item.postImage}
+              likes={item.likes}
+              comments={item.comments}
+            />
+          </View>
+        ),
+        []
+      );
+
   const handleSearch = (text: string) => {
     setSearch(text);
   };
@@ -41,21 +56,14 @@ export default function Home() {
       <FlatList
         data={POSTS_DATA}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View className="px-4">
-            <SocialPost
-              user={item.user}
-              title={item.title}
-              description={item.description}
-              postImage={item.postImage}
-              likes={item.likes}
-              comments={item.comments}
-            />
-          </View>
-        )}
+        renderItem={renderItem}
         ListHeaderComponent={renderHeader}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 80 }}
+        initialNumToRender={7}
+        maxToRenderPerBatch={7}
+        windowSize={7}
+        removeClippedSubviews={true}
       />
     </SafeAreaView>
   );
