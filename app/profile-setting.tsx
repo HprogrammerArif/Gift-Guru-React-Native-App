@@ -170,7 +170,7 @@ const ProfileSettingScreen = () => {
         </View>
 
         {/* Change Password Link */}
-        <TouchableOpacity className="mb-8">
+        <TouchableOpacity onPress={() => router.push("/change-password")} className="mb-8">
           <Text className="text-[#2B7FFF] text-lg font-quicksand-bold underline">
             Change password
           </Text>
