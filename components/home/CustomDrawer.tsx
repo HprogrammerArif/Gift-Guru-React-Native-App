@@ -84,7 +84,10 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
           <MenuItem
             icon="settings-sharp"
             label="Profile setting"
-            onPress={() => {}}
+            onPress={() => {
+              props.navigation.closeDrawer();
+              router.push("/profile-setting");
+            }}
           />
 
           <MenuItem
