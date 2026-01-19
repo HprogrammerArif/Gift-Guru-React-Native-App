@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
+import { useRouter } from "expo-router";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -37,6 +38,8 @@ const MenuItem = ({ icon, label, badge, onPress, isLast }: MenuItemProps) => (
 );
 
 const CustomDrawer = (props: DrawerContentComponentProps) => {
+  const router = useRouter();
+
   return (
     <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1 px-6">
@@ -57,16 +60,21 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
             icon="diamond-sharp"
             label="Membership"
             badge="pro"
-            onPress={() =>
-              props.navigation.navigate("(tabs)", { screen: "profile" })
-            }
+            onPress={() => {
+              props.navigation.closeDrawer();
+              router.push("/membership");
+            }}
           />
           <MenuItem
             icon="bookmark-sharp"
             label="My wish list"
             onPress={() => {}}
           />
-          <MenuItem icon="bar-chart-sharp" label="Dashboard" onPress={() => {}} />
+          <MenuItem
+            icon="bar-chart-sharp"
+            label="Dashboard"
+            onPress={() => {}}
+          />
           <MenuItem
             icon="settings-sharp"
             label="Profile setting"
