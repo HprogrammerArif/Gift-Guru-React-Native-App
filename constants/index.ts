@@ -163,6 +163,11 @@ export const POSTS_DATA = [
     comments: 62,
     recommended: true,
     trending: true,
+    isMyPost: false,
+    isSaved: true,
+    isLiked: true,
+    isBookmarked: true,
+    
   },
   {
     id: "2",
@@ -179,6 +184,11 @@ export const POSTS_DATA = [
     comments: 120,
     recommended: false,
     trending: false,
+    isMyPost: false,
+    isSaved: true,
+    isLiked: true,
+    isBookmarked: true,
+    
   },
   {
     id: "3",
@@ -195,6 +205,11 @@ export const POSTS_DATA = [
     comments: 120,
     recommended: true,
     trending: true,
+    isMyPost: true,
+    isSaved: true,
+    isLiked: false,
+    isBookmarked: false,
+    
   },
   {
     id: "4",
@@ -211,6 +226,11 @@ export const POSTS_DATA = [
     comments: 62,
     recommended: false,
     trending: false,
+    isMyPost: true,
+    isSaved: true,
+    isLiked: true,
+    isBookmarked: false,
+    
   },
   {
     id: "5",
@@ -227,6 +247,11 @@ export const POSTS_DATA = [
     comments: 120,
     recommended: false,
     trending: false,
+    isMyPost: true,
+    isSaved: true,
+    isLiked: true,
+    isBookmarked: false,
+    
   },
   {
     id: "6",
@@ -243,6 +268,11 @@ export const POSTS_DATA = [
     comments: 120,
     recommended: false,
     trending: false,
+    isMyPost: false,
+    isSaved: true,
+    isLiked: false,
+    isBookmarked: true,
+    
   },
   {
     id: "7",
@@ -259,6 +289,11 @@ export const POSTS_DATA = [
     comments: 62,
     recommended: true,
     trending: true,
+    isMyPost: true,
+    isSaved: true,
+    isLiked: true,
+    isBookmarked: true,
+    
   },
   {
     id: "8",
@@ -275,6 +310,11 @@ export const POSTS_DATA = [
     comments: 120,
     recommended: false,
     trending: false,
+    isMyPost: false,
+    isSaved: true,
+    isLiked: false,
+    isBookmarked: true,
+    
   },
   {
     id: "9",
@@ -291,6 +331,11 @@ export const POSTS_DATA = [
     comments: 120,
     recommended: false,
     trending: false,
+    isMyPost: true,
+    isSaved: true,
+    isLiked: true,
+    isBookmarked: true,
+    
   }
 ];
 

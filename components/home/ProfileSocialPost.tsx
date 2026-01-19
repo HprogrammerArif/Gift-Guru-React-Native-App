@@ -150,6 +150,7 @@ const ProfileSocialPost = ({
             </TouchableWithoutFeedback>
           </Modal>
         </View>
+        
       </View>
 
       {/* Title */}

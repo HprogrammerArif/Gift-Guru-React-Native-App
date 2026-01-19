@@ -68,12 +68,17 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
           <MenuItem
             icon="bookmark-sharp"
             label="My wish list"
-            onPress={() => {}}
+            onPress={() => {
+              props.navigation.closeDrawer();
+              router.push("/my-wish-list");
+            }}
           />
           <MenuItem
             icon="bar-chart-sharp"
             label="Dashboard"
-            onPress={() => {}}
+            onPress={() => {
+              
+            }}
           />
           <MenuItem
             icon="settings-sharp"

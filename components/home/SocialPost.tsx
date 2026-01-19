@@ -20,6 +20,10 @@ interface SocialPostProps {
   comments: number;
   recommended?: boolean;
   trending?: boolean;
+  isMyPost?: boolean;
+  isSaved?: boolean;
+  isLiked?: boolean;
+  isBookmarked?: boolean;
 }
 
 const SocialPost = ({
@@ -31,10 +35,24 @@ const SocialPost = ({
   comments,
   trending,
   recommended,
+  isMyPost,
+  isSaved,
+  isLiked,
+  isBookmarked,
 }: SocialPostProps) => {
   const [isFollowed, setIsFollowed] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+
+  const hanldeLike = () => {
+    console.log("Like");
+  };
+  const handleBookmark = () => {
+    console.log("Bookmark");
+  };
+
+  const handleFollow = () => {
+    console.log("Follow");
+  };
 
   return (
     <View className="bg-white p-2 mb-4 border-gray-100 pb-6">
@@ -79,14 +97,20 @@ const SocialPost = ({
           </View>
         </View>
         <TouchableOpacity
-          onPress={() => setIsFollowed(!isFollowed)}
+          onPress={() => handleFollow()}
           className={`px-4 py-1.5 rounded-lg border ${isFollowed ? "bg-gray-100 border-gray-200" : "border-gray-200 bg-white"}`}
         >
-          <Text
+         {
+          isMyPost ? (
+            <Text className="text-xs text-gray-500 font-medium">Three dots</Text>
+          ) : (
+             <Text
             className={`text-xs font-semibold ${isFollowed ? "text-gray-500" : "text-gray-900"}`}
           >
             {isFollowed ? "Following" : "Follow"}
           </Text>
+          )
+         }
         </TouchableOpacity>
       </View>
 
@@ -150,7 +174,7 @@ const SocialPost = ({
         <View className="flex-row items-center">
           <TouchableOpacity
             className="flex-row items-center gap-1.5 mr-2"
-            onPress={() => setIsLiked(!isLiked)}
+            onPress={() => hanldeLike()}
           >
             {isLiked ? (
               <Ionicons name="thumbs-up" size={20} color="#3B82F6" />
@@ -177,8 +201,12 @@ const SocialPost = ({
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity>
-            <Ionicons name="bookmark-outline" size={20} color="#6B7280" />
+          <TouchableOpacity onPress={() => handleBookmark()}>
+            {isBookmarked ? (
+              <Ionicons name="bookmark" size={20} color="#3B82F6" />
+            ) : (
+              <Ionicons name="bookmark-outline" size={20} color="#6B7280" />
+            )}
           </TouchableOpacity>
         </View>
       </View>
