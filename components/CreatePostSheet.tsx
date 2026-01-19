@@ -64,7 +64,7 @@ const CreatePostSheet = ({ visible, onClose }: CreatePostSheetProps) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      aspect: [4, 3],
+      // aspect: [4, 3],
       quality: 1,
     });
 
@@ -356,7 +356,7 @@ const CreatePostSheet = ({ visible, onClose }: CreatePostSheetProps) => {
               {isSubmitting ? (
                 <ActivityIndicator color="white" />
               ) : (
-                <Text className="text-white font-bold text-base">
+                <Text className="text-white font-semibold text-base">
                   Share with community
                 </Text>
               )}
