@@ -5,7 +5,7 @@ import GradientCircle from "./GradientCircle";
 interface TabBarIconProps {
   focused: boolean;
   icon: any;
-  title: string;
+  title?: string;
   onPress?: () => void;
 }
 
@@ -26,14 +26,14 @@ export const TabBarIcon = memo(
             }}
           />
         </View>
-        {/* {focused && (
+        {title && (
           <Text
             numberOfLines={1}
             className="text-[10px] font-semibold text-[#525252] mt-1 w-20 text-center"
           >
             {title}
           </Text>
-        )} */}
+        )}
       </View>
     );
   }

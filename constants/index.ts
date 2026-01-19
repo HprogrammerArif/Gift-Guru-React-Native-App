@@ -8,6 +8,7 @@ import profileBlack from "@/assets/images/tabIcon/profileBlack.png";
 import profileWhite from "@/assets/images/tabIcon/profileWhite.png";
 import scheduleBlack from "@/assets/images/tabIcon/scheduleBlack.png";
 import scheduleWhite from "@/assets/images/tabIcon/scheduleWhite.png";
+import createIcon from "@/assets/images/tabIcon/createIcon.png";
 
 import tabler_bulb from "@/assets/images/homeAsset/tabler_bulb.png";
 import document from "@/assets/images/homeAsset/document.png";
@@ -53,6 +54,7 @@ export const tabIcons = {
   profileWhite,
   scheduleBlack,
   scheduleWhite,
+  createIcon
 };
 
 export const notificationTabs = [
