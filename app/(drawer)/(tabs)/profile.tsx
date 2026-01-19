@@ -1,5 +1,4 @@
 import ProfileSocialPost from "@/components/home/ProfileSocialPost";
-import SocialPost from "@/components/home/SocialPost";
 import { POSTS_DATA } from "@/constants";
 import { Image } from "expo-image";
 import React from "react";
@@ -7,6 +6,21 @@ import { FlatList, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function ProfileScreen() {
+  const renderItem = React.useCallback(
+    ({ item }: { item: (typeof POSTS_DATA)[0] }) => (
+      <View className="mb-2 border-b border-gray-50">
+        <ProfileSocialPost
+          user={item.user}
+          title={item.title}
+          description={item.description}
+          postImage={item.postImage}
+          likes={item.likes}
+          comments={item.comments}
+        />
+      </View>
+    ),
+    []
+  );
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
@@ -26,8 +40,6 @@ export default function ProfileScreen() {
           <Text className="text-3xl font-bold text-gray-900 mb-2">
             Rakib Hasan
           </Text>
-
-
 
           <View className="flex-row gap-8">
             <View>
@@ -50,21 +62,7 @@ export default function ProfileScreen() {
       <FlatList
         data={POSTS_DATA}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View className="mb-2 border-b border-gray-50">
-            {/* Reusing SocialPost but removing the bottom border usually handled by the component slightly differently if needed, 
-                 but SocialPost has its own styles. We'll stick to 1:1 reuse as per best practice. */}
-            <ProfileSocialPost
-              user={item.user}
-              title={item.title}
-              description={item.description}
-              postImage={item.postImage}
-              likes={item.likes}
-              comments={item.comments}
-              //   recommended={item.recommended}
-            />
-          </View>
-        )}
+        renderItem={renderItem}
         // ListHeaderComponent={renderHeader}
         contentContainerStyle={{
           paddingHorizontal: 16,
@@ -72,6 +70,10 @@ export default function ProfileScreen() {
           paddingBottom: 40,
         }}
         showsVerticalScrollIndicator={false}
+        initialNumToRender={5}
+        maxToRenderPerBatch={5}
+        windowSize={5}
+        removeClippedSubviews={true}
       />
     </SafeAreaView>
   );

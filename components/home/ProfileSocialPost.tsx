@@ -248,4 +248,4 @@ const ProfileSocialPost = ({
   );
 };
 
-export default ProfileSocialPost;
+export default React.memo(ProfileSocialPost);
