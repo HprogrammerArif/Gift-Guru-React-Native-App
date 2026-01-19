@@ -287,34 +287,66 @@ const DashboardScreen = () => {
           </View>
 
           <View className="items-center justify-center pb-4 pr-4">
-            <BarChart
-              data={annualData[selectedYear]}
-              barWidth={14}
-              noOfSections={4}
-              barBorderRadius={4}
-              frontColor="#2B7FFF"
-              yAxisThickness={0.5}
-              yAxisColor="#F3F4F6"
-              xAxisThickness={0}
-              rulesType="dashed"
-              rulesColor="#F3F4F6"
-              dashGap={4}
-              hideYAxisText={false}
-              yAxisTextStyle={{
-                fontFamily: "QuickSand-Medium",
-                fontSize: 10,
-                color: "#9CA3AF",
-              }}
-              spacing={10}
-              height={140}
-              xAxisLabelTextStyle={{
-                fontFamily: "QuickSand-Medium",
-                fontSize: 9,
-                color: "#9CA3AF",
-              }}
-              isAnimated
-              animationDuration={800}
-            />
+            {(() => {
+              const currentYearData = annualData[selectedYear] || [];
+              const prevYearData =
+                annualData[selectedYear - 1] || annualData[selectedYear] || [];
+
+              const processedStackData = currentYearData.map((item, index) => {
+                const prevValue = prevYearData[index]?.value || item.value;
+                // We show the current value as the main bar.
+                // The "background" effect is achieved by stacking the remainder or a track segment.
+                return {
+                  label: item.label,
+                  stacks: [
+                    {
+                      value: item.value,
+                      color: "#2B7FFF",
+                      marginBottom: 1, // Slight gap for visual separation
+                    },
+                    {
+                      value: Math.max(
+                        10,
+                        prevValue - item.value > 0 ? prevValue - item.value : 15
+                      ),
+                      color: "#EFF6FF", // The "off color" for the background/prev year
+                      borderTopLeftRadius: 4,
+                      borderTopRightRadius: 4,
+                    },
+                  ],
+                };
+              });
+
+              return (
+                <BarChart
+                  stackData={processedStackData}
+                  barWidth={14}
+                  noOfSections={4}
+                  barBorderRadius={4}
+                  yAxisThickness={0.5}
+                  yAxisColor="#F3F4F6"
+                  xAxisThickness={0}
+                  rulesType="dashed"
+                  rulesColor="#F3F4F6"
+                  dashGap={4}
+                  hideYAxisText={false}
+                  yAxisTextStyle={{
+                    fontFamily: "QuickSand-Medium",
+                    fontSize: 10,
+                    color: "#9CA3AF",
+                  }}
+                  spacing={10}
+                  height={140}
+                  xAxisLabelTextStyle={{
+                    fontFamily: "QuickSand-Medium",
+                    fontSize: 9,
+                    color: "#9CA3AF",
+                  }}
+                  isAnimated
+                  animationDuration={800}
+                />
+              );
+            })()}
           </View>
         </View>
 
