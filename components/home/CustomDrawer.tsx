@@ -77,7 +77,8 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
             icon="bar-chart-sharp"
             label="Dashboard"
             onPress={() => {
-              
+              props.navigation.closeDrawer();
+              router.push("/dashboard");
             }}
           />
           <MenuItem
