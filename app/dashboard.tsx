@@ -90,7 +90,7 @@ const SubmissionRow = ({
   value: number;
   color: string;
 }) => (
-  <View className="flex-row items-center justify-between py-3">
+  <View className="flex-row items-center justify-between py-2">
     <View className="flex-row items-center gap-3">
       <View className={`w-3.5 h-3.5 rounded-full ${color}`} />
       <Text
@@ -351,10 +351,10 @@ const DashboardScreen = () => {
         </View>
 
         {/* Top Click Item */}
-        <View className="bg-white rounded-3xl p-6 mb-6 border border-gray-50 shadow-sm shadow-black/5">
+        <View className="bg-white rounded-3xl p-4 mb-6 border border-[#f0ebeb] shadow-sm shadow-black/5">
           <Text
             style={{ fontFamily: "QuickSand-Bold" }}
-            className="text-[10px] text-gray-400 uppercase tracking-widest mb-4"
+            className="text-[10px] text-gray-400 uppercase tracking-widest mb-4 px-2 pt-2"
           >
             TOP CLICK ITEM
           </Text>
@@ -370,7 +370,7 @@ const DashboardScreen = () => {
         </View>
 
         {/* Submission Pulse */}
-        <View className="bg-white rounded-3xl p-6 mb-6 border border-gray-50 shadow-sm shadow-black/5">
+        <View className="bg-white rounded-3xl p-6 mb-6 border border-[#f0ebeb] shadow-sm shadow-black/5">
           <Text
             style={{ fontFamily: "QuickSand-Bold" }}
             className="text-[10px] text-gray-400 uppercase tracking-widest mb-4"
