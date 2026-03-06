@@ -13,7 +13,7 @@ export default function Home() {
   const navigation = useNavigation();
 
   const renderItem = React.useCallback(({ item }: {item: (typeof POSTS_DATA)[0]}) => (
-          <View className="px-4">
+          <View className="px-2">
             <SocialPost
               user={item.user}
               title={item.title}

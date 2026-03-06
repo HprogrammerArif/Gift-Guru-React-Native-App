@@ -58,8 +58,8 @@ const HomeHeader = ({
   }, [currentIndex, infiniteData.length]);
 
   return (
-    <View className=" px-4 pt-4 pb-6 ">
-      <View className="flex-row items-center justify-between gap-4">
+    <View className=" px-2 pt-4 pb-6 ">
+      <View className="flex-row items-center justify-between gap-3">
         {/* Menu Icon */}
         <TouchableOpacity onPress={onMenuPress} activeOpacity={0.7}>
           <Ionicons name="menu-outline" size={28} color="white" />
@@ -75,7 +75,7 @@ const HomeHeader = ({
               placeholder="Search products..."
               placeholderTextColor="#9CA3AF"
               className="bg-white rounded-full px-5 py-3 text-base text-black pr-12 shadow-sm"
-              style={{ height: 48 }}
+              style={{ height: 44 }}
             />
 
             <View className="absolute right-4 top-0 bottom-0 justify-center">
