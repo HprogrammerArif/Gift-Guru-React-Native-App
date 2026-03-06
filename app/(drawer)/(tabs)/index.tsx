@@ -1,31 +1,33 @@
 import HomeHeader from "@/components/home/HomeHeader";
+import RecommendedCarousel from "@/components/home/RecommendedCarousel";
 import SocialPost from "@/components/home/SocialPost";
+import TrendingNowCarousel from "@/components/home/TrendingNowCarousel";
 import { POSTS_DATA, RECOMMENDED_DATA, TRENDING_DATA } from "@/constants";
+import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation } from "expo-router";
 import React, { useState } from "react";
 import { FlatList, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useNavigation } from "expo-router";
-import RecommendedCarousel from "@/components/home/RecommendedCarousel";
-import TrendingNowCarousel from "@/components/home/TrendingNowCarousel";
 
 export default function Home() {
   const [search, setSearch] = useState("");
   const navigation = useNavigation();
 
-  const renderItem = React.useCallback(({ item }: {item: (typeof POSTS_DATA)[0]}) => (
-          <View className="px-2">
-            <SocialPost
-              user={item.user}
-              title={item.title}
-              description={item.description}
-              postImage={item.postImage}
-              likes={item.likes}
-              comments={item.comments}
-            />
-          </View>
-        ),
-        []
-      );
+  const renderItem = React.useCallback(
+    ({ item }: { item: (typeof POSTS_DATA)[0] }) => (
+      <View className="px-2">
+        <SocialPost
+          user={item.user}
+          title={item.title}
+          description={item.description}
+          postImage={item.postImage}
+          likes={item.likes}
+          comments={item.comments}
+        />
+      </View>
+    ),
+    [],
+  );
 
   const handleSearch = (text: string) => {
     setSearch(text);
@@ -41,9 +43,9 @@ export default function Home() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F8F9FA]" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-[#FF4B3A]" edges={["top"]}>
       {/* Home Header */}
-      <View className="bg-[#FF4B3A]">
+      <View className="">
         <HomeHeader
           value={search}
           onSearch={handleSearch}
@@ -59,12 +61,17 @@ export default function Home() {
         renderItem={renderItem}
         ListHeaderComponent={renderHeader}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 80 }}
+        contentContainerStyle={{
+          paddingBottom: 80,
+          backgroundColor: "#F8F9FA",
+        }}
+        style={{ backgroundColor: "#FF4B3A" }}
         initialNumToRender={7}
         maxToRenderPerBatch={7}
         windowSize={7}
         removeClippedSubviews={true}
       />
+    
     </SafeAreaView>
   );
 }
