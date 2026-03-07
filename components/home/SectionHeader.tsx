@@ -19,7 +19,7 @@ const SectionHeader = ({
   textColor,
 }: SectionHeaderProps) => {
   return (
-    <View className="flex-row items-center justify-between px-4 mb-2">
+    <View className="flex-row items-center justify-between px-2 mb-2">
       <View className="flex-row items-center gap-1">
         {icon && <Ionicons name={icon} size={20} color={iconColor} />}
         <Text className={cn("text-xl font-bold", textColor)}>{title}</Text>
