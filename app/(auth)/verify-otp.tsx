@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import { useRef, useState } from "react";
 import { Alert, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function VerifyOtp() {
@@ -91,54 +92,65 @@ export default function VerifyOtp() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white items-center justify-center p-5">
-      <TouchableOpacity
-        onPress={() => router.back()}
-        className="absolute top-14 left-5"
+    <SafeAreaView className="flex-1 bg-white">
+      <KeyboardAwareScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 20,
+        }}
+        style={{ flex: 1 }}
+        keyboardShouldPersistTaps="handled"
       >
-        <Ionicons name="arrow-back" size={24} color="black" />
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="absolute top-14 left-5"
+        >
+          <Ionicons name="arrow-back" size={24} color="black" />
+        </TouchableOpacity>
 
-      <Text className="text-3xl font-bold mb-2">Verify OTP</Text>
-      <Text className="text-gray-500 text-center mb-10">
-        We have sent a verification code to {email || "your email"}
-      </Text>
-
-      <View className="flex-row gap-2 mb-10">
-        {[0, 1, 2, 3].map((index) => (
-          <View
-            key={index}
-            className="w-12 h-14 border border-gray-300 rounded-xl items-center justify-center"
-          >
-            <TextInput
-              ref={(ref) => {
-                inputs.current[index] = ref;
-              }}
-              maxLength={1}
-              keyboardType="numeric"
-              className="text-2xl font-bold text-center w-full h-full"
-              value={otp[index]}
-              onChangeText={(text) => handleOtpChange(text, index)}
-              onKeyPress={(e) => handleKeyPress(e, index)}
-            />
-          </View>
-        ))}
-      </View>
-
-      <GradientButton
-        title={isLoading ? "Verifying..." : "Verify"}
-        onPress={handleVerify}
-      />
-
-      <TouchableOpacity
-        className="mt-6"
-        onPress={handleResend}
-        disabled={isResending}
-      >
-        <Text className="text-[#2B7FFF] font-bold">
-          {isResending ? "Resending..." : "Resend Code"}
+        <Text className="text-3xl font-bold mb-2">Verify OTP</Text>
+        <Text className="text-gray-500 text-center mb-10">
+          We have sent a verification code to {email || "your email"}
         </Text>
-      </TouchableOpacity>
+
+        <View className="flex-row gap-2 mb-10">
+          {[0, 1, 2, 3].map((index) => (
+            <View
+              key={index}
+              className="w-12 h-14 border border-gray-300 rounded-xl items-center justify-center"
+            >
+              <TextInput
+                ref={(ref) => {
+                  inputs.current[index] = ref;
+                }}
+                maxLength={1}
+                keyboardType="numeric"
+                className="text-2xl font-bold text-center w-full h-full"
+                value={otp[index]}
+                onChangeText={(text) => handleOtpChange(text, index)}
+                onKeyPress={(e) => handleKeyPress(e, index)}
+              />
+            </View>
+          ))}
+        </View>
+
+        <GradientButton
+          title={isLoading ? "Verifying..." : "Verify"}
+          onPress={handleVerify}
+        />
+
+        <TouchableOpacity
+          className="mt-6"
+          onPress={handleResend}
+          disabled={isResending}
+        >
+          <Text className="text-[#2B7FFF] font-bold">
+            {isResending ? "Resending..." : "Resend Code"}
+          </Text>
+        </TouchableOpacity>
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }
