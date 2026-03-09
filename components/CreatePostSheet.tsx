@@ -1,3 +1,8 @@
+import {
+  useCreatePostMutation,
+  useGetCategoriesQuery,
+  useGetOccasionsQuery,
+} from "@/redux/features/posts/postApi";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as ImagePicker from "expo-image-picker";
@@ -21,42 +26,53 @@ interface CreatePostSheetProps {
   onClose: () => void;
 }
 
-const categories = [
-  { id: 1, name: "All" },
-  { id: 2, name: "Birthday" },
-  { id: 3, name: "Anniversary" },
-  { id: 4, name: "Graduation" },
-  { id: 5, name: "Wedding" },
-];
-
-const occasions = [
-  { id: 1, name: "All" },
-  { id: 2, name: "Birthday" },
-  { id: 3, name: "Anniversary" },
-  { id: 4, name: "Graduation" },
-  { id: 5, name: "Wedding" },
-];
+interface ListOption {
+  id: number | string;
+  name: string;
+}
 
 const CreatePostSheet = ({ visible, onClose }: CreatePostSheetProps) => {
   const [targetCustomer, setTargetCustomer] = useState("All");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [selectedImageAsset, setSelectedImageAsset] =
+    useState<ImagePicker.ImagePickerAsset | null>(null);
+
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
-  const [category, setCategory] = useState<string | null>(null);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [categoryName, setCategoryName] = useState<string | null>(null);
+
   const [showOccasionsDropdown, setShowOccasionsDropdown] = useState(false);
-  const [occasion, setOccasion] = useState<string | null>(null);
+  const [occasionId, setOccasionId] = useState<string | null>(null);
+  const [occasionName, setOccasionName] = useState<string | null>(null);
 
   // Form State
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [amazonLink, setAmazonLink] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // API hooks
+  const [createPost, { isLoading: isSubmitting }] = useCreatePostMutation();
+  const { data: categoriesData } = useGetCategoriesQuery(undefined, {
+    skip: !visible,
+  });
+  const { data: occasionsData } = useGetOccasionsQuery(undefined, {
+    skip: !visible,
+  });
+
+  // Fallback to empty arrays if API hasn't returned yet
+  const categories: ListOption[] = Array.isArray(categoriesData)
+    ? categoriesData
+    : [];
+  const occasions: ListOption[] = Array.isArray(occasionsData)
+    ? occasionsData
+    : [];
 
   const handleUploadPhoto = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
       Alert.alert(
         "Permission Required",
-        "Please allow access to your photo library"
+        "Please allow access to your photo library",
       );
       return;
     }
@@ -64,46 +80,90 @@ const CreatePostSheet = ({ visible, onClose }: CreatePostSheetProps) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
-      // aspect: [4, 3],
-      quality: 1,
+      quality: 0.8,
     });
 
-    if (!result.canceled) {
+    if (!result.canceled && result.assets[0]) {
       setSelectedImage(result.assets[0].uri);
+      setSelectedImageAsset(result.assets[0]);
     }
+  };
+
+  const resetForm = () => {
+    setTitle("");
+    setDescription("");
+    setAmazonLink("");
+    setCategoryId(null);
+    setCategoryName(null);
+    setOccasionId(null);
+    setOccasionName(null);
+    setSelectedImage(null);
+    setSelectedImageAsset(null);
+    setTargetCustomer("All");
   };
 
   const handleCreatePost = async () => {
     // Basic Validation
-    if (!title.trim() || !description.trim() || !category || !occasion) {
+    if (!title.trim() || !description.trim() || !categoryId || !occasionId) {
       Alert.alert("Missing Fields", "Please fill in all required fields.");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
 
-    setIsSubmitting(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
 
     try {
-      // Simulate API Call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const formData = new FormData();
+      formData.append("title", title.trim());
+      formData.append("content", description.trim());
+      formData.append("category", categoryId);
+      formData.append("occasion", occasionId);
+      formData.append("amazon_link", amazonLink.trim());
+      formData.append("target_category", targetCustomer);
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      Alert.alert("Success", "Your post has been shared with the community!");
+      // Attach image if selected
+      if (selectedImageAsset) {
+        const uri = selectedImageAsset.uri;
+        const filename = uri.split("/").pop() || "photo.jpg";
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : "image/jpeg";
 
-      // Cleanup and Close
-      setTitle("");
-      setDescription("");
-      setAmazonLink("");
-      setCategory(null);
-      setOccasion(null);
-      setSelectedImage(null);
-      onClose();
-    } catch (error) {
+        formData.append("images", {
+          uri,
+          name: filename,
+          type,
+        } as any);
+      }
+
+      const response: any = await createPost(formData);
+
+      if (
+        response?.data?.id ||
+        response?.data?.success ||
+        response?.data?.message
+      ) {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert(
+          "Success 🎉",
+          response.data?.message ||
+            "Your post has been shared with the community!",
+        );
+        resetForm();
+        onClose();
+      } else if (response?.error) {
+        const errorData = response.error?.data;
+        const errorMessage =
+          errorData?.error ||
+          errorData?.detail ||
+          errorData?.message ||
+          "Failed to create post. Please check required fields.";
+        Alert.alert("Post Failed", errorMessage);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
+    } catch (error: any) {
       Alert.alert("Error", "Something went wrong. Please try again.");
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-    } finally {
-      setIsSubmitting(false);
+      console.error("Create post error:", error);
     }
   };
 
@@ -145,7 +205,7 @@ const CreatePostSheet = ({ visible, onClose }: CreatePostSheetProps) => {
               className="w-full h-12 px-4 py-2 bg-gray-50 rounded-xl text-gray-700 text-base mb-4 border border-gray-100"
               placeholderTextColor="#9CA3AF"
             />
-            {/* Text Input */}
+            {/* Description Input */}
             <TextInput
               multiline
               placeholder="What's on your mind? Share a gift idea, a wish, or a deal ...*"
@@ -165,7 +225,10 @@ const CreatePostSheet = ({ visible, onClose }: CreatePostSheetProps) => {
                   resizeMode="cover"
                 />
                 <TouchableOpacity
-                  onPress={() => setSelectedImage(null)}
+                  onPress={() => {
+                    setSelectedImage(null);
+                    setSelectedImageAsset(null);
+                  }}
                   className="absolute top-2 right-2 bg-black/50 p-2 rounded-full"
                 >
                   <Ionicons name="close" size={20} color="white" />
@@ -198,38 +261,44 @@ const CreatePostSheet = ({ visible, onClose }: CreatePostSheetProps) => {
               >
                 <Text
                   className={`text-base ${
-                    category ? "text-gray-900" : "text-gray-400"
+                    categoryName ? "text-gray-900" : "text-gray-400"
                   }`}
                 >
-                  {category || "Select a category"}
+                  {categoryName || "Select a category"}
                 </Text>
                 <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
               </TouchableOpacity>
 
               {showCategoryDropdown && (
                 <View className="absolute top-full left-0 right-0 bg-white border border-gray-100 rounded-xl shadow-lg mt-1 z-50">
-                  {categories.map((cat) => (
-                    <TouchableOpacity
-                      key={cat.id}
-                      onPress={(e) => {
-                        e.preventDefault();
-                        setCategory(cat.name);
-                        setShowCategoryDropdown(false);
-                        Haptics.selectionAsync();
-                      }}
-                      className="px-4 py-3 border-b border-gray-50 last:border-b-0"
-                    >
-                      <Text
-                        className={`text-base ${
-                          category === cat.name
-                            ? "text-[#2B7FFF] font-semibold"
-                            : "text-gray-900"
-                        }`}
+                  {categories.length === 0 ? (
+                    <View className="px-4 py-3">
+                      <Text className="text-gray-400 text-sm">Loading...</Text>
+                    </View>
+                  ) : (
+                    categories.map((cat) => (
+                      <TouchableOpacity
+                        key={cat.id}
+                        onPress={() => {
+                          setCategoryId(String(cat.id));
+                          setCategoryName(cat.name);
+                          setShowCategoryDropdown(false);
+                          Haptics.selectionAsync();
+                        }}
+                        className="px-4 py-3 border-b border-gray-50"
                       >
-                        {cat.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <Text
+                          className={`text-base ${
+                            categoryId === String(cat.id)
+                              ? "text-[#2B7FFF] font-semibold"
+                              : "text-gray-900"
+                          }`}
+                        >
+                          {cat.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))
+                  )}
                 </View>
               )}
             </View>
@@ -249,38 +318,44 @@ const CreatePostSheet = ({ visible, onClose }: CreatePostSheetProps) => {
               >
                 <Text
                   className={`text-base ${
-                    occasion ? "text-gray-900" : "text-gray-400"
+                    occasionName ? "text-gray-900" : "text-gray-400"
                   }`}
                 >
-                  {occasion || "Select Occasions"}
+                  {occasionName || "Select Occasions"}
                 </Text>
                 <Ionicons name="chevron-down" size={20} color="#9CA3AF" />
               </TouchableOpacity>
 
               {showOccasionsDropdown && (
                 <View className="absolute top-full left-0 right-0 bg-white border border-gray-100 rounded-xl shadow-lg mt-1 z-50">
-                  {occasions.map((occ) => (
-                    <TouchableOpacity
-                      key={occ.id}
-                      onPress={(e) => {
-                        e.preventDefault();
-                        setOccasion(occ.name);
-                        setShowOccasionsDropdown(false);
-                        Haptics.selectionAsync();
-                      }}
-                      className="px-4 py-3 border-b border-gray-50 last:border-b-0"
-                    >
-                      <Text
-                        className={`text-base ${
-                          occasion === occ.name
-                            ? "text-[#2B7FFF] font-semibold"
-                            : "text-gray-900"
-                        }`}
+                  {occasions.length === 0 ? (
+                    <View className="px-4 py-3">
+                      <Text className="text-gray-400 text-sm">Loading...</Text>
+                    </View>
+                  ) : (
+                    occasions.map((occ) => (
+                      <TouchableOpacity
+                        key={occ.id}
+                        onPress={() => {
+                          setOccasionId(String(occ.id));
+                          setOccasionName(occ.name);
+                          setShowOccasionsDropdown(false);
+                          Haptics.selectionAsync();
+                        }}
+                        className="px-4 py-3 border-b border-gray-50"
                       >
-                        {occ.name}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
+                        <Text
+                          className={`text-base ${
+                            occasionId === String(occ.id)
+                              ? "text-[#2B7FFF] font-semibold"
+                              : "text-gray-900"
+                          }`}
+                        >
+                          {occ.name}
+                        </Text>
+                      </TouchableOpacity>
+                    ))
+                  )}
                 </View>
               )}
             </View>
@@ -290,8 +365,8 @@ const CreatePostSheet = ({ visible, onClose }: CreatePostSheetProps) => {
               <Text className="text-sm font-bold text-gray-900 mb-2">
                 Target Customer*
               </Text>
-              <View className="flex-row gap-3">
-                {["All", "Men", "Women", "Kids"].map((type) => (
+              <View className="flex-row flex-wrap gap-3">
+                {["All", "Men", "Women", "Kids", "Teens"].map((type) => (
                   <TouchableOpacity
                     key={type}
                     onPress={() => setTargetCustomer(type)}

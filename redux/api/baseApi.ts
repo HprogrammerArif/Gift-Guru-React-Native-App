@@ -1,13 +1,19 @@
 // src/api/baseApi.ts
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { setCredentials, logout, updateToken } from "../features/auth/authSlice";
 import Toast from "react-native-toast-message"; // or your toast library
+import {
+    logout,
+    updateToken
+} from "../features/auth/authSlice";
 import { RootState } from "../store";
 
-export const API_IMAGE_URL = "https://intensely-optimal-unicorn.ngrok-free.app"
+export const API_IMAGE_URL = "https://intensely-optimal-unicorn.ngrok-free.app";
 // export const API_IMAGE_URL = "http://10.10.13.61:8002"
 
-const API_URL = (process.env.EXPO_PUBLIC_API_URL || "https://intensely-optimal-unicorn.ngrok-free.app")
+const API_URL = (
+  process.env.EXPO_PUBLIC_API_URL ||
+  "https://intensely-optimal-unicorn.ngrok-free.app"
+)
   .replace(/"/g, "")
   .replace(/\/$/, "");
 export const baseUrl = API_URL;
@@ -23,7 +29,7 @@ const baseQuery = fetchBaseQuery({
       "refreshToken",
       "verify-email",
       "confirm",
-      "legal-privacy/"
+      "legal-privacy/",
     ].includes(endpoint);
     if (skipAuth) return headers;
 
@@ -45,12 +51,11 @@ const baseQueryWithReauth: any = async (
 
   let result = await baseQuery(args, api, extraOptions);
 
-
   const is403Error = result.error?.status === 403;
 
   if (result.error) {
     // Only log errors that aren't expected 403s on approve/reject
-    if (!(is403Error)) {
+    if (!is403Error) {
       console.log(`[RTK Query] ❌ Error for ${requestUrl}:`, result.error);
     }
   } else {
@@ -70,16 +75,13 @@ const baseQueryWithReauth: any = async (
     }
 
     try {
-      const refreshResult = await fetch(
-        `${API_URL}/api/token/refresh/`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ refresh: refreshToken }),
+      const refreshResult = await fetch(`${API_URL}/api/token/refresh/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({ refresh: refreshToken }),
+      });
 
       const data = await refreshResult.json();
 
@@ -117,11 +119,11 @@ const baseQueryWithReauth: any = async (
   if (result.error) {
     const message =
       (result.error.data as any)?.message || "Something went wrong";
-    const isApproveRejectEndpoint = requestUrl?.includes('/expenses/approve/');
+    const isApproveRejectEndpoint = requestUrl?.includes("/expenses/approve/");
     const is403Error = result.error.status === 403;
-    
+
     // Don't show toast for expected 403 errors on approve/reject (handled in UI)
-    if (result.error.status === 403 ) {
+    if (result.error.status === 403) {
       Toast.show({ type: "error", text1: message });
     } else if (result.error.status === 404) {
       // Toast.show({ text1: message, type: "error" });
@@ -157,7 +159,10 @@ export const baseApi = createApi({
     "NotificationPreferences",
     "NotificationHistory",
     "HomeScreenSentimentGraph",
-    "LegalAndPrivacyPolicy"
+    "LegalAndPrivacyPolicy",
+    "Posts",
+    "Categories",
+    "Occasions",
   ],
   endpoints: () => ({}),
 });
