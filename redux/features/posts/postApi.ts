@@ -49,7 +49,7 @@ const postApi = baseApi.injectEndpoints({
         url: `social/posts/${postId}/likes/`,
         method: "POST",
       }),
-      invalidatesTags: ["Posts"],
+      invalidatesTags: ["Likes"],
     }),
 
 
@@ -60,7 +60,7 @@ const postApi = baseApi.injectEndpoints({
       method: "POST",
       body: data,
     }),
-    invalidatesTags: ["Posts"],
+    invalidatesTags: ["Comments"],
   }),
 
   // get comments
@@ -69,7 +69,7 @@ const postApi = baseApi.injectEndpoints({
       url: `social/post/${postId}/comments/`,
       method: "GET",
     }),
-    providesTags: ["Posts"],
+    providesTags: ["Comments"],
   }),
 
   // follow user
@@ -78,7 +78,7 @@ const postApi = baseApi.injectEndpoints({
       url: `/auth/follow/${userId}/`,
       method: "POST",
     }),
-    invalidatesTags: ["Posts"],
+    invalidatesTags: ["Follows"],
   }),
 
 
@@ -88,7 +88,7 @@ const postApi = baseApi.injectEndpoints({
       url: `/social/post/${postId}/wishlist/`,
       method: "POST",
     }),
-    invalidatesTags: ["Posts"],
+    invalidatesTags: ["SavedPosts"],
   }),
 
   

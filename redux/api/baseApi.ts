@@ -163,6 +163,11 @@ export const baseApi = createApi({
     "Posts",
     "Categories",
     "Occasions",
+    "Comments",
+    "Follows",
+    "SavedPosts",
+    "Likes",
+    "Wishlists",
   ],
   endpoints: () => ({}),
 });

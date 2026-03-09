@@ -1,11 +1,16 @@
 import {
+  useFollowUserMutation,
+  useLikePostMutation,
+  useSavePostMutation,
+} from "@/redux/features/posts/postApi";
+import {
   FontAwesome5,
   Ionicons,
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React, { useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Alert, Text, TouchableOpacity, View } from "react-native";
 
 // --- Types matching the backend API shape ---
 export interface PostUser {
@@ -68,6 +73,11 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
   const [isBookmarked, setIsBookmarked] = useState(post.is_saved ?? false);
   const [expanded, setExpanded] = useState(false);
 
+  // API mutations
+  const [likePost] = useLikePostMutation();
+  const [followUser] = useFollowUserMutation();
+  const [savePost] = useSavePostMutation();
+
   // Derived display values
   const displayName =
     `${post.user?.first_name || ""} ${post.user?.last_name || ""}`.trim() ||
@@ -85,13 +95,57 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
   const productImage = post.amazon_product_image_url || null;
   const cardImage = firstImage || productImage;
 
-  const handleLike = () => {
-    setIsLiked((prev) => !prev);
-    setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
+  const handleLike = async () => {
+    // Optimistic update
+    const prevLiked = isLiked;
+    const prevCount = likesCount;
+    setIsLiked(!prevLiked);
+    setLikesCount((prev) => (prevLiked ? prev - 1 : prev + 1));
+
+    try {
+      const res: any = await likePost(post.id);
+      if (res?.error) {
+        // Rollback on failure
+        setIsLiked(prevLiked);
+        setLikesCount(prevCount);
+      }
+    } catch {
+      setIsLiked(prevLiked);
+      setLikesCount(prevCount);
+    }
   };
 
-  const handleBookmark = () => setIsBookmarked((prev) => !prev);
-  const handleFollow = () => setIsFollowed((prev) => !prev);
+  const handleBookmark = async () => {
+    // Optimistic update
+    const prevBookmarked = isBookmarked;
+    setIsBookmarked(!prevBookmarked);
+
+    try {
+      const res: any = await savePost(post.id);
+      if (res?.error) {
+        setIsBookmarked(prevBookmarked);
+        Alert.alert("Error", "Failed to save post. Please try again.");
+      }
+    } catch {
+      setIsBookmarked(prevBookmarked);
+    }
+  };
+
+  const handleFollow = async () => {
+    // Optimistic update
+    const prevFollowed = isFollowed;
+    setIsFollowed(!prevFollowed);
+
+    try {
+      const res: any = await followUser(post.user.id);
+      if (res?.error) {
+        setIsFollowed(prevFollowed);
+        Alert.alert("Error", "Failed to follow user. Please try again.");
+      }
+    } catch {
+      setIsFollowed(prevFollowed);
+    }
+  };
 
   return (
     <View className="bg-white p-2 mb-4 border-gray-100 pb-6">
