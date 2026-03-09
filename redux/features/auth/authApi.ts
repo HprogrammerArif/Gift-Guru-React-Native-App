@@ -13,7 +13,7 @@ const authApi = baseApi.injectEndpoints({
 
     verifyOtp: builder.mutation({
       query: (userInfo) => ({
-        url: "auth/verify-email/",
+        url: "auth/register/verify/",
         method: "POST",
         body: userInfo,
         
@@ -22,7 +22,7 @@ const authApi = baseApi.injectEndpoints({
 
     resendOtp: builder.mutation({
       query: (userInfo) => ({
-        url: "auth/resend-verification/",
+        url: "auth/register/resend-otp/",
         method: "POST",
         body: userInfo,
       }),

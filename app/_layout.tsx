@@ -82,6 +82,12 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+if (__DEV__) {
+  require("../ReactotronConfig");
+}
+
+
+
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync().catch(() => {});
 

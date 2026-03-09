@@ -11,7 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function VerifyOtp() {
   const { email } = useLocalSearchParams();
-  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", ""]);
   const inputs = useRef<Array<TextInput | null>>([]);
 
   const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
@@ -23,7 +23,7 @@ export default function VerifyOtp() {
     setOtp(newOtp);
 
     // Auto-advance to next input
-    if (text && index < 5) {
+    if (text && index < 3) {
       inputs.current[index + 1]?.focus();
     }
   };
@@ -40,15 +40,15 @@ export default function VerifyOtp() {
 
   const handleVerify = async () => {
     const otpValue = otp.join("");
-    if (otpValue.length !== 6) {
-      Alert.alert("Error", "Please enter a valid 6-digit verification code");
+    if (otpValue.length !== 4) {
+      Alert.alert("Error", "Please enter a valid 4-digit verification code");
       return;
     }
 
     try {
       const response: any = await verifyOtp({
         email: email as string,
-        otp: otpValue,
+        code: otpValue,
       });
 
       if (response?.data?.message) {
@@ -105,7 +105,7 @@ export default function VerifyOtp() {
       </Text>
 
       <View className="flex-row gap-2 mb-10">
-        {[0, 1, 2, 3, 4, 5].map((index) => (
+        {[0, 1, 2, 3].map((index) => (
           <View
             key={index}
             className="w-12 h-14 border border-gray-300 rounded-xl items-center justify-center"
