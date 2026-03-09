@@ -2,8 +2,10 @@ import CustomInput from "@/components/CustomInput";
 import CustomInputModified from "@/components/CustomInputModified";
 import { GradientButton } from "@/components/GradientButton";
 import RolePicker from "@/components/RolePicker";
+import { useRegisterMutation } from "@/redux/features/auth/authApi";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { Image as ExpoImage } from "expo-image";
 import { Link, router } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
@@ -16,7 +18,6 @@ import {
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Image as ExpoImage } from "expo-image";
 
 interface FormData {
   firstName: string;
@@ -29,6 +30,7 @@ interface FormData {
 }
 
 const SignUp = () => {
+    const [register]= useRegisterMutation()
   const [form, setForm] = useState<FormData>({
     firstName: "",
     lastName: "",
@@ -65,21 +67,21 @@ const SignUp = () => {
     ) {
       return Alert.alert(
         "Missing Fields",
-        "Please fill in all fields including your date of birth."
+        "Please fill in all fields including your date of birth.",
       );
     }
 
     if (password !== confirmPassword) {
       return Alert.alert(
         "Passwords Don't Match",
-        "Please make sure both passwords are the same"
+        "Please make sure both passwords are the same",
       );
     }
 
     if (password.length < 6) {
       return Alert.alert(
         "Weak Password",
-        "Password must be at least 6 characters"
+        "Password must be at least 6 characters",
       );
     }
 
@@ -260,47 +262,47 @@ const SignUp = () => {
               </View>
             </View> */}
 
-             <View className="mt-4 gap-3">
-                          <GradientButton
-                            title="Sign Up"
-                            onPress={submit}
-                            isLoading={isSubmitting}
-                          />
-            
-                          <Text className="text-center text-gray-400 font-normal">
-                            Or Continue With
-                          </Text>
-            
-                          <TouchableOpacity
-                            activeOpacity={0.8}
-                            className="w-full bg-[#e1e2e9] rounded-xl py-3 flex-row items-center justify-center gap-3"
-                            onPress={() =>
-                              Alert.alert("Google Login", "This feature is coming soon!")
-                            }
-                          >
-                            <ExpoImage
-                              source={{
-                                uri: "https://authjs.dev/img/providers/google.svg",
-                              }}
-                              style={{ width: 24, height: 24 }}
-                              contentFit="contain"
-                            />
-                            <Text className="text-lg font-medium text-black">
-                              Continue with Google
-                            </Text>
-                          </TouchableOpacity>
-            
-                          <View className="flex-row justify-center mt-2">
-                            <Text className="text-gray-600 text-sm">
-                              Already have an account?{" "}
-                            </Text>
-                            <Link href="/(auth)/sign-in" asChild>
-                              <TouchableOpacity>
-                                <Text className="text-[#2B7FFF] font-bold">Sign In</Text>
-                              </TouchableOpacity>
-                            </Link>
-                          </View>
-                        </View>
+            <View className="mt-4 gap-3">
+              <GradientButton
+                title="Sign Up"
+                onPress={submit}
+                isLoading={isSubmitting}
+              />
+
+              <Text className="text-center text-gray-400 font-normal">
+                Or Continue With
+              </Text>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                className="w-full bg-[#e1e2e9] rounded-xl py-3 flex-row items-center justify-center gap-3"
+                onPress={() =>
+                  Alert.alert("Google Login", "This feature is coming soon!")
+                }
+              >
+                <ExpoImage
+                  source={{
+                    uri: "https://authjs.dev/img/providers/google.svg",
+                  }}
+                  style={{ width: 24, height: 24 }}
+                  contentFit="contain"
+                />
+                <Text className="text-lg font-medium text-black">
+                  Continue with Google
+                </Text>
+              </TouchableOpacity>
+
+              <View className="flex-row justify-center mt-2">
+                <Text className="text-gray-600 text-sm">
+                  Already have an account?{" "}
+                </Text>
+                <Link href="/(auth)/sign-in" asChild>
+                  <TouchableOpacity>
+                    <Text className="text-[#2B7FFF] font-bold">Sign In</Text>
+                  </TouchableOpacity>
+                </Link>
+              </View>
+            </View>
           </View>
         </View>
       </KeyboardAwareScrollView>

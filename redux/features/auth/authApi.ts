@@ -2,14 +2,6 @@ import { baseApi } from "../../api/baseApi";
 
 const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // ONBOARDING
-
-    getOnboardingData: builder.query({
-      query: () => ({
-        url: "about/onboarding/",
-        providesTags: ["Onboarding"],
-      }),
-    }),
 
     register: builder.mutation({
       query: (userInfo) => ({
@@ -157,7 +149,6 @@ const authApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useGetOnboardingDataQuery,
   useLoginMutation,
   useRegisterMutation,
   useForgetPasswordMutation,
