@@ -1,7 +1,7 @@
 import {
-  FontAwesome5,
-  Ionicons,
-  MaterialCommunityIcons,
+    FontAwesome5,
+    Ionicons,
+    MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React, { useState } from "react";
@@ -44,14 +44,15 @@ const SocialPost = ({
   const [expanded, setExpanded] = useState(false);
 
   const hanldeLike = () => {
-    console.log("Like");
+    // console.log("Like");
   };
   const handleBookmark = () => {
-    console.log("Bookmark");
+    // console.log("Bookmark");
   };
 
   const handleFollow = () => {
-    console.log("Follow");
+    setIsFollowed(!isFollowed);
+    // console.log("Follow");
   };
 
   return (
@@ -100,17 +101,17 @@ const SocialPost = ({
           onPress={() => handleFollow()}
           className={`px-4 py-1.5 rounded-lg border ${isFollowed ? "bg-gray-100 border-gray-200" : "border-gray-200 bg-white"}`}
         >
-         {
-          isMyPost ? (
-            <Text className="text-xs text-gray-500 font-medium">Three dots</Text>
+          {isMyPost ? (
+            <Text className="text-xs text-gray-500 font-medium">
+              Three dots
+            </Text>
           ) : (
-             <Text
-            className={`text-xs font-semibold ${isFollowed ? "text-gray-500" : "text-gray-900"}`}
-          >
-            {isFollowed ? "Following" : "Follow"}
-          </Text>
-          )
-         }
+            <Text
+              className={`text-xs font-semibold ${isFollowed ? "text-gray-500" : "text-gray-900"}`}
+            >
+              {isFollowed ? "Following" : "Follow"}
+            </Text>
+          )}
         </TouchableOpacity>
       </View>
 

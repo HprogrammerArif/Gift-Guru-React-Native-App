@@ -1,16 +1,16 @@
 import { RECOMMENDED_DATA_TYPE } from "@/constants";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Dimensions,
-  FlatList,
-  Text,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    FlatList,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import SectionHeader from "./SectionHeader";
-import { LinearGradient } from "expo-linear-gradient";
 const { width } = Dimensions.get("window");
 
 const RecommendedCarousel = ({
@@ -25,14 +25,14 @@ const RecommendedCarousel = ({
   // Create a large dataset for "infinite" scrolling simulation
   // This is a common high-performance pattern for React Native carousels
   const infiniteData = React.useMemo(
-    () => Array.from({ length: 1000 }).flatMap(() => RECOMMENDED_DATA),
-    []
+    () => Array.from({ length: 50 }).flatMap(() => RECOMMENDED_DATA),
+    [],
   );
 
   useEffect(() => {
     const interval = setInterval(() => {
       const nextIndex = currentIndex + 1;
-      // If we get huge, silently reset. But 1000 * 6 items is plenty for hours.
+      // If we reach the end of our shortened list, silently reset
       if (nextIndex >= infiniteData.length) {
         flatListRef.current?.scrollToIndex({ index: 0, animated: false });
         setCurrentIndex(0);
@@ -51,13 +51,11 @@ const RecommendedCarousel = ({
   }, [currentIndex, infiniteData.length]);
 
   return (
-    
-      <LinearGradient
-              colors={["#FF4B3A", "#FF8C42"]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
-              
-            >
+    <LinearGradient
+      colors={["#FF4B3A", "#FF8C42"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 0, y: 1 }}
+    >
       {/* Recommended Section */}
       <SectionHeader
         title="Recommended"
@@ -127,14 +125,13 @@ const RecommendedCarousel = ({
           )}
           onMomentumScrollEnd={(e) => {
             const newIndex = Math.round(
-              e.nativeEvent.contentOffset.x / CARD_WIDTH
+              e.nativeEvent.contentOffset.x / CARD_WIDTH,
             );
             setCurrentIndex(newIndex);
           }}
         />
       </View>
-      </LinearGradient>
-    
+    </LinearGradient>
   );
 };
 

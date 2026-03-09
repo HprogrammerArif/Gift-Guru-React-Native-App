@@ -1,15 +1,15 @@
-import { RECOMMENDED_DATA_TYPE, TRENDING_DATA_TYPE } from "@/constants";
+import { TRENDING_DATA_TYPE } from "@/constants";
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Dimensions,
-  FlatList,
-  Text,
-  TouchableOpacity,
-  View,
+    Dimensions,
+    FlatList,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import SectionHeader from "./SectionHeader";
-import { router } from "expo-router";
 const { width } = Dimensions.get("window");
 
 const TrendingNowCarousel = ({
@@ -24,14 +24,14 @@ const TrendingNowCarousel = ({
   // Create a large dataset for "infinite" scrolling simulation
   // This is a common high-performance pattern for React Native carousels
   const infiniteData = React.useMemo(
-    () => Array.from({ length: 1000 }).flatMap(() => TRENDING_DATA),
-    []
+    () => Array.from({ length: 50 }).flatMap(() => TRENDING_DATA),
+    [],
   );
 
   useEffect(() => {
     const interval = setInterval(() => {
       const nextIndex = currentIndex + 1;
-      // If we get huge, silently reset. But 1000 * 6 items is plenty for hours.
+      // If we reach the end of our shortened list, silently reset
       if (nextIndex >= infiniteData.length) {
         flatListRef.current?.scrollToIndex({ index: 0, animated: false });
         setCurrentIndex(0);
@@ -119,7 +119,7 @@ const TrendingNowCarousel = ({
           )}
           onMomentumScrollEnd={(e) => {
             const newIndex = Math.round(
-              e.nativeEvent.contentOffset.x / CARD_WIDTH
+              e.nativeEvent.contentOffset.x / CARD_WIDTH,
             );
             setCurrentIndex(newIndex);
           }}
