@@ -30,7 +30,7 @@ interface FormData {
 }
 
 const SignUp = () => {
-    const [register]= useRegisterMutation()
+  const [register] = useRegisterMutation();
   const [form, setForm] = useState<FormData>({
     firstName: "",
     lastName: "",
@@ -94,19 +94,49 @@ const SignUp = () => {
     setIsSubmitting(true);
 
     try {
-      // simulated response
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const formatApiDate = (d: Date) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      };
 
-      router.push({
-        pathname: "/verify-otp",
-        params: { email: email.toLowerCase().trim() },
-      });
+      const payload = {
+        first_name: firstName,
+        last_name: lastName,
+        date_of_birth: date ? formatApiDate(date) : undefined,
+        gender: role,
+        email: email.toLowerCase().trim(),
+        password: password,
+        confirm_password: confirmPassword,
+      };
+
+      const response: any = await register(payload);
+      console.log("register response", response);
+
+      if (response?.data?.message) {
+        Alert.alert("Success", response.data.message);
+        router.push({
+          pathname: "/verify-otp",
+          params: { email: email.toLowerCase().trim() },
+        });
+      } else if (response?.error) {
+        const errorData = response.error?.data;
+        const errorMessage =
+          errorData?.error ||
+          errorData?.email?.[0] ||
+          errorData?.password?.[0] ||
+          errorData?.detail ||
+          "Registration failed";
+
+        Alert.alert("Sign Up Failed", errorMessage);
+      }
     } catch (error: any) {
       Alert.alert("Sign Up Failed", error.message || "Please try again");
     } finally {
       setIsSubmitting(false);
     }
-  }, [form, date]);
+  }, [form, date, register]);
 
   const onDateChange = (event: any, selectedDate?: Date) => {
     // On Android, the picker closes itself after selection
@@ -243,24 +273,7 @@ const SignUp = () => {
               onTogglePassword={setShowConfirm}
             />
 
-            {/* <View className="mt-4">
-              <GradientButton
-                title="Continue"
-                onPress={submit}
-                isLoading={isSubmitting}
-              />
-
-              <View className="flex-row justify-center mt-6">
-                <Text className="text-gray-600 text-sm">
-                  Already have an account?{" "}
-                </Text>
-                <Link href="/(auth)/sign-in" asChild>
-                  <TouchableOpacity>
-                    <Text className="text-[#2B7FFF] font-bold">Sign In</Text>
-                  </TouchableOpacity>
-                </Link>
-              </View>
-            </View> */}
+         
 
             <View className="mt-4 gap-3">
               <GradientButton
