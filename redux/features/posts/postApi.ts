@@ -41,6 +41,61 @@ const postApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Posts"],
     }),
+
+
+    // Like post
+    likePost: builder.mutation({
+      query: (postId: string | number) => ({
+        url: `social/posts/${postId}/likes/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Posts"],
+    }),
+
+
+  // submit comment
+  submitComment: builder.mutation({
+    query: (data: { postId: string | number; content: string }) => ({
+      url: `social/posts/${data.postId}/comments/`,
+      method: "POST",
+      body: data,
+    }),
+    invalidatesTags: ["Posts"],
+  }),
+
+  // get comments
+  getComments: builder.query({
+    query: (postId: string | number) => ({
+      url: `social/post/${postId}/comments/`,
+      method: "GET",
+    }),
+    providesTags: ["Posts"],
+  }),
+
+  // follow user
+  followUser: builder.mutation({
+    query: (userId: string | number) => ({
+      url: `/auth/follow/${userId}/`,
+      method: "POST",
+    }),
+    invalidatesTags: ["Posts"],
+  }),
+
+
+  //savePost
+  savePost: builder.mutation({
+    query: (postId: string | number) => ({
+      url: `/social/post/${postId}/wishlist/`,
+      method: "POST",
+    }),
+    invalidatesTags: ["Posts"],
+  }),
+
+  
+
+  
+    
+
   }),
 });
 
@@ -49,4 +104,9 @@ export const {
   useGetCategoriesQuery,
   useGetOccasionsQuery,
   useGetPostsQuery,
+  useLikePostMutation,
+  useSubmitCommentMutation,
+  useGetCommentsQuery,
+  useFollowUserMutation,
+  useSavePostMutation,
 } = postApi;
