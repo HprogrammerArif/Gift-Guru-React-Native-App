@@ -6,7 +6,7 @@ import { useRegisterMutation } from "@/redux/features/auth/authApi";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Image as ExpoImage } from "expo-image";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
   Alert,
@@ -273,8 +273,6 @@ const SignUp = () => {
               onTogglePassword={setShowConfirm}
             />
 
-         
-
             <View className="mt-4 gap-3">
               <GradientButton
                 title="Sign Up"
@@ -309,11 +307,11 @@ const SignUp = () => {
                 <Text className="text-gray-600 text-sm">
                   Already have an account?{" "}
                 </Text>
-                <Link href="/(auth)/sign-in" asChild>
-                  <TouchableOpacity>
-                    <Text className="text-[#2B7FFF] font-bold">Sign In</Text>
-                  </TouchableOpacity>
-                </Link>
+                <TouchableOpacity
+                  onPress={() => router.replace("/(auth)/sign-in")}
+                >
+                  <Text className="text-[#2B7FFF] font-bold">Sign In</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>

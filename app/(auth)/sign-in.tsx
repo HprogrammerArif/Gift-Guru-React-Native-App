@@ -2,7 +2,7 @@ import CustomInput from "@/components/CustomInput";
 import { GradientButton } from "@/components/GradientButton";
 import Checkbox from "expo-checkbox";
 import { Image as ExpoImage } from "expo-image";
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, Keyboard, Text, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
@@ -22,7 +22,7 @@ const SignIn = () => {
     if (!email || !password) {
       return Alert.alert(
         "Error",
-        "Please enter valid email address & password."
+        "Please enter valid email address & password.",
       );
     }
 
@@ -95,13 +95,11 @@ const SignIn = () => {
                 <Text className="text-black text-sm">Remember Me</Text>
               </TouchableOpacity>
 
-              <Link href="/forgetpass" asChild>
-                <TouchableOpacity>
-                  <Text className="text-[#2B7FFF] text-sm font-medium">
-                    Forgot Password?
-                  </Text>
-                </TouchableOpacity>
-              </Link>
+              <TouchableOpacity onPress={() => router.push("/forgetpass")}>
+                <Text className="text-[#2B7FFF] text-sm font-medium">
+                  Forgot Password?
+                </Text>
+              </TouchableOpacity>
             </View>
 
             <View className="mt-4 gap-4">
@@ -138,18 +136,18 @@ const SignIn = () => {
                 <Text className="text-gray-600 text-sm">
                   Don't have an account?{" "}
                 </Text>
-                <Link href="/(auth)/sign-up" asChild>
-                  <TouchableOpacity>
-                    <Text className="text-[#2B7FFF] font-bold">Sign Up</Text>
-                  </TouchableOpacity>
-                </Link>
+                <TouchableOpacity
+                  onPress={() => router.replace("/(auth)/sign-up")}
+                >
+                  <Text className="text-[#2B7FFF] font-bold">Sign Up</Text>
+                </TouchableOpacity>
               </View>
             </View>
-            <Link href="/(tabs)" asChild>
-              <TouchableOpacity>
-                <Text className="text-[#2B7FFF] font-bold">HOME</Text>
-              </TouchableOpacity>
-            </Link>
+            <TouchableOpacity
+              onPress={() => router.replace("/(drawer)/(tabs)")}
+            >
+              <Text className="text-[#2B7FFF] font-bold">HOME</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </KeyboardAwareScrollView>
