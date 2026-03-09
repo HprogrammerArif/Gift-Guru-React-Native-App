@@ -67,6 +67,7 @@ function formatDate(iso: string): string {
 }
 
 const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
+  console.log(post, "post", isMyPost);
   const [isFollowed, setIsFollowed] = useState(post.is_following ?? false);
   const [isLiked, setIsLiked] = useState(post.is_liked ?? false);
   const [likesCount, setLikesCount] = useState(post.likes_count ?? 0);
@@ -206,8 +207,8 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
           onPress={() => handleFollow()}
           className={`px-4 py-1.5 rounded-lg border ${
             isFollowed
-              ? "bg-gray-100 border-gray-200"
-              : "border-gray-200 bg-white"
+              ? "bg-gray-100 border-gray-200 text-gray-900"
+              : "border-gray-200 bg-white text-gray-900"
           }`}
         >
           {isMyPost ? (
@@ -215,7 +216,7 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
           ) : (
             <Text
               className={`text-xs font-semibold ${
-                isFollowed ? "text-gray-500" : "text-gray-900"
+                isFollowed ? "text-gray-900" : "text-gray-900"
               }`}
             >
               {isFollowed ? "Following" : "Follow"}
@@ -298,7 +299,7 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
           </Text>
         </View>
 
-        <View className="flex-row items-center gap-2">
+        <View className="flex-row items-center gap-4">
           <TouchableOpacity className="flex-row items-center gap-1">
             <MaterialCommunityIcons
               name="message-reply-text-outline"
@@ -310,11 +311,11 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity onPress={handleBookmark}>
+          <TouchableOpacity hitSlop={24} onPress={handleBookmark}>
             {isBookmarked ? (
-              <Ionicons name="bookmark" size={20} color="#3B82F6" />
+              <Ionicons name="bookmark" size={22} color="#3B82F6" />
             ) : (
-              <Ionicons name="bookmark-outline" size={20} color="#6B7280" />
+              <Ionicons name="bookmark-outline" size={22} color="#6B7280" />
             )}
           </TouchableOpacity>
         </View>

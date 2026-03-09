@@ -35,7 +35,7 @@ export default function Home() {
   const renderItem = React.useCallback(
     ({ item }: { item: ApiPost }) => (
       <View className="px-2">
-        <SocialPost post={item} />
+        <SocialPost post={item}  />
       </View>
     ),
     [],
