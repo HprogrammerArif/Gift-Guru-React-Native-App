@@ -16,8 +16,6 @@ export type TAuthState = {
   role: string | null;
   token: string | null;
   refreshToken: string | null;
-  isAddChild: boolean;
-  isSendInvite: boolean;
   device_token: string | null;
 };
 
@@ -26,8 +24,6 @@ const initialState: TAuthState = {
   role: null,
   token: null,
   refreshToken: null,
-  isAddChild: false,
-  isSendInvite: false,
   device_token: null,
 };
 
@@ -43,17 +39,13 @@ const authSlice = createSlice({
         role: string;
         token: string;
         refreshToken: string;
-        isAddChild: boolean;
-        isSendInvite: boolean;
         device_token: string;
       }>,
     ) => {
-      const { user, role, token, refreshToken, isAddChild, isSendInvite, device_token } = action.payload;
+      const { user, role, token, refreshToken, device_token } = action.payload;
       state.user = { ...user, role };
       state.token = token;
       state.refreshToken = refreshToken;
-      state.isAddChild = isAddChild;
-      state.isSendInvite = isSendInvite;
       state.device_token = device_token;
     },
 
@@ -74,23 +66,21 @@ const authSlice = createSlice({
       state.role = null;
       state.token = null;
       state.refreshToken = null;
-      state.isAddChild = false;
-      state.isSendInvite = false;
       state.device_token = null;
     },
 
     // For partial updates to onboarding flags
-    updateOnboardingStatus: (
-      state,
-      action: PayloadAction<{ isAddChild?: boolean; isSendInvite?: boolean }>
-    ) => {
-      if (action.payload.isAddChild !== undefined) {
-        state.isAddChild = action.payload.isAddChild;
-      }
-      if (action.payload.isSendInvite !== undefined) {
-        state.isSendInvite = action.payload.isSendInvite;
-      }
-    },
+    // updateOnboardingStatus: (
+    //   state,
+    //   action: PayloadAction<{ isAddChild?: boolean; isSendInvite?: boolean }>
+    // ) => {
+    //   if (action.payload.isAddChild !== undefined) {
+    //     state.isAddChild = action.payload.isAddChild;
+    //   }
+    //   if (action.payload.isSendInvite !== undefined) {
+    //     state.isSendInvite = action.payload.isSendInvite;
+    //   }
+    // },
 
     // Update device token
     updateDeviceToken: (
@@ -102,7 +92,7 @@ const authSlice = createSlice({
   },
 });
 
-export const { setCredentials, updateToken, logout, updateOnboardingStatus, updateDeviceToken } = authSlice.actions;
+export const { setCredentials, updateToken, logout,  updateDeviceToken } = authSlice.actions;
 
 export default authSlice.reducer;
 

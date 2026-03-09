@@ -6,14 +6,20 @@ import { router } from "expo-router";
 import { useCallback, useState } from "react";
 import { Alert, Keyboard, Text, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-
 import { SafeAreaView } from "react-native-safe-area-context";
+
+import { useLoginMutation } from "@/redux/features/auth/authApi";
+import { setCredentials } from "@/redux/features/auth/authSlice";
+import { useAppDispatch } from "@/redux/hooks";
 
 const SignIn = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+
+  const [login] = useLoginMutation();
+  const dispatch = useAppDispatch();
 
   // Best Practice: Memoize the submit function
   const submit = useCallback(async () => {
@@ -30,15 +36,38 @@ const SignIn = () => {
     setIsSubmitting(true);
 
     try {
-      // API call simulation
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      router.replace("/(drawer)/(tabs)/index");
+      const response: any = await login({
+        email: email.toLowerCase().trim(),
+        password,
+      });
+
+      if (response?.status === 200) {
+        dispatch(
+          setCredentials({
+            user: response.data.user || response.data,
+            role: response.data.role || response.data.user?.role || "",
+            token: response.data.access || response.data.token || "",
+            refreshToken:
+              response.data.refresh || response.data.refreshToken || "",
+            device_token: response.data.device_token || "",
+          }),
+        );
+        router.replace("/(drawer)/(tabs)");
+      } else if (response?.error) {
+        const errorData = response.error?.data;
+        const errorMessage =
+          errorData?.error ||
+          errorData?.detail ||
+          errorData?.non_field_errors?.[0] ||
+          "Invalid credentials. Please try again.";
+        Alert.alert("Login Failed", errorMessage);
+      }
     } catch (error: any) {
       Alert.alert("Error", error.message || "Something went wrong.");
     } finally {
       setIsSubmitting(false);
     }
-  }, [form]); // Only recreate if form data changes
+  }, [form, login, dispatch]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#FFFFFF]" edges={["top"]}>
