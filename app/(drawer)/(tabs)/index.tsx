@@ -3,34 +3,65 @@ import { PostSkeletonList } from "@/components/home/PostSkeleton";
 import RecommendedCarousel from "@/components/home/RecommendedCarousel";
 import SocialPost, { ApiPost } from "@/components/home/SocialPost";
 import TrendingNowCarousel from "@/components/home/TrendingNowCarousel";
-import { RECOMMENDED_DATA, TRENDING_DATA } from "@/constants";
 import { useGetPostsQuery } from "@/redux/features/posts/postApi";
 import { useNavigation } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
-import { FlatList, RefreshControl, Text, View } from "react-native";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  FlatList,
+  InteractionManager,
+  RefreshControl,
+  Text,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Stable component — never re-creates on parent re-render
-const PostItem = React.memo(({ item }: { item: ApiPost }) => (
+// 1. Memoized Post Item with stable props
+const PostItem = memo(({ item }: { item: ApiPost }) => (
   <View className="px-2">
     <SocialPost post={item} />
   </View>
 ));
 PostItem.displayName = "PostItem";
 
-// Stable header component outside render cycle
-const FeedHeader = React.memo(() => (
-  <View>
-    <RecommendedCarousel />
-    <TrendingNowCarousel />
-    <View className="mt-6" />
-  </View>
-));
+// 2. Optimized Carousels Wrapper — only renders children when Home is ready
+const FeedHeader = memo(
+  ({ isLoading, isReady }: { isLoading: boolean; isReady: boolean }) => (
+    <View>
+      {isReady ? (
+        <>
+          <RecommendedCarousel />
+          <TrendingNowCarousel />
+        </>
+      ) : (
+        // Placeholder height for carousels to prevent layout jump
+        <View style={{ height: 350 }} />
+      )}
+      <View className="mt-6" />
+      {isLoading && (
+        <View className="px-2">
+          <PostSkeletonList count={4} />
+        </View>
+      )}
+    </View>
+  ),
+);
 FeedHeader.displayName = "FeedHeader";
+
+// 3. Stable Separator
+const ItemSeparator = memo(() => <View style={{ height: 8 }} />);
 
 export default function Home() {
   const [search, setSearch] = useState("");
+  const [isReady, setIsReady] = useState(false);
   const navigation = useNavigation();
+
+  // Defer heavy rendering until after basic navigation/splash hide
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      setIsReady(true);
+    });
+    return () => task.cancel();
+  }, []);
 
   const {
     data: postsData,
@@ -39,7 +70,6 @@ export default function Home() {
     refetch,
   } = useGetPostsQuery({ page: 1, page_size: 20 });
 
-  // Handle both array and paginated { results: [] } response shapes
   const posts: ApiPost[] = useMemo(
     () =>
       Array.isArray(postsData)
@@ -48,7 +78,6 @@ export default function Home() {
     [postsData],
   );
 
-  // Stable renderItem — item identity from keyExtractor prevents re-renders
   const renderItem = useCallback(
     ({ item }: { item: ApiPost }) => <PostItem item={item} />,
     [],
@@ -56,62 +85,60 @@ export default function Home() {
 
   const keyExtractor = useCallback((item: ApiPost) => String(item.id), []);
 
-  const renderEmpty = useCallback(
-    () => (
-      <View className="flex-1 items-center justify-center py-20">
+  const renderEmpty = useCallback(() => {
+    if (isLoading || !isReady) return null;
+    return (
+      <View className="items-center justify-center py-20">
         <Text className="text-gray-400 text-base font-medium">
           No posts yet. Be the first to share!
         </Text>
       </View>
-    ),
-    [],
-  );
+    );
+  }, [isLoading, isReady]);
 
-  // Skeleton is shown INSIDE the FlatList header so the carousels still show
-  const renderHeader = useCallback(
-    () => (
-      <View>
-        <FeedHeader />
-        {isLoading && <PostSkeletonList count={4} />}
-      </View>
-    ),
-    [isLoading],
+  // Pass isReady to FeedHeader so carousels don't fetch/render until interactions are clear
+  const listHeader = useMemo(
+    () => <FeedHeader isLoading={isLoading} isReady={isReady} />,
+    [isLoading, isReady],
   );
 
   return (
     <SafeAreaView className="flex-1 bg-[#FF4B3A]" edges={["top"]}>
-      {/* Home Header always visible */}
       <HomeHeader
         value={search}
         onSearch={setSearch}
-        onMenuPress={() => (navigation as any).openDrawer()}
-        onNotificationPress={() => {}}
+        onMenuPress={useCallback(
+          () => (navigation as any).openDrawer(),
+          [navigation],
+        )}
+        onNotificationPress={useCallback(() => {}, [])}
       />
 
       <FlatList
-        data={isLoading ? [] : posts}
+        // Empty list until interaction finishes to prioritize UI responsiveness
+        data={!isReady || isLoading ? [] : posts}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={isLoading ? null : renderEmpty}
+        ListHeaderComponent={listHeader}
+        ListEmptyComponent={renderEmpty}
+        ItemSeparatorComponent={ItemSeparator}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 80,
+          paddingBottom: 40,
           backgroundColor: "#F8F9FA",
         }}
         style={{ backgroundColor: "#FF4B3A" }}
-        // Performance tuning
-        initialNumToRender={5}
-        maxToRenderPerBatch={5}
-        updateCellsBatchingPeriod={50}
-        windowSize={10}
-        removeClippedSubviews={false} // true causes Android glitches with complex cells
+        // --- Smart Performance Tuning ---
+        removeClippedSubviews={false}
+        initialNumToRender={4}
+        maxToRenderPerBatch={4}
+        windowSize={5}
+        updateCellsBatchingPeriod={100}
         refreshControl={
           <RefreshControl
             refreshing={isFetching && !isLoading}
             onRefresh={refetch}
             tintColor="#2B7FFF"
-            colors={["#2B7FFF"]}
           />
         }
       />
