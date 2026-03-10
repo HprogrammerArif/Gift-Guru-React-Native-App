@@ -1,7 +1,6 @@
 import {
   useLikePostMutation,
   useSavePostMutation,
-  useSubmitCommentMutation
 } from "@/redux/features/posts/postApi";
 import {
   FontAwesome5,
@@ -10,20 +9,17 @@ import {
 } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import React, { memo, useCallback, useRef, useState } from "react";
-import {
-  ActivityIndicator,
+import {  
   Alert,
   Dimensions,
   Linking,
   Modal,
-  ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
 } from "react-native";
-import { ApiComment, ApiPost } from "./SocialPost";
+import { ApiPost } from "./SocialPost";
 
 interface ProfileSocialPostProps {
   post: ApiPost;

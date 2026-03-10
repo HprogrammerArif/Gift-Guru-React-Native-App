@@ -112,7 +112,6 @@ const SignUp = () => {
       };
 
       const response: any = await register(payload);
-      console.log("register response", response);
 
       if (response?.data?.message) {
         Alert.alert("Success", response.data.message);

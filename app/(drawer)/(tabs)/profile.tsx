@@ -38,7 +38,11 @@ export default function ProfileScreen() {
     ? searchParams.id[0]
     : searchParams.id;
 
+    console.log("IdParams", idParam)
+
   const currentUser = useSelector(selectCurrentUser);
+
+  console.log("currentUser", currentUser)
   const [isReady, setIsReady] = useState(false);
 
   // High-performance: wait for navigation transition to finish
@@ -50,6 +54,8 @@ export default function ProfileScreen() {
   }, []);
 
   const userId = idParam || currentUser?.user_id;
+
+  console.log("userId", userId)
 
   const {
     data: profile,
