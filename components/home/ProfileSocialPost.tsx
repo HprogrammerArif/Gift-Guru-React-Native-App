@@ -1,20 +1,29 @@
 import {
-    FontAwesome5,
-    Ionicons,
-    MaterialCommunityIcons,
+  useLikePostMutation,
+  useSavePostMutation,
+  useSubmitCommentMutation
+} from "@/redux/features/posts/postApi";
+import {
+  FontAwesome5,
+  Ionicons,
+  MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import React, { memo, useRef, useState } from "react";
+import React, { memo, useCallback, useRef, useState } from "react";
 import {
-    Dimensions,
-    Linking,
-    Modal,
-    Text,
-    TouchableOpacity,
-    TouchableWithoutFeedback,
-    View,
+  ActivityIndicator,
+  Alert,
+  Dimensions,
+  Linking,
+  Modal,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
 } from "react-native";
-import { ApiPost } from "./SocialPost";
+import { ApiComment, ApiPost } from "./SocialPost";
 
 interface ProfileSocialPostProps {
   post: ApiPost;
@@ -22,6 +31,7 @@ interface ProfileSocialPostProps {
 
 /** Format ISO date to relative/readable string */
 function formatDate(iso: string): string {
+  if (!iso) return "";
   const date = new Date(iso);
   return date.toLocaleDateString("en-GB", {
     day: "numeric",
@@ -30,12 +40,58 @@ function formatDate(iso: string): string {
   });
 }
 
+
+
 const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
   const [expanded, setExpanded] = useState(false);
   const [isLiked, setIsLiked] = useState(post.is_liked ?? false);
+  const [likesCount, setLikesCount] = useState(post.likes_count ?? 0);
+  const [isBookmarked, setIsBookmarked] = useState(post.is_saved ?? false);
+  const [showComments, setShowComments] = useState(false);
+  const [commentsCount, setCommentsCount] = useState(post.comments_count ?? 0);
+
   const [showMenu, setShowMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
   const iconRef = useRef<View>(null);
+
+  const [likePost] = useLikePostMutation();
+  const [savePost] = useSavePostMutation();
+
+  const handleLike = useCallback(async () => {
+    // Optimistic UI update
+    const previousLiked = isLiked;
+    const previousCount = likesCount;
+
+    setIsLiked(!previousLiked);
+    setLikesCount(previousLiked ? previousCount - 1 : previousCount + 1);
+
+    try {
+      const res: any = await likePost(post.id);
+      if (res?.error) {
+        // Revert on error
+        setIsLiked(previousLiked);
+        setLikesCount(previousCount);
+        Alert.alert("Error", "Failed to like post.");
+      }
+    } catch {
+      setIsLiked(previousLiked);
+      setLikesCount(previousCount);
+    }
+  }, [isLiked, likesCount, post.id, likePost]);
+
+  const handleBookmark = useCallback(async () => {
+    const previousSaved = isBookmarked;
+    setIsBookmarked(!previousSaved);
+    try {
+      const res: any = await savePost(post.id);
+      if (res?.error) {
+        setIsBookmarked(previousSaved);
+        Alert.alert("Error", "Failed to save post.");
+      }
+    } catch {
+      setIsBookmarked(previousSaved);
+    }
+  }, [isBookmarked, post.id, savePost]);
 
   const openMenu = () => {
     iconRef.current?.measureInWindow((x, y, width, height) => {
@@ -58,7 +114,7 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
       : post.amazon_product_image_url;
 
   return (
-    <View className="bg-white p-2 mb-4 border-gray-100 pb-6">
+    <View className="bg-white p-2 mb-4 border-gray-100 pb-4">
       {/* User Header */}
       <View className="flex-row items-center justify-between mb-3">
         <View className="flex-row items-center gap-3">
@@ -101,7 +157,7 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
           </View>
         </View>
 
-        {/* Three dot icon for post management */}
+        {/* Three dot icon */}
         <View ref={iconRef} collapsable={false}>
           <TouchableOpacity onPress={openMenu} className="p-3" hitSlop={15}>
             <Ionicons name="ellipsis-vertical" size={16} color="black" />
@@ -124,10 +180,7 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
                   }}
                 >
                   <TouchableOpacity
-                    onPress={() => {
-                      setShowMenu(false);
-                      // Handle update
-                    }}
+                    onPress={() => setShowMenu(false)}
                     className="flex-row items-center gap-2 px-4 py-3 border-b border-gray-50"
                   >
                     <Ionicons name="create-outline" size={16} color="#374151" />
@@ -136,10 +189,7 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => {
-                      setShowMenu(false);
-                      // Handle delete
-                    }}
+                    onPress={() => setShowMenu(false)}
                     className="flex-row items-center gap-2 px-4 py-3"
                   >
                     <Ionicons name="trash-outline" size={16} color="#EF4444" />
@@ -154,7 +204,7 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
         </View>
       </View>
 
-      {/* Content / Description */}
+      {/* Content */}
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => setExpanded(!expanded)}
@@ -165,7 +215,7 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
           className="text-[14px] text-gray-700 leading-5"
         >
           {post.content}
-          {!expanded && post.content.length > 100 && (
+          {!expanded && post.content.length > 120 && (
             <Text className="text-[#2B7FFF] font-semibold">.. see more</Text>
           )}
         </Text>
@@ -184,7 +234,6 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
           <View style={{ height: 10 }} />
         )}
 
-        {/* Amazon Call to Action */}
         <View className="flex-row items-center justify-between p-3 bg-[#EEF2F6]">
           <View className="flex-row items-center gap-3 flex-1">
             <View className="w-10 h-10 bg-white rounded-lg items-center justify-center shadow-sm">
@@ -202,12 +251,11 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
               </Text>
             </View>
           </View>
-
           <TouchableOpacity
             onPress={() =>
               post.amazon_link && Linking.openURL(post.amazon_link)
             }
-            className="bg-[#3B82F6] px-4 py-2 rounded-lg shadow-sm"
+            className="bg-[#3B82F6] px-4 py-2 rounded-lg"
           >
             <Text className="text-white text-xs font-bold">Check Price</Text>
           </TouchableOpacity>
@@ -215,43 +263,55 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
       </View>
 
       {/* Engagement Footer */}
-      <View className="flex-row items-center justify-between mt-4">
-        <View className="flex-row items-center gap-3">
+      <View className="flex-row items-center justify-between mt-3">
+        {/* Like */}
+        <View className="flex-row items-center">
           <TouchableOpacity
-            className="flex-row items-center gap-1.5"
-            onPress={() => setIsLiked(!isLiked)}
+            className="flex-row items-center gap-1.5 mr-2"
+            onPress={handleLike}
           >
             <Ionicons
               name={isLiked ? "thumbs-up" : "thumbs-up-outline"}
               size={20}
-              color={isLiked ? "#3B82F6" : "#6B7280"}
+              color="#3B82F6"
+            />
+            <Text className="text-sm text-gray-500 font-medium">Like</Text>
+          </TouchableOpacity>
+          <Text className="text-xs text-gray-400 font-medium">
+            {likesCount} {likesCount === 1 ? "person" : "people"} liked this
+          </Text>
+        </View>
+
+        {/* Comment + Bookmark */}
+        <View className="flex-row items-center gap-4">
+          <TouchableOpacity
+            onPress={() => setShowComments((prev) => !prev)}
+            className="flex-row items-center gap-1.5"
+          >
+            <MaterialCommunityIcons
+              name={
+                showComments
+                  ? "message-reply-text"
+                  : "message-reply-text-outline"
+              }
+              size={18}
+              color={showComments ? "#2B7FFF" : "#9CA3AF"}
             />
             <Text
-              className={`text-sm font-medium ${isLiked ? "text-[#3B82F6]" : "text-gray-500"}`}
+              className={`text-sm font-medium ${showComments ? "text-[#2B7FFF]" : "text-gray-500"}`}
             >
-              {post.likes_count}
+              {commentsCount}
             </Text>
           </TouchableOpacity>
 
-          <View className="flex-row items-center gap-1.5">
-            <MaterialCommunityIcons
-              name="message-reply-text-outline"
-              size={18}
-              color="#6B7280"
+          <TouchableOpacity hitSlop={15} onPress={handleBookmark}>
+            <Ionicons
+              name={isBookmarked ? "bookmark" : "bookmark-outline"}
+              size={22}
+              color={isBookmarked ? "#3B82F6" : "#6B7280"}
             />
-            <Text className="text-sm text-gray-500 font-medium">
-              {post.comments_count}
-            </Text>
-          </View>
+          </TouchableOpacity>
         </View>
-
-        <TouchableOpacity hitSlop={15}>
-          <Ionicons
-            name={post.is_saved ? "bookmark" : "bookmark-outline"}
-            size={22}
-            color={post.is_saved ? "#3B82F6" : "#6B7280"}
-          />
-        </TouchableOpacity>
       </View>
     </View>
   );
