@@ -1,4 +1,6 @@
 import SplashScreenView from "@/components/SplashScreen";
+import { selectCurrentToken } from "@/redux/features/auth/authSlice";
+import { useAppSelector } from "@/redux/hooks";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { useFonts } from "expo-font";
 import { useKeepAwake } from "expo-keep-awake";
@@ -18,8 +20,6 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "../redux/store";
 import "./global.css";
-import { useAppSelector } from "@/redux/hooks";
-import { selectCurrentToken } from "@/redux/features/auth/authSlice";
 
 const toastConfig = {
   success: (props: any) => (
@@ -59,10 +59,7 @@ const toastConfig = {
 
 // --- NAVIGATION GUARD COMPONENT ---
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  // const { token } = useAppSelector((state) => state.auth);
-  const token = useAppSelector(selectCurrentToken)
-
-  console.log("tokensss", token);
+  const token = useAppSelector(selectCurrentToken);
   const segments = useSegments();
   const router = useRouter();
   const navigationState = useRootNavigationState();
@@ -90,8 +87,6 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 if (__DEV__) {
   require("../ReactotronConfig");
 }
-
-
 
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync().catch(() => {});

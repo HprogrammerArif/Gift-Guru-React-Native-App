@@ -39,8 +39,6 @@ export default function ProfileScreen() {
     : searchParams.id;
 
   const currentUser = useSelector(selectCurrentUser);
-
-  console.log("currentUser", currentUser, idParam);
   const [isReady, setIsReady] = useState(false);
 
   // High-performance: wait for navigation transition to finish

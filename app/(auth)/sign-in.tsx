@@ -41,15 +41,12 @@ const SignIn = () => {
         password,
       });
 
-      console.log("login response", response);
-
-      if (response?.status === 200) {
+      if (response?.data) {
         dispatch(
           setCredentials({
-            user: response.data.user || response.data,
-            token: response.data.access || response.data.token || "",
-            refreshToken:
-              response.data.refresh || response.data.refreshToken || "",
+            user: response.data.user,
+            token: response.data.access,
+            refreshToken: response.data.refresh,
             device_token: response.data.device_token || "",
           }),
         );
