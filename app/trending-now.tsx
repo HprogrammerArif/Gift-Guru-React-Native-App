@@ -1,11 +1,13 @@
-import SocialPost from "@/components/home/SocialPost";
-import { POSTS_DATA } from "@/constants";
+import { PostSkeletonList } from "@/components/home/PostSkeleton";
+import SocialPost, { ApiPost } from "@/components/home/SocialPost";
+import { useGetTrendingPostsQuery } from "@/redux/features/posts/postApi";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React from "react";
+import React, { useMemo } from "react";
 import {
   FlatList,
+  RefreshControl,
   Text,
   TextInput,
   TouchableOpacity,
@@ -14,10 +16,15 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function TrendingNowScreen() {
-  const renderHeader = (
-    iconName: React.ComponentProps<typeof Ionicons>["name"],
-    iconColor: string
-  ) => (
+  const { data, isLoading, isFetching, refetch } =
+    useGetTrendingPostsQuery(undefined);
+
+  const posts: ApiPost[] = useMemo(
+    () => (Array.isArray(data) ? data : ((data as any)?.results ?? [])),
+    [data],
+  );
+
+  const renderHeader = () => (
     <View className="mb-4">
       {/* Gradient Banner */}
       <LinearGradient
@@ -27,7 +34,7 @@ export default function TrendingNowScreen() {
         className="rounded-2xl p-5 mb-6"
       >
         <View className="flex-row items-center gap-2 mb-2">
-          <Ionicons name={iconName} size={24} color={iconColor} />
+          <Ionicons name="trending-up" size={24} color="white" />
           <Text className="text-white text-xl font-bold">Trending Now</Text>
         </View>
         <Text className="text-white/90 text-[13px] leading-5 font-medium">
@@ -36,14 +43,26 @@ export default function TrendingNowScreen() {
         </Text>
       </LinearGradient>
 
-      {/* List content starts after this */}
+      {/* Show skeletons inside the list if loading */}
+      {isLoading && <PostSkeletonList count={3} />}
     </View>
   );
+
+  const renderEmpty = () => {
+    if (isLoading) return null;
+    return (
+      <View className="py-20 items-center">
+        <Text className="text-gray-400 font-medium">
+          No trending posts found.
+        </Text>
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       {/* Navigation Header with Search */}
-      <View className="px-4 py-3 pb-2 flex-row items-center gap-3 border-b border-transparent">
+      <View className="px-4 py-3 pb-2 flex-row items-center gap-3 border-b border-gray-100">
         <TouchableOpacity
           onPress={() => router.back()}
           className="w-10 h-10 items-center justify-center -ml-2"
@@ -56,47 +75,40 @@ export default function TrendingNowScreen() {
             <Ionicons name="search-outline" size={20} color="#9CA3AF" />
           </View>
           <TextInput
-            placeholder="Search"
+            placeholder="Search trending"
             placeholderTextColor="#9CA3AF"
-            className="w-full bg-white border border-gray-200 rounded-full py-2.5 pl-10 pr-4 text-gray-900 text-base shadow-sm"
+            className="w-full bg-gray-50 border border-gray-100 rounded-full py-2.5 pl-10 pr-4 text-gray-900 text-base"
           />
         </View>
 
-        {/* Notification Icon */}
-        <TouchableOpacity
-          onPress={() => router.push("/notifications")}
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity onPress={() => router.push("/notifications")}>
           <Ionicons name="notifications-outline" size={24} color="#1F2937" />
         </TouchableOpacity>
       </View>
 
-      {/* Main Content List */}
       <FlatList
-        data={POSTS_DATA}
-        keyExtractor={(item) => item.id}
+        data={isLoading ? [] : posts}
+        keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
-          <View className="mb-2 border-b border-gray-100">
-            {/* Reusing SocialPost but removing the bottom border usually handled by the component slightly differently if needed, 
-                 but SocialPost has its own styles. We'll stick to 1:1 reuse as per best practice. */}
-            <SocialPost
-              user={item.user}
-              title={item.title}
-              description={item.description}
-              postImage={item.postImage}
-              likes={item.likes}
-              comments={item.comments}
-              trending={item.trending}
-            />
+          <View className="mb-2">
+            <SocialPost post={item} />
           </View>
         )}
-        ListHeaderComponent={renderHeader("trending-up", "white")}
+        ListHeaderComponent={renderHeader}
+        ListEmptyComponent={renderEmpty}
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingVertical: 10,
           paddingBottom: 40,
         }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching && !isLoading}
+            onRefresh={refetch}
+            tintColor="#2B7FFF"
+          />
+        }
       />
     </SafeAreaView>
   );
