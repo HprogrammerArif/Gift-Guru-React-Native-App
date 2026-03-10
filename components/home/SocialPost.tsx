@@ -14,14 +14,12 @@ import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  KeyboardAvoidingView,
   Linking,
-  Platform,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 // --- Types matching the backend API shape ---
@@ -87,34 +85,46 @@ function formatDate(iso: string): string {
   return date.toLocaleDateString("en-GB");
 }
 
-// --- Single Comment Bubble ---
-const CommentItem = ({ comment }: { comment: ApiComment }) => {
+// --- Single Comment Row (matches web design) ---
+const CommentItem = ({
+  comment,
+  isLast,
+}: {
+  comment: ApiComment;
+  isLast: boolean;
+}) => {
   const name =
     `${comment.user?.first_name || ""} ${comment.user?.last_name || ""}`.trim() ||
     comment.user?.username ||
     "User";
 
-  return (
-    <View className="flex-row gap-2 mb-3">
-      {/* Avatar initial */}
-      <View className="w-8 h-8 rounded-full bg-[#2B7FFF]/20 items-center justify-center shrink-0">
-        <Text className="text-[#2B7FFF] font-bold text-sm">
-          {name.charAt(0).toUpperCase()}
-        </Text>
-      </View>
+  // Short date: "Mar 5"
+  const shortDate = new Date(comment.created_at).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 
-      {/* Bubble */}
-      <View className="flex-1">
-        <View className="bg-gray-100 rounded-2xl px-3 py-2">
-          <Text className="text-xs font-bold text-gray-900 mb-0.5">{name}</Text>
+  return (
+    <View>
+      <View className="flex-row items-start gap-3 py-3">
+        {/* Avatar icon */}
+        <View className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center shrink-0 mt-0.5">
+          <Ionicons name="person" size={16} color="#9CA3AF" />
+        </View>
+
+        {/* Name + date + content */}
+        <View className="flex-1">
+          <View className="flex-row items-center gap-2 mb-0.5">
+            <Text className="text-sm font-bold text-gray-900">{name}</Text>
+            <Text className="text-xs text-gray-400">{shortDate}</Text>
+          </View>
           <Text className="text-sm text-gray-700 leading-5">
             {comment.content}
           </Text>
         </View>
-        <Text className="text-[10px] text-gray-400 mt-1 ml-2">
-          {formatDate(comment.created_at)}
-        </Text>
       </View>
+      {/* Divider between comments, not after last */}
+      {!isLast && <View className="h-px bg-gray-100 ml-11" />}
     </View>
   );
 };
@@ -162,68 +172,69 @@ const CommentsSection = ({
 
   return (
     <View className="mt-3 border-t border-gray-100 pt-3">
-      {/* Comments list */}
+      {/* Input bar — always at the top */}
+      <View className="flex-row items-center gap-2 mb-3">
+        <View className="flex-1 flex-row items-center bg-gray-50 shadow-sm rounded-full px-4 py-1">
+          <TextInput
+            ref={inputRef}
+            placeholder="Write a comment..."
+            placeholderTextColor="#9CA3AF"
+            value={commentText}
+            onChangeText={setCommentText}
+            style={{ flex: 1, fontSize: 14, color: "#111827", maxHeight: 80 }}
+            multiline
+            maxLength={500}
+            returnKeyType="send"
+            onSubmitEditing={handleSubmit}
+            blurOnSubmit={false}
+          />
+          <TouchableOpacity
+            onPress={handleSubmit}
+            disabled={!commentText.trim() || isPosting}
+            className="ml-3"
+            hitSlop={10}
+          >
+            {isPosting ? (
+              <ActivityIndicator size="small" color="#2B7FFF" />
+            ) : (
+              <Ionicons
+                name="send"
+                size={18}
+                color={commentText.trim() ? "#2B7FFF" : "#D1D5DB"}
+              />
+            )}
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Comments or empty state */}
       {comments.length === 0 ? (
-        <Text className="text-gray-400 text-xs text-center py-3 mb-2">
-          No comments yet. Be the first! 👇
+        <Text
+          style={{
+            textAlign: "center",
+            color: "#D97706",
+            fontSize: 13,
+            fontWeight: "500",
+            paddingVertical: 10,
+          }}
+        >
+          No comments yet.
         </Text>
       ) : (
         <ScrollView
           nestedScrollEnabled
           showsVerticalScrollIndicator={false}
-          style={{ maxHeight: 260 }}
-          className="mb-2"
+          style={{ maxHeight: 280 }}
         >
-          {comments.map((c) => (
-            <CommentItem key={c.id} comment={c} />
+          {comments.map((c, index) => (
+            <CommentItem
+              key={c.id}
+              comment={c}
+              isLast={index === comments.length - 1}
+            />
           ))}
         </ScrollView>
       )}
-
-      {/* Input bar */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <View className="flex-row items-center gap-2 mt-1">
-          {/* Current user avatar placeholder */}
-          <View className="w-8 h-8 rounded-full bg-[#2B7FFF]/20 items-center justify-center shrink-0">
-            <Ionicons name="person" size={14} color="#2B7FFF" />
-          </View>
-
-          {/* Input + Send */}
-          <View className="flex-1 flex-row items-center bg-gray-100 rounded-full px-4 py-2">
-            <TextInput
-              ref={inputRef}
-              placeholder="Write a comment..."
-              placeholderTextColor="#9CA3AF"
-              value={commentText}
-              onChangeText={setCommentText}
-              className="flex-1 text-sm text-gray-900"
-              multiline
-              maxLength={500}
-              style={{ maxHeight: 80 }}
-              returnKeyType="send"
-              onSubmitEditing={handleSubmit}
-              blurOnSubmit={false}
-            />
-            <TouchableOpacity
-              onPress={handleSubmit}
-              disabled={!commentText.trim() || isPosting}
-              className="ml-2"
-            >
-              {isPosting ? (
-                <ActivityIndicator size="small" color="#2B7FFF" />
-              ) : (
-                <Ionicons
-                  name="send"
-                  size={18}
-                  color={commentText.trim() ? "#2B7FFF" : "#D1D5DB"}
-                />
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
     </View>
   );
 };
