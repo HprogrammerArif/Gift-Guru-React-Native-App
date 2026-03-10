@@ -41,6 +41,8 @@ const SignIn = () => {
         password,
       });
 
+      console.log("login response", response);
+
       if (response?.status === 200) {
         dispatch(
           setCredentials({

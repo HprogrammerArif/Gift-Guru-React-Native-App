@@ -14,10 +14,12 @@ import { useEffect, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler"; // Performance critical
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import Toast, { BaseToast, ErrorToast } from "react-native-toast-message";
-import { Provider, useSelector } from "react-redux";
+import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { persistor, RootState, store } from "../redux/store";
+import { persistor, store } from "../redux/store";
 import "./global.css";
+import { useAppSelector } from "@/redux/hooks";
+import { selectCurrentToken } from "@/redux/features/auth/authSlice";
 
 const toastConfig = {
   success: (props: any) => (
@@ -57,7 +59,10 @@ const toastConfig = {
 
 // --- NAVIGATION GUARD COMPONENT ---
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { token } = useSelector((state: RootState) => state.auth);
+  // const { token } = useAppSelector((state) => state.auth);
+  const token = useAppSelector(selectCurrentToken)
+
+  console.log("tokensss", token);
   const segments = useSegments();
   const router = useRouter();
   const navigationState = useRootNavigationState();
