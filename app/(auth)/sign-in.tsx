@@ -45,7 +45,6 @@ const SignIn = () => {
         dispatch(
           setCredentials({
             user: response.data.user || response.data,
-            role: response.data.role || response.data.user?.role || "",
             token: response.data.access || response.data.token || "",
             refreshToken:
               response.data.refresh || response.data.refreshToken || "",

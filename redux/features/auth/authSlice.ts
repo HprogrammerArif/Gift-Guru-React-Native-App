@@ -3,8 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
 
 export type TUser = {
-  id: number;
-  username: string;
+  user_id: number;
   email: string;
   first_name?: string;
   last_name?: string;
@@ -13,15 +12,27 @@ export type TUser = {
 
 export type TAuthState = {
   user: TUser | null;
-  role: string | null;
   token: string | null;
   refreshToken: string | null;
   device_token: string | null;
 };
 
+
+// {
+//     "message": "Login Successful",
+//     "refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4MTc1NDEwOCwiaWF0IjoxNzczMTE0MTA4LCJqdGkiOiJmYTFkYWYwN2I1YjM0M2YyOTMwYTZjYmM4ZDY5MjU4NiIsInVzZXJfaWQiOiIxMyJ9.aJRyTTaRxWG7E8ACN8doe-Ut1Em_6cFtGBp_hX0QdgM",
+//     "access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzczMTQ0MTA4LCJpYXQiOjE3NzMxMTQxMDgsImp0aSI6Ijg1N2RjZDBjODZmNDQwY2E5Y2QxZWM2N2Q4M2U3NjZhIiwidXNlcl9pZCI6IjEzIiwiZmlyc3RfbmFtZSI6Ik1vaGFtbWVkIiwibGFzdF9uYW1lIjoiQXJpZiIsImVtYWlsIjoicmFraWJoYXNhbmNvZGVzQGdtYWlsLmNvbSIsInJvbGUiOiJ1c2VyIn0.GkEigSDAeUsbbeVeyoGCpeF1q5CY9a2q0H_FNEjqPD0",
+//     "user": {
+//         "user_id": 13,
+//         "first_name": "Mohammed",
+//         "last_name": "Arif",
+//         "email": "rakibhasancodes@gmail.com",
+//         "role": "user"
+//     }
+// }
+
 const initialState: TAuthState = {
   user: null,
-  role: null,
   token: null,
   refreshToken: null,
   device_token: null,
@@ -35,15 +46,14 @@ const authSlice = createSlice({
     setCredentials: (
       state,
       action: PayloadAction<{
-        user: Omit<TUser, "role">;
-        role: string;
+        user: TUser;
         token: string;
         refreshToken: string;
         device_token: string;
       }>,
     ) => {
-      const { user, role, token, refreshToken, device_token } = action.payload;
-      state.user = { ...user, role };
+      const { user, token, refreshToken, device_token } = action.payload;
+      state.user = user;
       state.token = token;
       state.refreshToken = refreshToken;
       state.device_token = device_token;
@@ -63,7 +73,6 @@ const authSlice = createSlice({
     // Full logout — clears everything
     logout: (state) => {
       state.user = null;
-      state.role = null;
       state.token = null;
       state.refreshToken = null;
       state.device_token = null;
@@ -110,5 +119,5 @@ export const selectUserName = (state: RootState) => {
   if (user?.first_name || user?.last_name) {
     return `${user.first_name || ""} ${user.last_name || ""}`.trim();
   }
-  return user?.username || user?.email?.split("@")[0] || "Parent";
+  return user?.email?.split("@")[0] || "Parent";
 };
