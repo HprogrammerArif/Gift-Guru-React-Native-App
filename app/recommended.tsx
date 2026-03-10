@@ -4,20 +4,31 @@ import { useGetRecommendedPostsQuery } from "@/redux/features/posts/postApi";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   FlatList,
+  InteractionManager,
   RefreshControl,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function RecommendedScreen() {
+  const insets = useSafeAreaInsets();
+  const [isReady, setIsReady] = useState(false);
   const { data, isLoading, isFetching, refetch } =
     useGetRecommendedPostsQuery(undefined);
+
+  // Defer showing heavy content until navigation animation is done
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      setIsReady(true);
+    });
+    return () => task.cancel();
+  }, []);
 
   const posts: ApiPost[] = useMemo(
     () => (Array.isArray(data) ? data : ((data as any)?.results ?? [])),
@@ -25,13 +36,12 @@ export default function RecommendedScreen() {
   );
 
   const renderHeader = () => (
-    <View className="mb-4">
-      {/* Gradient Banner */}
+    <View>
       <LinearGradient
         colors={["#FF4B3A", "#FF8C42"]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 0 }}
-        className="rounded-2xl p-5 mb-6"
+        className="rounded-2xl p-5 mb-5"
       >
         <View className="flex-row items-center gap-2 mb-2">
           <Ionicons name="flame" size={24} color="white" />
@@ -45,16 +55,15 @@ export default function RecommendedScreen() {
         </Text>
       </LinearGradient>
 
-      {/* Show skeletons inside the list if loading */}
-      {isLoading && <PostSkeletonList count={3} />}
+      {(isLoading || !isReady) && <PostSkeletonList count={3} />}
     </View>
   );
 
   const renderEmpty = () => {
-    if (isLoading) return null;
+    if (isLoading || !isReady) return null;
     return (
       <View className="py-20 items-center">
-        <Text className="text-gray-400 font-medium">
+        <Text className="text-gray-400 font-medium text-base">
           No recommendations found.
         </Text>
       </View>
@@ -62,34 +71,38 @@ export default function RecommendedScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      {/* Navigation Header with Search */}
-      <View className="px-4 py-3 pb-2 flex-row items-center gap-3 border-b border-gray-100">
+    <View style={{ flex: 1, backgroundColor: "white", paddingTop: insets.top }}>
+      {/* Navigation Header */}
+      <View className="px-4 py-3 flex-row items-center gap-3 bg-white">
         <TouchableOpacity
           onPress={() => router.back()}
           className="w-10 h-10 items-center justify-center -ml-2"
+          hitSlop={8}
         >
-          <Ionicons name="chevron-back" size={28} color="#1F2937" />
+          <Ionicons name="chevron-back" size={28} color="#111827" />
         </TouchableOpacity>
 
         <View className="flex-1 relative">
-          <View className="absolute left-3 top-3 z-10">
-            <Ionicons name="search-outline" size={20} color="#9CA3AF" />
+          <View className="absolute left-3 top-2.5 z-10">
+            <Ionicons name="search-outline" size={18} color="#9CA3AF" />
           </View>
           <TextInput
             placeholder="Search recommended"
             placeholderTextColor="#9CA3AF"
-            className="w-full bg-gray-50 border border-gray-100 rounded-full py-2.5 pl-10 pr-4 text-gray-900 text-base"
+            className="w-full bg-gray-50 border border-gray-100 rounded-full py-2 pl-10 pr-4 text-[#111827] text-[15px]"
           />
         </View>
 
-        <TouchableOpacity onPress={() => router.push("/notifications")}>
-          <Ionicons name="notifications-outline" size={24} color="#1F2937" />
+        <TouchableOpacity
+          onPress={() => router.push("/notifications")}
+          className="p-1"
+        >
+          <Ionicons name="notifications-outline" size={24} color="#111827" />
         </TouchableOpacity>
       </View>
 
       <FlatList
-        data={isLoading ? [] : posts}
+        data={!isReady || isLoading ? [] : posts}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => (
           <View className="mb-2">
@@ -101,9 +114,12 @@ export default function RecommendedScreen() {
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingVertical: 10,
-          paddingBottom: 40,
+          paddingBottom: 60,
         }}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={false}
+        initialNumToRender={5}
+        windowSize={10}
         refreshControl={
           <RefreshControl
             refreshing={isFetching && !isLoading}
@@ -112,6 +128,6 @@ export default function RecommendedScreen() {
           />
         }
       />
-    </SafeAreaView>
+    </View>
   );
 }
