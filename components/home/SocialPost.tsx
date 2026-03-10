@@ -4,11 +4,7 @@ import {
   useSavePostMutation,
   useSubmitCommentMutation,
 } from "@/redux/features/posts/postApi";
-import {
-  FontAwesome5,
-  Ionicons,
-  MaterialCommunityIcons,
-} from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useRef, useState } from "react";
@@ -429,11 +425,15 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
       ) : null}
 
       {/* Amazon Product Card */}
-      {post.amazon_link ? (
+      {post.amazon_product_image_url ? (
         <View className="flex-row items-center justify-between p-3 bg-[#EEF2F6] rounded-xl mb-3">
           <View className="flex-row items-center gap-3 flex-1">
             <View className="w-10 h-10 bg-white rounded-lg items-center justify-center shadow-sm">
-              <FontAwesome5 name="amazon" size={20} color="#0071e3" />
+              <Image
+                source={{ uri: post.amazon_product_image_url }}
+                style={{ width: 40, height: 40 }}
+                contentFit="cover"
+              />
             </View>
             <View className="flex-1">
               <Text className="text-[10px] font-bold text-[#0071e3] mb-0.5">

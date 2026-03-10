@@ -3,9 +3,8 @@ import {
   useSavePostMutation,
 } from "@/redux/features/posts/postApi";
 import {
-  FontAwesome5,
   Ionicons,
-  MaterialCommunityIcons,
+  MaterialCommunityIcons
 } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -225,26 +224,31 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
       </TouchableOpacity>
 
       {/* Post Image Container */}
-      <View className="rounded-2xl overflow-hidden bg-gray-100 border border-gray-100">
-        {postImage ? (
+      {postImage ? (
+        <View className="rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 mb-3">
           <Image
             source={{ uri: postImage }}
             style={{ width: "100%", height: 300 }}
             contentFit="cover"
             transition={300}
           />
-        ) : (
-          <View style={{ height: 10 }} />
-        )}
+        </View>
+      ) : null}
 
-        <View className="flex-row items-center justify-between p-3 bg-[#EEF2F6]">
+      {/* Amazon Product Card */}
+      {post.amazon_product_image_url ? (
+        <View className="flex-row items-center justify-between p-3 bg-[#EEF2F6] rounded-xl mb-3">
           <View className="flex-row items-center gap-3 flex-1">
             <View className="w-10 h-10 bg-white rounded-lg items-center justify-center shadow-sm">
-              <FontAwesome5 name="amazon" size={20} color="#0071e3" />
+              <Image
+                source={{ uri: post.amazon_product_image_url }}
+                style={{ width: 40, height: 40 }}
+                contentFit="cover"
+              />
             </View>
             <View className="flex-1">
-              <Text className="text-[10px] font-bold text-[#0071e3] mb-0.5 uppercase tracking-tighter">
-                Available on Amazon
+              <Text className="text-[10px] font-bold text-[#0071e3] mb-0.5">
+                AVAILABLE ON AMAZON
               </Text>
               <Text
                 className="text-xs text-gray-700 font-medium"
@@ -263,7 +267,7 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
             <Text className="text-white text-xs font-bold">Check Price</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      ) : null}
 
       {/* Engagement Footer */}
       <View className="flex-row items-center justify-between mt-3">
