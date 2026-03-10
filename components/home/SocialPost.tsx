@@ -308,15 +308,22 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
       const res: any = await followUser(post.user.id);
       if (res?.error) {
         setIsFollowed(prev);
-        Alert.alert(res?.error?.data?.error || "Error", "Failed to follow user!");
+        Alert.alert(
+          res?.error?.data?.error || "Error",
+          "Failed to follow user!",
+        );
       }
     } catch {
       setIsFollowed(prev);
     }
   };
 
+  const truncateText = (text: string, limit: number) => {
+    return text.length > limit ? text.substring(0, limit) + ".." : text;
+  };
+
   return (
-    <View className="bg-white p-2 mb-4 border-gray-100 pb-4">
+    <View className="bg-white p-1 mb-4 border-gray-100 pb-4">
       {/* User Header */}
       <View className="flex-row items-center justify-between mb-3">
         <TouchableOpacity
@@ -358,7 +365,7 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
                 <View className="bg-[#EFF6FF] px-2 py-0.5 rounded-full flex-row items-center gap-1">
                   <Ionicons name="pricetag" size={10} color="#2B7FFF" />
                   <Text className="text-[10px] text-[#2B7FFF] font-medium">
-                    {post.category.name}
+                    {truncateText(post.category.name, 10)}
                   </Text>
                 </View>
               )}
@@ -367,7 +374,7 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
                 <View className="bg-[#FFF0ED] px-2 py-0.5 rounded-full flex-row items-center gap-1">
                   <Ionicons name="flame" size={10} color="#FF4B3A" />
                   <Text className="text-[10px] text-[#FF4B3A] font-medium">
-                    {post.occasion.name}
+                    {truncateText(post.occasion.name, 10)}
                   </Text>
                 </View>
               )}

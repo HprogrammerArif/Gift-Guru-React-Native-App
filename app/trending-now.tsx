@@ -56,7 +56,7 @@ export default function TrendingNowScreen() {
           colors={["#2B7FFF", "#2B7FFF"]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          className="rounded-2xl p-5 mb-5"
+          className="rounded-2xl p-4 mb-5"
         >
           <View className="flex-row items-center gap-2 mb-2">
             <Ionicons name="trending-up" size={24} color="white" />
@@ -88,7 +88,7 @@ export default function TrendingNowScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: "white", paddingTop: insets.top }}>
       {/* Navigation Header */}
-      <View className="px-4 py-3 flex-row items-center gap-3 bg-white">
+      <View className="px-3 py-3 flex-row items-center gap-3 bg-white">
         <TouchableOpacity
           onPress={() => router.back()}
           className="w-10 h-10 items-center justify-center -ml-2"
@@ -123,7 +123,7 @@ export default function TrendingNowScreen() {
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={{
-          paddingHorizontal: 16,
+          paddingHorizontal: 14,
           paddingVertical: 10,
           paddingBottom: 60,
         }}
