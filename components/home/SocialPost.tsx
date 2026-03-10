@@ -124,7 +124,7 @@ const CommentItem = ({
         </View>
       </View>
       {/* Divider between comments, not after last */}
-      {!isLast && <View className="h-px bg-gray-100 ml-11" />}
+      {!isLast && <View className="h-px bg-gray-300 ml-11" />}
     </View>
   );
 };
@@ -153,7 +153,7 @@ const CommentsSection = ({
     if (!trimmed) return;
 
     try {
-      const res: any = await submitComment({ postId, content: trimmed });
+      const res: any = await submitComment({ post:postId, content: trimmed });
 
       if (res?.data) {
         // Append the newly created comment from the API response to local list
@@ -374,14 +374,14 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
           onPress={handleFollow}
           className={`px-4 py-1.5 rounded-lg border ${
             isFollowed
-              ? "bg-gray-100 border-gray-200"
+              ? "bg-[#EEF2F6] text-[#006edb] border-[#006edb]"
               : "border-gray-200 bg-white"
           }`}
         >
           {isMyPost ? (
             <Text className="text-xs text-gray-500 font-medium">• • •</Text>
           ) : (
-            <Text className="text-xs font-semibold text-gray-900">
+            <Text className={`text-xs font-semibold ${isFollowed ? "text-blue-500" : "text-gray-900"}`}>
               {isFollowed ? "Following" : "Follow"}
             </Text>
           )}

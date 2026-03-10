@@ -55,8 +55,8 @@ const postApi = baseApi.injectEndpoints({
 
   // submit comment
   submitComment: builder.mutation({
-    query: (data: { postId: string | number; content: string }) => ({
-      url: `social/posts/${data.postId}/comments/`,
+    query: (data: { post: string | number; content: string }) => ({
+      url: `social/posts/${data.post}/comments/`,
       method: "POST",
       body: data,
     }),
