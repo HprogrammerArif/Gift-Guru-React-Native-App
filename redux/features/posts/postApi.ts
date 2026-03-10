@@ -42,7 +42,6 @@ const postApi = baseApi.injectEndpoints({
       providesTags: ["Posts"],
     }),
 
-
     // Like post
     likePost: builder.mutation({
       query: (postId: string | number) => ({
@@ -52,50 +51,60 @@ const postApi = baseApi.injectEndpoints({
       invalidatesTags: ["Likes"],
     }),
 
-
-  // submit comment
-  submitComment: builder.mutation({
-    query: (data: { post: string | number; content: string }) => ({
-      url: `social/posts/${data.post}/comments/`,
-      method: "POST",
-      body: data,
+    // submit comment
+    submitComment: builder.mutation({
+      query: (data: { post: string | number; content: string }) => ({
+        url: `social/posts/${data.post}/comments/`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["Comments"],
     }),
-    invalidatesTags: ["Comments"],
-  }),
 
-  // get comments
-  getComments: builder.query({
-    query: (postId: string | number) => ({
-      url: `social/post/${postId}/comments/`,
-      method: "GET",
+    // get comments
+    getComments: builder.query({
+      query: (postId: string | number) => ({
+        url: `social/post/${postId}/comments/`,
+        method: "GET",
+      }),
+      providesTags: ["Comments"],
     }),
-    providesTags: ["Comments"],
-  }),
 
-  // follow user
-  followUser: builder.mutation({
-    query: (userId: string | number) => ({
-      url: `/auth/follow/${userId}/`,
-      method: "POST",
+    // follow user
+    followUser: builder.mutation({
+      query: (userId: string | number) => ({
+        url: `/auth/follow/${userId}/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Follows"],
     }),
-    invalidatesTags: ["Follows"],
-  }),
 
-
-  //savePost
-  savePost: builder.mutation({
-    query: (postId: string | number) => ({
-      url: `/social/post/${postId}/wishlist/`,
-      method: "POST",
+    //savePost
+    savePost: builder.mutation({
+      query: (postId: string | number) => ({
+        url: `/social/post/${postId}/wishlist/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["SavedPosts"],
     }),
-    invalidatesTags: ["SavedPosts"],
-  }),
 
-  
+    // Get recommended posts
+    getRecommendedPosts: builder.query({
+      query: () => ({
+        url: "social/posts/recommended/",
+        method: "GET",
+      }),
+      providesTags: ["Posts"],
+    }),
 
-  
-    
-
+    // Get trending posts
+    getTrendingPosts: builder.query({
+      query: () => ({
+        url: "social/posts/trending/",
+        method: "GET",
+      }),
+      providesTags: ["Posts"],
+    }),
   }),
 });
 
@@ -109,4 +118,6 @@ export const {
   useGetCommentsQuery,
   useFollowUserMutation,
   useSavePostMutation,
+  useGetRecommendedPostsQuery,
+  useGetTrendingPostsQuery,
 } = postApi;
