@@ -124,6 +124,32 @@ const postApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Posts"],
     }),
+
+    // Update post
+    updatePost: builder.mutation({
+      query: ({
+        postId,
+        formData,
+      }: {
+        postId: string | number;
+        formData: FormData;
+      }) => ({
+        url: `social/post/details/${postId}/`,
+        method: "PUT",
+        body: formData,
+        formData: true,
+      }),
+      invalidatesTags: ["Posts"],
+    }),
+
+    // Delete post
+    deletePost: builder.mutation({
+      query: (postId: string | number) => ({
+        url: `social/post/details/${postId}/`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Posts"],
+    }),
   }),
 });
 
@@ -141,4 +167,6 @@ export const {
   useGetTrendingPostsQuery,
   useGetProfileDataQuery,
   useGetUserPostsQuery,
+  useUpdatePostMutation,
+  useDeletePostMutation,
 } = postApi;

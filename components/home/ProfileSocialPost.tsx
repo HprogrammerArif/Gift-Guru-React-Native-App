@@ -1,15 +1,14 @@
 import {
+  useDeletePostMutation,
   useLikePostMutation,
   useSavePostMutation,
 } from "@/redux/features/posts/postApi";
-import {
-  Ionicons,
-  MaterialCommunityIcons
-} from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { memo, useCallback, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Dimensions,
   Linking,
@@ -19,6 +18,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import EditPostSheet from "../EditPostSheet";
 import { ApiPost } from "./SocialPost";
 
 interface ProfileSocialPostProps {
@@ -44,15 +44,38 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
   const [showComments, setShowComments] = useState(false);
   const [commentsCount, setCommentsCount] = useState(post.comments_count ?? 0);
 
+  const [showEditSheet, setShowEditSheet] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
   const iconRef = useRef<View>(null);
 
   const [likePost] = useLikePostMutation();
   const [savePost] = useSavePostMutation();
+  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
+
+  const handleDelete = async () => {
+    Alert.alert("Delete Post", "Are you sure you want to delete this post?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const res: any = await deletePost(post.id);
+            if (res?.data) {
+              setShowMenu(false);
+            } else if (res?.error) {
+              Alert.alert("Error", "Failed to delete post.");
+            }
+          } catch {
+            Alert.alert("Error", "Something went wrong.");
+          }
+        },
+      },
+    ]);
+  };
 
   const handleLike = useCallback(async () => {
-    // Optimistic UI update
     const previousLiked = isLiked;
     const previousCount = likesCount;
 
@@ -62,7 +85,6 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
     try {
       const res: any = await likePost(post.id);
       if (res?.error) {
-        // Revert on error
         setIsLiked(previousLiked);
         setLikesCount(previousCount);
         Alert.alert("Error", "Failed to like post.");
@@ -102,10 +124,8 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
     post.user?.username ||
     "User";
 
-  const postImage =
-    post.images && post.images.length > 0
-      ? post.images[0].image
-      : post.amazon_product_image_url;
+  const postImgUri =
+    post.images && post.images.length > 0 ? post.images[0].image : null;
 
   return (
     <View className="bg-white p-2 mb-4 border-gray-100 pb-4">
@@ -172,7 +192,7 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
             onRequestClose={() => setShowMenu(false)}
           >
             <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
-              <View className="flex-1">
+              <View className="flex-1 bg-black/5">
                 <View
                   className="absolute bg-white rounded-xl shadow-lg border border-gray-100 w-36 overflow-hidden"
                   style={{
@@ -182,7 +202,10 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
                   }}
                 >
                   <TouchableOpacity
-                    onPress={() => setShowMenu(false)}
+                    onPress={() => {
+                      setShowMenu(false);
+                      setShowEditSheet(true);
+                    }}
                     className="flex-row items-center gap-2 px-4 py-3 border-b border-gray-50"
                   >
                     <Ionicons name="create-outline" size={16} color="#374151" />
@@ -191,13 +214,24 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
                     </Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    onPress={() => setShowMenu(false)}
+                    onPress={handleDelete}
+                    disabled={isDeleting}
                     className="flex-row items-center gap-2 px-4 py-3"
                   >
-                    <Ionicons name="trash-outline" size={16} color="#EF4444" />
-                    <Text className="text-red-500 font-medium text-sm">
-                      Delete
-                    </Text>
+                    {isDeleting ? (
+                      <ActivityIndicator size="small" color="#EF4444" />
+                    ) : (
+                      <>
+                        <Ionicons
+                          name="trash-outline"
+                          size={16}
+                          color="#EF4444"
+                        />
+                        <Text className="text-red-500 font-medium text-sm">
+                          Delete
+                        </Text>
+                      </>
+                    )}
                   </TouchableOpacity>
                 </View>
               </View>
@@ -224,10 +258,10 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
       </TouchableOpacity>
 
       {/* Post Image Container */}
-      {postImage ? (
+      {postImgUri ? (
         <View className="rounded-2xl overflow-hidden bg-gray-100 border border-gray-100 mb-3">
           <Image
-            source={{ uri: postImage }}
+            source={{ uri: postImgUri }}
             style={{ width: "100%", height: 300 }}
             contentFit="cover"
             transition={300}
@@ -320,6 +354,21 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* {showComments && (
+        <CommentsSection
+          postId={post.id}
+          initialComments={post.comments || []}
+          onCommentPosted={() => setCommentsCount((c) => c + 1)}
+        />
+      )} */}
+
+      {/* Edit Form */}
+      <EditPostSheet
+        visible={showEditSheet}
+        onClose={() => setShowEditSheet(false)}
+        post={post}
+      />
     </View>
   );
 };

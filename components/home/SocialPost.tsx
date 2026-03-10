@@ -44,6 +44,7 @@ export interface ApiComment {
 export interface ApiPost {
   id: number;
   user: PostUser;
+  title: string;
   content: string;
   category?: { id: number; name: string };
   occasion?: { id: number; name: string };
