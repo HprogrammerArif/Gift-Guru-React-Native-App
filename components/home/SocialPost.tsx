@@ -10,6 +10,7 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { Image } from "expo-image";
+import { router } from "expo-router";
 import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -322,7 +323,15 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
     <View className="bg-white p-2 mb-4 border-gray-100 pb-4">
       {/* User Header */}
       <View className="flex-row items-center justify-between mb-3">
-        <View className="flex-row items-center gap-3">
+        <TouchableOpacity
+          onPress={() => {
+            router.push({
+              pathname: "/profile",
+              params: { id: post.user.id },
+            });
+          }}
+          className="flex-row items-center gap-3"
+        >
           {/* Avatar */}
           <View className="w-10 h-10 rounded-full bg-gray-200 overflow-hidden">
             {avatarUrl ? (
@@ -368,7 +377,7 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
               )}
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Follow / dots */}
         <TouchableOpacity
