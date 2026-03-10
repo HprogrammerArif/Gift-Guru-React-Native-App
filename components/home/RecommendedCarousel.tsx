@@ -7,6 +7,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   Dimensions,
   FlatList,
+  Linking,
   Text,
   TouchableOpacity,
   View,
@@ -62,7 +63,7 @@ const RecommendedCarousel = () => {
         viewOffset: 0,
       });
       setCurrentIndex(nextIndex);
-    }, 2000);
+    }, 2500);
     return () => clearInterval(interval);
   }, [currentIndex, infiniteData.length]);
 
@@ -122,6 +123,11 @@ const RecommendedCarousel = () => {
                 <View style={{ width: CARD_WIDTH }} className="px-1 h-full">
                   <TouchableOpacity
                     activeOpacity={0.9}
+                    onPress={() => {
+                      if (item.amazon_link) {
+                        Linking.openURL(item.amazon_link);
+                      }
+                    }}
                     className="bg-black/10 rounded-[15px] overflow-hidden border border-black/10 w-full h-[135px]"
                   >
                     <View className="w-full h-24 overflow-hidden bg-white/20">

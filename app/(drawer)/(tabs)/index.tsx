@@ -21,8 +21,8 @@ PostItem.displayName = "PostItem";
 // Stable header component outside render cycle
 const FeedHeader = React.memo(() => (
   <View>
-    <RecommendedCarousel RECOMMENDED_DATA={RECOMMENDED_DATA} />
-    <TrendingNowCarousel TRENDING_DATA={TRENDING_DATA} />
+    <RecommendedCarousel />
+    <TrendingNowCarousel />
     <View className="mt-6" />
   </View>
 ));
