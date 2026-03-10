@@ -308,7 +308,7 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
       const res: any = await followUser(post.user.id);
       if (res?.error) {
         setIsFollowed(prev);
-        Alert.alert("Error", "Failed to follow user. Please try again.");
+        Alert.alert(res?.error?.data?.error || "Error", "Failed to follow user!");
       }
     } catch {
       setIsFollowed(prev);
