@@ -105,6 +105,25 @@ const postApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Posts"],
     }),
+
+    // Get user profile data
+    getProfileData: builder.query({
+      query: (userId: string | number) => ({
+        url: "auth/profile/",
+        method: "GET",
+        params: { id: userId },
+      }),
+      providesTags: ["Posts"],
+    }),
+
+    // Get user specific posts
+    getUserPosts: builder.query({
+      query: (userId: string | number) => ({
+        url: `social/other-user/posts/${userId}/`,
+        method: "GET",
+      }),
+      providesTags: ["Posts"],
+    }),
   }),
 });
 
@@ -120,4 +139,6 @@ export const {
   useSavePostMutation,
   useGetRecommendedPostsQuery,
   useGetTrendingPostsQuery,
+  useGetProfileDataQuery,
+  useGetUserPostsQuery,
 } = postApi;

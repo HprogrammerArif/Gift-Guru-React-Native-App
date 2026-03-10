@@ -1,55 +1,150 @@
 import ProfileSocialPost from "@/components/home/ProfileSocialPost";
-import { POSTS_DATA } from "@/constants";
+import { ApiPost } from "@/components/home/SocialPost";
+import { selectCurrentUser } from "@/redux/features/auth/authSlice";
+import {
+  useGetProfileDataQuery,
+  useGetUserPostsQuery,
+} from "@/redux/features/posts/postApi";
+import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import React from "react";
-import { FlatList, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useLocalSearchParams } from "expo-router";
+import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  InteractionManager,
+  RefreshControl,
+  Text,
+  View,
+} from "react-native";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
+import { useSelector } from "react-redux";
+
+// 1. Memoized item for efficiency
+const MemoizedProfilePost = memo(({ item }: { item: ApiPost }) => (
+  <View className="mb-2 border-b border-gray-50">
+    <ProfileSocialPost post={item} />
+  </View>
+));
+MemoizedProfilePost.displayName = "MemoizedProfilePost";
 
 export default function ProfileScreen() {
-  const renderItem = React.useCallback(
-    ({ item }: { item: (typeof POSTS_DATA)[0] }) => (
-      <View className="mb-2 border-b border-gray-50">
-        <ProfileSocialPost
-          user={item.user}
-          title={item.title}
-          description={item.description}
-          postImage={item.postImage}
-          likes={item.likes}
-          comments={item.comments}
-        />
-      </View>
-    ),
-    []
+  const insets = useSafeAreaInsets();
+  const searchParams = useLocalSearchParams();
+  const idParam = Array.isArray(searchParams.id)
+    ? searchParams.id[0]
+    : searchParams.id;
+
+  const currentUser = useSelector(selectCurrentUser);
+
+  console.log("currentUser", currentUser, idParam);
+  const [isReady, setIsReady] = useState(false);
+
+  // High-performance: wait for navigation transition to finish
+  useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      setIsReady(true);
+    });
+    return () => task.cancel();
+  }, []);
+
+  const userId = idParam || currentUser?.user_id;
+
+  const {
+    data: profile,
+    isLoading: isProfileLoading,
+    isFetching: isProfileFetching,
+    refetch: refetchProfile,
+  } = useGetProfileDataQuery(userId!, {
+    skip: !userId,
+  });
+
+  const {
+    data: postsData,
+    isLoading: isPostsLoading,
+    isFetching: isPostsFetching,
+    refetch: refetchPosts,
+  } = useGetUserPostsQuery(userId!, {
+    skip: !userId,
+  });
+
+  const posts: ApiPost[] = useMemo(() => {
+    if (!postsData) return [];
+    return Array.isArray(postsData)
+      ? postsData
+      : (postsData as any).results || [];
+  }, [postsData]);
+
+  const onRefresh = useCallback(() => {
+    refetchProfile();
+    refetchPosts();
+  }, [refetchProfile, refetchPosts]);
+
+  const renderItem = useCallback(
+    ({ item }: { item: ApiPost }) => <MemoizedProfilePost item={item} />,
+    [],
   );
 
-  return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      {/* Profile data */}
-      {/* Profile data */}
-      <View className="px-6 py-6 flex-row items-center gap-5">
-        <Image
-          source={{
-            uri: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=200&q=80",
-          }}
-          style={{ width: 64, height: 64 }}
-          className="w-24 h-24 rounded-2xl bg-gray-200"
-          contentFit="cover"
-          transition={200}
-        />
-        <View>
-          <Text className="text-3xl font-bold text-gray-900 mb-2">
-            Rakib Hasan
+  const keyExtractor = useCallback((item: ApiPost) => String(item.id), []);
+
+  const renderHeader = useCallback(() => {
+    if (isProfileLoading || !profile)
+      return (
+        <View style={{ height: 120, justifyContent: "center" }}>
+          <ActivityIndicator color="#2B7FFF" />
+        </View>
+      );
+
+    const name =
+      `${profile.first_name || ""} ${profile.last_name || ""}`.trim() ||
+      profile.email?.split("@")[0] ||
+      profile.username ||
+      "User";
+
+    // Construct full URL for image if it's a relative path
+    const profileImage = profile.image
+      ? profile.image.startsWith("http")
+        ? profile.image
+        : `http://intensely-optimal-unicorn.ngrok-free.app${profile.image}`
+      : null;
+
+    return (
+      <View className="px-6 py-8 flex-row items-center gap-5">
+        <View className="w-24 h-24 rounded-2xl bg-gray-100 overflow-hidden shadow-sm">
+          {profileImage ? (
+            <Image
+              source={{ uri: profileImage }}
+              style={{ width: "100%", height: "100%" }}
+              contentFit="cover"
+              transition={300}
+            />
+          ) : (
+            <View className="flex-1 items-center justify-center bg-gray-100">
+              <Ionicons name="person" size={40} color="#D1D5DB" />
+            </View>
+          )}
+        </View>
+        <View className="flex-1">
+          <Text className="text-3xl font-bold text-gray-900 mb-1 leading-tight">
+            {name}
           </Text>
 
-          <View className="flex-row gap-8">
+          <View className="flex-row gap-8 mt-1">
             <View>
-              <Text className="text-lg font-bold text-gray-900">128</Text>
+              <Text className="text-xl font-bold text-gray-900">
+                {profile.followers_count || 0}
+              </Text>
               <Text className="text-[10px] text-gray-400 font-bold tracking-widest uppercase">
                 Followers
               </Text>
             </View>
             <View>
-              <Text className="text-lg font-bold text-gray-900">89</Text>
+              <Text className="text-xl font-bold text-gray-900">
+                {profile.following_count || 0}
+              </Text>
               <Text className="text-[10px] text-gray-400 font-bold tracking-widest uppercase">
                 Following
               </Text>
@@ -57,24 +152,65 @@ export default function ProfileScreen() {
           </View>
         </View>
       </View>
+    );
+  }, [profile, isProfileLoading]);
 
-      {/* Main Content List */}
+  if (!userId) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center p-5">
+        <Text className="text-gray-400 font-medium">
+          Please login to view profile
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (isProfileLoading && !profile) {
+    return (
+      <SafeAreaView className="flex-1 bg-white items-center justify-center">
+        <ActivityIndicator size="large" color="#2B7FFF" />
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1, backgroundColor: "white", paddingTop: insets.top }}>
       <FlatList
-        data={POSTS_DATA}
-        keyExtractor={(item) => item.id}
+        data={!isReady ? [] : posts}
+        keyExtractor={keyExtractor}
         renderItem={renderItem}
-        // ListHeaderComponent={renderHeader}
+        ListHeaderComponent={renderHeader}
         contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingVertical: 10,
+          paddingHorizontal: 0,
           paddingBottom: 40,
         }}
         showsVerticalScrollIndicator={false}
+        // Performance Tuning
         initialNumToRender={5}
         maxToRenderPerBatch={5}
         windowSize={5}
-        removeClippedSubviews={true}
+        updateCellsBatchingPeriod={100}
+        ListEmptyComponent={
+          isReady && !isPostsLoading && posts.length === 0 ? (
+            <View className="py-20 items-center">
+              <Text className="text-gray-400">No posts yet</Text>
+            </View>
+          ) : !isReady || isProfileLoading || isPostsLoading ? (
+            <View className="py-20">
+              <ActivityIndicator color="#2B7FFF" />
+            </View>
+          ) : null
+        }
+        refreshControl={
+          <RefreshControl
+            refreshing={
+              (isProfileFetching || isPostsFetching) && !isProfileLoading
+            }
+            onRefresh={onRefresh}
+            tintColor="#2B7FFF"
+          />
+        }
       />
-    </SafeAreaView>
+    </View>
   );
 }

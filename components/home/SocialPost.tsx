@@ -19,7 +19,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 // --- Types matching the backend API shape ---
@@ -63,6 +63,7 @@ export interface ApiPost {
   is_saved?: boolean;
   is_liked?: boolean;
   is_following?: boolean;
+  status?: string | null;
 }
 
 interface SocialPostProps {
@@ -153,7 +154,7 @@ const CommentsSection = ({
     if (!trimmed) return;
 
     try {
-      const res: any = await submitComment({ post:postId, content: trimmed });
+      const res: any = await submitComment({ post: postId, content: trimmed });
 
       if (res?.data) {
         // Append the newly created comment from the API response to local list
@@ -381,7 +382,9 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
           {isMyPost ? (
             <Text className="text-xs text-gray-500 font-medium">• • •</Text>
           ) : (
-            <Text className={`text-xs font-semibold ${isFollowed ? "text-blue-500" : "text-gray-900"}`}>
+            <Text
+              className={`text-xs font-semibold ${isFollowed ? "text-blue-500" : "text-gray-900"}`}
+            >
               {isFollowed ? "Following" : "Follow"}
             </Text>
           )}

@@ -1,47 +1,38 @@
 import {
-  FontAwesome5,
-  Ionicons,
-  MaterialCommunityIcons,
+    FontAwesome5,
+    Ionicons,
+    MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import React, { useRef, useState } from "react";
+import React, { memo, useRef, useState } from "react";
 import {
-  Dimensions,
-  Modal,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
+    Dimensions,
+    Linking,
+    Modal,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
+import { ApiPost } from "./SocialPost";
 
-interface SocialPostProps {
-  user: {
-    name: string;
-    avatar: string;
-    date: string;
-  };
-  title: string;
-  description: string;
-  postImage: string;
-  likes: number;
-  comments: number;
-  recommended?: boolean;
-  trending?: boolean;
+interface ProfileSocialPostProps {
+  post: ApiPost;
 }
 
-const ProfileSocialPost = ({
-  user,
-  title,
-  description,
-  postImage,
-  likes,
-  comments,
-  trending,
-  recommended,
-}: SocialPostProps) => {
-  const [isFollowed, setIsFollowed] = useState(false);
+/** Format ISO date to relative/readable string */
+function formatDate(iso: string): string {
+  const date = new Date(iso);
+  return date.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
   const [expanded, setExpanded] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+  const [isLiked, setIsLiked] = useState(post.is_liked ?? false);
   const [showMenu, setShowMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
   const iconRef = useRef<View>(null);
@@ -56,28 +47,41 @@ const ProfileSocialPost = ({
     });
   };
 
+  const displayName =
+    `${post.user?.first_name || ""} ${post.user?.last_name || ""}`.trim() ||
+    post.user?.username ||
+    "User";
+
+  const postImage =
+    post.images && post.images.length > 0
+      ? post.images[0].image
+      : post.amazon_product_image_url;
+
   return (
     <View className="bg-white p-2 mb-4 border-gray-100 pb-6">
       {/* User Header */}
       <View className="flex-row items-center justify-between mb-3">
         <View className="flex-row items-center gap-3">
-          <Image
-            source={{ uri: user.avatar }}
-            style={{ width: 40, height: 40 }}
-            className="rounded-full bg-gray-200"
-            contentFit="cover"
-          />
+          <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center overflow-hidden">
+            {post.profile ? (
+              <Image
+                source={{ uri: post.profile }}
+                style={{ width: "100%", height: "100%" }}
+                contentFit="cover"
+              />
+            ) : (
+              <Ionicons name="person" size={20} color="#9CA3AF" />
+            )}
+          </View>
           <View>
-            <Text className="text-[15px] font-bold text-black border-black">
-              {user.name}
+            <Text className="text-[15px] font-bold text-black">
+              {displayName}
             </Text>
             <View className="flex-row items-center gap-2">
               <Text className="text-xs text-gray-500 font-medium">
-                {user.date}
+                {formatDate(post.created_at)}
               </Text>
-
-              {/* Recommended Badge (Hardcoded for demo as per design) */}
-              {recommended && (
+              {post.status === "recommended" && (
                 <View className="bg-[#FFF0ED] px-2 py-0.5 rounded-full flex-row items-center gap-1">
                   <Ionicons name="flame" size={10} color="#FF4B3A" />
                   <Text className="text-[10px] text-[#FF4B3A] font-medium">
@@ -85,9 +89,7 @@ const ProfileSocialPost = ({
                   </Text>
                 </View>
               )}
-
-              {/* Trending Badge (Hardcoded for demo as per design) */}
-              {trending && (
+              {post.status === "trending" && (
                 <View className="bg-[#EFF6FF] px-2 py-0.5 rounded-full flex-row items-center gap-1">
                   <Ionicons name="trending-up" size={10} color="#2B7FFF" />
                   <Text className="text-[10px] text-[#2B7FFF] font-medium">
@@ -99,9 +101,9 @@ const ProfileSocialPost = ({
           </View>
         </View>
 
-        {/* Three dot icon for profile post update delete */}
+        {/* Three dot icon for post management */}
         <View ref={iconRef} collapsable={false}>
-          <TouchableOpacity onPress={openMenu} className="p-3">
+          <TouchableOpacity onPress={openMenu} className="p-3" hitSlop={15}>
             <Ionicons name="ellipsis-vertical" size={16} color="black" />
           </TouchableOpacity>
 
@@ -114,7 +116,7 @@ const ProfileSocialPost = ({
             <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
               <View className="flex-1">
                 <View
-                  className="absolute bg-white rounded-xl shadow-sm border border-gray-100 w-36"
+                  className="absolute bg-white rounded-xl shadow-lg border border-gray-100 w-36 overflow-hidden"
                   style={{
                     top: menuPosition.top,
                     right: menuPosition.right,
@@ -124,7 +126,7 @@ const ProfileSocialPost = ({
                   <TouchableOpacity
                     onPress={() => {
                       setShowMenu(false);
-                      console.log("Update pressed");
+                      // Handle update
                     }}
                     className="flex-row items-center gap-2 px-4 py-3 border-b border-gray-50"
                   >
@@ -136,7 +138,7 @@ const ProfileSocialPost = ({
                   <TouchableOpacity
                     onPress={() => {
                       setShowMenu(false);
-                      console.log("Delete pressed");
+                      // Handle delete
                     }}
                     className="flex-row items-center gap-2 px-4 py-3"
                   >
@@ -150,103 +152,109 @@ const ProfileSocialPost = ({
             </TouchableWithoutFeedback>
           </Modal>
         </View>
-        
       </View>
 
-      {/* Title */}
-      <Text className="text-lg font-bold text-gray-900 mb-1">{title}</Text>
-
-      {/* Description */}
+      {/* Content / Description */}
       <TouchableOpacity
         activeOpacity={1}
         onPress={() => setExpanded(!expanded)}
         className="mb-3"
       >
         <Text
-          numberOfLines={expanded ? 0 : 2}
-          className="text-[14px] text-gray-500 leading-5"
+          numberOfLines={expanded ? 0 : 3}
+          className="text-[14px] text-gray-700 leading-5"
         >
-          {description}
-          {!expanded && (
-            <Text className="text-black font-semibold">.. see more</Text>
+          {post.content}
+          {!expanded && post.content.length > 100 && (
+            <Text className="text-[#2B7FFF] font-semibold">.. see more</Text>
           )}
         </Text>
       </TouchableOpacity>
 
       {/* Post Image Container */}
       <View className="rounded-2xl overflow-hidden bg-gray-100 border border-gray-100">
-        <Image
-          source={{ uri: postImage }}
-          style={{ width: "100%", height: 250 }}
-          contentFit="cover"
-        />
+        {postImage ? (
+          <Image
+            source={{ uri: postImage }}
+            style={{ width: "100%", height: 300 }}
+            contentFit="cover"
+            transition={300}
+          />
+        ) : (
+          <View style={{ height: 10 }} />
+        )}
 
-        {/* Amazon Call to Action - Styled like the reference */}
+        {/* Amazon Call to Action */}
         <View className="flex-row items-center justify-between p-3 bg-[#EEF2F6]">
           <View className="flex-row items-center gap-3 flex-1">
             <View className="w-10 h-10 bg-white rounded-lg items-center justify-center shadow-sm">
               <FontAwesome5 name="amazon" size={20} color="#0071e3" />
             </View>
             <View className="flex-1">
-              <Text className="text-[10px] font-bold text-[#0071e3] mb-0.5">
-                AVAILABLE ON AMAZON
+              <Text className="text-[10px] font-bold text-[#0071e3] mb-0.5 uppercase tracking-tighter">
+                Available on Amazon
               </Text>
               <Text
                 className="text-xs text-gray-700 font-medium"
                 numberOfLines={1}
               >
-                {title}
+                {post.amazon_product_name || "Check Price"}
               </Text>
             </View>
           </View>
 
-          <TouchableOpacity className="bg-[#3B82F6] px-4 py-2 rounded-lg shadow-sm">
-            <Text className="text-white text-xs font-bold">
-              Check On Amazon
-            </Text>
+          <TouchableOpacity
+            onPress={() =>
+              post.amazon_link && Linking.openURL(post.amazon_link)
+            }
+            className="bg-[#3B82F6] px-4 py-2 rounded-lg shadow-sm"
+          >
+            <Text className="text-white text-xs font-bold">Check Price</Text>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* Engagement Footer */}
       <View className="flex-row items-center justify-between mt-4">
-        <View className="flex-row items-center">
+        <View className="flex-row items-center gap-3">
           <TouchableOpacity
-            className="flex-row items-center gap-1.5 mr-2"
+            className="flex-row items-center gap-1.5"
             onPress={() => setIsLiked(!isLiked)}
           >
-            {isLiked ? (
-              <Ionicons name="thumbs-up" size={20} color="#3B82F6" />
-            ) : (
-              <Ionicons name="thumbs-up-outline" size={20} color="#3B82F6" />
-            )}
-            <Text className="text-sm text-gray-500 font-medium">Like</Text>
-          </TouchableOpacity>
-
-          <Text className="text-xs text-gray-400 font-medium">
-            {likes} People liked this
-          </Text>
-        </View>
-
-        <View className="flex-row items-center gap-2">
-          <TouchableOpacity className="flex-row items-center gap-1  ">
-            <MaterialCommunityIcons
-              name="message-reply-text-outline"
-              size={16}
-              color="#9CA3AF"
+            <Ionicons
+              name={isLiked ? "thumbs-up" : "thumbs-up-outline"}
+              size={20}
+              color={isLiked ? "#3B82F6" : "#6B7280"}
             />
-            <Text className="text-sm text-gray-500 font-medium">
-              {comments} comments
+            <Text
+              className={`text-sm font-medium ${isLiked ? "text-[#3B82F6]" : "text-gray-500"}`}
+            >
+              {post.likes_count}
             </Text>
           </TouchableOpacity>
 
-          <TouchableOpacity>
-            <Ionicons name="bookmark-outline" size={20} color="#6B7280" />
-          </TouchableOpacity>
+          <View className="flex-row items-center gap-1.5">
+            <MaterialCommunityIcons
+              name="message-reply-text-outline"
+              size={18}
+              color="#6B7280"
+            />
+            <Text className="text-sm text-gray-500 font-medium">
+              {post.comments_count}
+            </Text>
+          </View>
         </View>
+
+        <TouchableOpacity hitSlop={15}>
+          <Ionicons
+            name={post.is_saved ? "bookmark" : "bookmark-outline"}
+            size={22}
+            color={post.is_saved ? "#3B82F6" : "#6B7280"}
+          />
+        </TouchableOpacity>
       </View>
     </View>
   );
 };
 
-export default React.memo(ProfileSocialPost);
+export default memo(ProfileSocialPost);
