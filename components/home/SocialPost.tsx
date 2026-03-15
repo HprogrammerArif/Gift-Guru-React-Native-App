@@ -2,22 +2,13 @@ import {
   useFollowUserMutation,
   useLikePostMutation,
   useSavePostMutation,
-  useSubmitCommentMutation,
 } from "@/redux/features/posts/postApi";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React, { useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Linking,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useState } from "react";
+import { Alert, Linking, Text, TouchableOpacity, View } from "react-native";
+import CommentsSheet from "./CommentsSheet";
 
 // --- Types matching the backend API shape ---
 export interface PostUser {
@@ -124,116 +115,6 @@ const CommentItem = ({
       </View>
       {/* Divider between comments, not after last */}
       {!isLast && <View className="h-px bg-gray-300 ml-11" />}
-    </View>
-  );
-};
-
-// --- Comments Section (uses embedded data + submit mutation) ---
-interface CommentsSectionProps {
-  postId: number;
-  initialComments: ApiComment[];
-  onCommentPosted: () => void;
-}
-
-const CommentsSection = ({
-  postId,
-  initialComments,
-  onCommentPosted,
-}: CommentsSectionProps) => {
-  const [commentText, setCommentText] = useState("");
-  // Local list starts from what was already embedded in post response
-  const [comments, setComments] = useState<ApiComment[]>(initialComments);
-  const inputRef = useRef<TextInput>(null);
-
-  const [submitComment, { isLoading: isPosting }] = useSubmitCommentMutation();
-
-  const handleSubmit = async () => {
-    const trimmed = commentText.trim();
-    if (!trimmed) return;
-
-    try {
-      const res: any = await submitComment({ post: postId, content: trimmed });
-
-      if (res?.data) {
-        // Append the newly created comment from the API response to local list
-        const newComment: ApiComment = res.data;
-        setComments((prev) => [...prev, newComment]);
-        setCommentText("");
-        inputRef.current?.blur();
-        onCommentPosted(); // bump count in parent
-      } else if (res?.error) {
-        Alert.alert("Error", "Failed to post comment. Please try again.");
-      }
-    } catch {
-      Alert.alert("Error", "Something went wrong.");
-    }
-  };
-
-  return (
-    <View className="mt-3 border-t border-gray-100 pt-3">
-      {/* Input bar — always at the top */}
-      <View className="flex-row items-center gap-2 mb-3">
-        <View className="flex-1 flex-row items-center bg-gray-50 shadow-sm rounded-full px-4 py-1">
-          <TextInput
-            ref={inputRef}
-            placeholder="Write a comment..."
-            placeholderTextColor="#9CA3AF"
-            value={commentText}
-            onChangeText={setCommentText}
-            style={{ flex: 1, fontSize: 14, color: "#111827", maxHeight: 80 }}
-            multiline
-            maxLength={500}
-            returnKeyType="send"
-            onSubmitEditing={handleSubmit}
-            blurOnSubmit={false}
-          />
-          <TouchableOpacity
-            onPress={handleSubmit}
-            disabled={!commentText.trim() || isPosting}
-            className="ml-3"
-            hitSlop={10}
-          >
-            {isPosting ? (
-              <ActivityIndicator size="small" color="#2B7FFF" />
-            ) : (
-              <Ionicons
-                name="send"
-                size={18}
-                color={commentText.trim() ? "#2B7FFF" : "#D1D5DB"}
-              />
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Comments or empty state */}
-      {comments.length === 0 ? (
-        <Text
-          style={{
-            textAlign: "center",
-            color: "#D97706",
-            fontSize: 13,
-            fontWeight: "500",
-            paddingVertical: 10,
-          }}
-        >
-          No comments yet.
-        </Text>
-      ) : (
-        <ScrollView
-          nestedScrollEnabled
-          showsVerticalScrollIndicator={false}
-          style={{ maxHeight: 280 }}
-        >
-          {comments.map((c, index) => (
-            <CommentItem
-              key={c.id}
-              comment={c}
-              isLast={index === comments.length - 1}
-            />
-          ))}
-        </ScrollView>
-      )}
     </View>
   );
 };
@@ -524,14 +405,14 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
         </View>
       </View>
 
-      {/* Comments Section */}
-      {showComments && (
-        <CommentsSection
-          postId={post.id}
-          initialComments={initialComments}
-          onCommentPosted={() => setCommentsCount((prev) => prev + 1)}
-        />
-      )}
+      {/* Comments Sheet (Better UX, no gaps) */}
+      <CommentsSheet
+        visible={showComments}
+        onClose={() => setShowComments(false)}
+        postId={post.id}
+        initialComments={initialComments}
+        onCommentPosted={() => setCommentsCount((prev) => prev + 1)}
+      />
     </View>
   );
 };
