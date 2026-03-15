@@ -2,25 +2,25 @@ import { useSubmitCommentMutation } from "@/redux/features/posts/postApi";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Dimensions,
+  FlatList,
   Modal,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Text,
   TextInput,
   TouchableOpacity,
   TouchableWithoutFeedback,
-  View
+  View,
 } from "react-native";
 import {
   Gesture,
   GestureDetector,
   GestureHandlerRootView,
 } from "react-native-gesture-handler";
-import {
-  KeyboardAwareScrollView,
-  KeyboardStickyView,
-  KeyboardToolbar,
-} from "react-native-keyboard-controller";
+import { KeyboardStickyView } from "react-native-keyboard-controller";
 import Animated, {
   Easing,
   runOnJS,
@@ -33,8 +33,8 @@ import { ApiComment } from "./SocialPost";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-// --- Optimized FB Comment Item ---
-const CommentItem = ({ comment }: { comment: ApiComment; isLast: boolean }) => {
+// --- FB Comment Item ---
+const CommentItem = ({ comment }: { comment: ApiComment }) => {
   const name =
     `${comment.user?.first_name || ""} ${comment.user?.last_name || ""}`.trim() ||
     comment.user?.username ||
@@ -46,8 +46,8 @@ const CommentItem = ({ comment }: { comment: ApiComment; isLast: boolean }) => {
   });
 
   return (
-    <View className="flex-row items-start gap-2.5 py-2.5">
-      <View className="w-9 h-9 rounded-full bg-gray-200 items-center justify-center shrink-0">
+    <View className="flex-row items-start gap-2.5 py-2.5 px-3">
+      <View className="w-9 h-9 rounded-full bg-[#E4E6EB] items-center justify-center shrink-0">
         <Ionicons name="person" size={20} color="#65676B" />
       </View>
       <View className="flex-1">
@@ -63,10 +63,10 @@ const CommentItem = ({ comment }: { comment: ApiComment; isLast: boolean }) => {
           <Text className="text-[12px] text-[#65676B] font-medium">
             {shortDate}
           </Text>
-          <TouchableOpacity hitSlop={10}>
+          <TouchableOpacity hitSlop={12}>
             <Text className="text-[12px] font-bold text-[#65676B]">Like</Text>
           </TouchableOpacity>
-          <TouchableOpacity hitSlop={10}>
+          <TouchableOpacity hitSlop={12}>
             <Text className="text-[12px] font-bold text-[#65676B]">Reply</Text>
           </TouchableOpacity>
         </View>
@@ -92,6 +92,8 @@ const CommentsSheet = ({
 }: CommentsSheetProps) => {
   const [commentText, setCommentText] = useState("");
   const [comments, setComments] = useState<ApiComment[]>(initialComments);
+  const [isAtTop, setIsAtTop] = useState(true);
+
   const inputRef = useRef<TextInput>(null);
   const [submitComment, { isLoading: isPosting }] = useSubmitCommentMutation();
 
@@ -99,7 +101,6 @@ const CommentsSheet = ({
   const backdropOpacity = useSharedValue(0);
   const context = useSharedValue(0);
 
-  // --- FASTER & SMOOTHER ANIMATION (Timing based like FB native) ---
   const animateIn = useCallback(() => {
     translateY.value = withTiming(0, {
       duration: 250,
@@ -133,12 +134,12 @@ const CommentsSheet = ({
       context.value = translateY.value;
     })
     .onUpdate((event) => {
-      if (event.translationY > 0) {
+      if (isAtTop && event.translationY > 0) {
         translateY.value = context.value + event.translationY;
       }
     })
     .onEnd((event) => {
-      if (event.translationY > 150 || event.velocityY > 600) {
+      if ((event.translationY > 150 || event.velocityY > 600) && isAtTop) {
         runOnJS(animateOut)();
       } else {
         translateY.value = withSpring(0, { damping: 25, stiffness: 200 });
@@ -152,6 +153,12 @@ const CommentsSheet = ({
   const backdropStyle = useAnimatedStyle(() => ({
     opacity: backdropOpacity.value,
   }));
+
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const y = event.nativeEvent.contentOffset.y;
+    if (y <= 0 && !isAtTop) setIsAtTop(true);
+    if (y > 0 && isAtTop) setIsAtTop(false);
+  };
 
   const handleSubmit = async () => {
     const trimmed = commentText.trim();
@@ -188,113 +195,115 @@ const CommentsSheet = ({
             />
           </TouchableWithoutFeedback>
 
-          <GestureDetector gesture={panGesture}>
-            <Animated.View
-              style={[
-                animatedStyle,
-                { height: SCREEN_HEIGHT * 0.9, backgroundColor: "white" },
-              ]}
-              className="rounded-t-[14px] w-full"
-            >
-              {/* Handle Bar */}
-              <View className="items-center py-2">
-                <View className="w-10 h-1.5 bg-[#E4E6EB] rounded-full" />
-              </View>
-
-              {/* FB Style Header */}
-              <View className="px-4 pb-3 flex-row items-center border-b border-[#E4E6EB]">
-                <View className="flex-row items-center flex-1">
-                  <Ionicons name="chatbubble" size={12} color="#65676B" />
-                  <Text className="ml-1 text-[13px] text-[#65676B] font-medium">
-                    {comments.length} comments
-                  </Text>
+          <Animated.View
+            style={[
+              animatedStyle,
+              { height: SCREEN_HEIGHT * 0.92, backgroundColor: "white" },
+            ]}
+            className="rounded-t-[14px] w-full"
+          >
+            {/* Gesture Handle / Draggable Area */}
+            <GestureDetector gesture={panGesture}>
+              <View>
+                <View className="items-center py-2.5">
+                  <View className="w-10 h-1 bg-[#E4E6EB] rounded-full" />
                 </View>
-                <TouchableOpacity onPress={animateOut} className="px-2 py-1">
-                  <Ionicons name="close-circle" size={24} color="#BEC2C9" />
-                </TouchableOpacity>
-              </View>
 
-              <View className="flex-1">
-                <KeyboardAwareScrollView
-                  bottomOffset={0}
-                  keyboardShouldPersistTaps="handled"
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={{
-                    paddingHorizontal: 12,
-                    paddingBottom: 150, // Extra space for sticky input
-                  }}
-                  className="flex-1"
-                >
-                  {comments.length === 0 ? (
-                    <View className="py-20 items-center">
-                      <Ionicons
-                        name="chatbubbles-outline"
-                        size={64}
-                        color="#BEC2C9"
-                      />
-                      <Text className="text-[#65676B] mt-4 text-base font-semibold">
-                        Be the first to comment
-                      </Text>
+                {/* FB Style Header */}
+                <View className="px-4 pb-3 flex-row items-center border-b border-[#E4E6EB]">
+                  <View className="flex-row items-center flex-1">
+                    <View className="bg-[#1877F2] rounded-full p-1.5 mr-2">
+                      <Ionicons name="thumbs-up" size={10} color="white" />
                     </View>
-                  ) : (
-                    comments.map((c, index) => (
-                      <CommentItem
-                        key={c.id}
-                        comment={c}
-                        isLast={index === comments.length - 1}
-                      />
-                    ))
-                  )}
-                </KeyboardAwareScrollView>
+                    <Text className="text-[14px] text-[#65676B] font-medium">
+                      {comments.length} comments
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    onPress={animateOut}
+                    className="bg-gray-100 rounded-full p-1"
+                  >
+                    <Ionicons name="close" size={20} color="#65676B" />
+                  </TouchableOpacity>
+                </View>
               </View>
+            </GestureDetector>
 
-              {/* STICKY INPUT BAR (Anchored to keyboard) */}
-              <KeyboardStickyView offset={{ opened: 0, closed: 0 }}>
-                <View className="bg-white border-t border-[#E4E6EB] px-4 py-3 pb-8">
-                  <View className="flex-row items-center gap-2.5">
-                    <View className="w-9 h-9 rounded-full bg-[#E4E6EB] items-center justify-center">
-                      <Ionicons name="person" size={20} color="#65676B" />
-                    </View>
-                    <View className="flex-1 flex-row items-center bg-[#F0F2F5] rounded-full px-4 py-2">
-                      <TextInput
-                        ref={inputRef}
-                        placeholder="Write a comment..."
-                        placeholderTextColor="#65676B"
-                        value={commentText}
-                        onChangeText={setCommentText}
-                        className="flex-1 text-[15px] text-[#050505] py-0.5"
-                        multiline
-                      />
-                      <TouchableOpacity
-                        onPress={handleSubmit}
-                        disabled={!commentText.trim() || isPosting}
-                      >
+            {/* Scrollable Content Area */}
+            <View className="flex-1">
+              <FlatList
+                data={comments}
+                keyExtractor={(item) => String(item.id)}
+                renderItem={({ item }) => <CommentItem comment={item} />}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{
+                  paddingTop: 10,
+                  paddingBottom: 220,
+                }}
+                ListEmptyComponent={
+                  <View className="py-20 items-center">
+                    <Ionicons
+                      name="chatbubbles-outline"
+                      size={64}
+                      color="#BEC2C9"
+                    />
+                    <Text className="text-[#65676B] mt-4 text-[16px] font-semibold">
+                      Be the first to comment
+                    </Text>
+                  </View>
+                }
+              />
+            </View>
+
+            <KeyboardStickyView offset={{ opened: 0, closed: 0 }}>
+              <View className="bg-white border-t border-[#E4E6EB] px-4 py-3 pb-8">
+                <View className="flex-row items-center gap-2.5">
+                  <View className="w-9 h-9 rounded-full bg-[#E4E6EB] items-center justify-center">
+                    <Ionicons name="person" size={20} color="#65676B" />
+                  </View>
+                  <View className="flex-1 flex-row items-center bg-[#F0F2F5] rounded-[20px] px-4 py-1.5">
+                    <TextInput
+                      ref={inputRef}
+                      placeholder="Write a comment..."
+                      placeholderTextColor="#65676B"
+                      value={commentText}
+                      onChangeText={setCommentText}
+                      className="flex-1 text-[15px] text-[#050505] min-h-[36px]"
+                      multiline
+                    />
+                    <TouchableOpacity
+                      onPress={handleSubmit}
+                      disabled={!commentText.trim() || isPosting}
+                      className="ml-2"
+                    >
+                      {isPosting ? (
+                        <ActivityIndicator size="small" color="#0566FF" />
+                      ) : (
                         <Ionicons
                           name="send"
                           size={22}
                           color={commentText.trim() ? "#0566FF" : "#B0B3B8"}
                         />
-                      </TouchableOpacity>
-                    </View>
+                      )}
+                    </TouchableOpacity>
                   </View>
                 </View>
-              </KeyboardStickyView>
+              </View>
+            </KeyboardStickyView>
 
-              {/* This extra view ensures the background stays solid when lifted by keyboard */}
-              <View
-                style={{
-                  position: "absolute",
-                  bottom: -1000,
-                  left: 0,
-                  right: 0,
-                  height: 1000,
-                  backgroundColor: "white",
-                }}
-              />
-
-              {/* <KeyboardToolbar /> */}
-            </Animated.View>
-          </GestureDetector>
+            <View
+              style={{
+                position: "absolute",
+                bottom: -1000,
+                left: 0,
+                right: 0,
+                height: 1000,
+                backgroundColor: "white",
+              }}
+            />
+          </Animated.View>
         </View>
       </GestureHandlerRootView>
     </Modal>
