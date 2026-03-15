@@ -1,3 +1,4 @@
+import { selectCurrentUser } from "@/redux/features/auth/authSlice";
 import {
   useDeletePostMutation,
   useLikePostMutation,
@@ -18,6 +19,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from "react-native";
+import { useSelector } from "react-redux";
 import EditPostSheet from "../EditPostSheet";
 import { ApiPost } from "./SocialPost";
 
@@ -48,6 +50,9 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
   const [showMenu, setShowMenu] = useState(false);
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
   const iconRef = useRef<View>(null);
+
+  const currentUser = useSelector(selectCurrentUser);
+  const isMyPost = currentUser?.user_id === post.user?.id;
 
   const [likePost] = useLikePostMutation();
   const [savePost] = useSavePostMutation();
@@ -179,65 +184,71 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
           </View>
         </TouchableOpacity>
 
-        {/* Three dot icon */}
-        <View ref={iconRef} collapsable={false}>
-          <TouchableOpacity onPress={openMenu} className="p-3" hitSlop={15}>
-            <Ionicons name="ellipsis-vertical" size={16} color="black" />
-          </TouchableOpacity>
+        {/* Three dot icon - Only for owner */}
+        {isMyPost && (
+          <View ref={iconRef} collapsable={false}>
+            <TouchableOpacity onPress={openMenu} className="p-3" hitSlop={15}>
+              <Ionicons name="ellipsis-vertical" size={16} color="black" />
+            </TouchableOpacity>
 
-          <Modal
-            transparent
-            visible={showMenu}
-            animationType="fade"
-            onRequestClose={() => setShowMenu(false)}
-          >
-            <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
-              <View className="flex-1 bg-black/5">
-                <View
-                  className="absolute bg-white rounded-xl shadow-lg border border-gray-100 w-36 overflow-hidden"
-                  style={{
-                    top: menuPosition.top,
-                    right: menuPosition.right,
-                    elevation: 5,
-                  }}
-                >
-                  <TouchableOpacity
-                    onPress={() => {
-                      setShowMenu(false);
-                      setShowEditSheet(true);
+            <Modal
+              transparent
+              visible={showMenu}
+              animationType="fade"
+              onRequestClose={() => setShowMenu(false)}
+            >
+              <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
+                <View className="flex-1 bg-black/5">
+                  <View
+                    className="absolute bg-white rounded-xl shadow-lg border border-gray-100 w-36 overflow-hidden"
+                    style={{
+                      top: menuPosition.top,
+                      right: menuPosition.right,
+                      elevation: 5,
                     }}
-                    className="flex-row items-center gap-2 px-4 py-3 border-b border-gray-50"
                   >
-                    <Ionicons name="create-outline" size={16} color="#374151" />
-                    <Text className="text-gray-700 font-medium text-sm">
-                      Update
-                    </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    onPress={handleDelete}
-                    disabled={isDeleting}
-                    className="flex-row items-center gap-2 px-4 py-3"
-                  >
-                    {isDeleting ? (
-                      <ActivityIndicator size="small" color="#EF4444" />
-                    ) : (
-                      <>
-                        <Ionicons
-                          name="trash-outline"
-                          size={16}
-                          color="#EF4444"
-                        />
-                        <Text className="text-red-500 font-medium text-sm">
-                          Delete
-                        </Text>
-                      </>
-                    )}
-                  </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        setShowMenu(false);
+                        setShowEditSheet(true);
+                      }}
+                      className="flex-row items-center gap-2 px-4 py-3 border-b border-gray-50"
+                    >
+                      <Ionicons
+                        name="create-outline"
+                        size={16}
+                        color="#374151"
+                      />
+                      <Text className="text-gray-700 font-medium text-sm">
+                        Update
+                      </Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={handleDelete}
+                      disabled={isDeleting}
+                      className="flex-row items-center gap-2 px-4 py-3"
+                    >
+                      {isDeleting ? (
+                        <ActivityIndicator size="small" color="#EF4444" />
+                      ) : (
+                        <>
+                          <Ionicons
+                            name="trash-outline"
+                            size={16}
+                            color="#EF4444"
+                          />
+                          <Text className="text-red-500 font-medium text-sm">
+                            Delete
+                          </Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  </View>
                 </View>
-              </View>
-            </TouchableWithoutFeedback>
-          </Modal>
-        </View>
+              </TouchableWithoutFeedback>
+            </Modal>
+          </View>
+        )}
       </View>
 
       {/* Content */}
@@ -354,14 +365,6 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
           </TouchableOpacity>
         </View>
       </View>
-
-      {/* {showComments && (
-        <CommentsSection
-          postId={post.id}
-          initialComments={post.comments || []}
-          onCommentPosted={() => setCommentsCount((c) => c + 1)}
-        />
-      )} */}
 
       {/* Edit Form */}
       <EditPostSheet

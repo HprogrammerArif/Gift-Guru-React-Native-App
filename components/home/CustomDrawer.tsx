@@ -2,8 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { API_IMAGE_URL } from "../../redux/api/baseApi";
+import { useGetUserProfileQuery } from "../../redux/features/profileService/profileApi";
 
 interface MenuItemProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -40,18 +42,41 @@ const MenuItem = ({ icon, label, badge, onPress, isLast }: MenuItemProps) => (
 const CustomDrawer = (props: DrawerContentComponentProps) => {
   const router = useRouter();
 
+  const { data: profile } = useGetUserProfileQuery(undefined);
+
+  const fullName =
+    profile?.first_name || profile?.last_name
+      ? `${profile?.first_name ?? ""} ${profile?.last_name ?? ""}`.trim()
+      : "User Profile";
+
+  const email = profile?.email ?? "user@example.com";
+
+  const imageUri = profile?.image
+    ? profile.image.startsWith("http")
+      ? profile.image
+      : `${API_IMAGE_URL}${profile.image}`
+    : null;
+
   return (
     <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1 px-6">
         {/* Header / Profile Section */}
         <View className="py-10">
-          <View className="w-16 h-16 bg-gray-200 rounded-full items-center justify-center border-2 border-[#FF4B3A]/10">
-            <Ionicons name="person" size={32} color="#9CA3AF" />
+          <View className="w-16 h-16 bg-gray-200 rounded-full items-center justify-center border-2 border-[#FF4B3A]/10 overflow-hidden">
+            {imageUri ? (
+              <Image
+                source={{ uri: imageUri }}
+                className="w-full h-full"
+                resizeMode="cover"
+              />
+            ) : (
+              <Ionicons name="person" size={32} color="#9CA3AF" />
+            )}
           </View>
           <Text className="mt-4 text-xl font-bold text-gray-900">
-            User Profile
+            {fullName}
           </Text>
-          <Text className="text-sm text-gray-500">user@example.com</Text>
+          <Text className="text-sm text-gray-500">{email}</Text>
         </View>
 
         {/* Navigation Items */}
