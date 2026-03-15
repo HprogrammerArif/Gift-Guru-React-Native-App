@@ -2,9 +2,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { DrawerContentComponentProps } from "@react-navigation/drawer";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { API_IMAGE_URL } from "../../redux/api/baseApi";
+import { useDispatch } from "react-redux";
+import { API_IMAGE_URL, baseApi } from "../../redux/api/baseApi";
+import { logout } from "../../redux/features/auth/authSlice";
 import { useGetUserProfileQuery } from "../../redux/features/profileService/profileApi";
 
 interface MenuItemProps {
@@ -41,6 +43,13 @@ const MenuItem = ({ icon, label, badge, onPress, isLast }: MenuItemProps) => (
 
 const CustomDrawer = (props: DrawerContentComponentProps) => {
   const router = useRouter();
+  const dispatch = useDispatch();
+
+  const handleLogout = () => {
+    dispatch(logout());
+    dispatch(baseApi.util.resetApiState());
+    router.replace("/sign-in");
+  };
 
   const { data: profile } = useGetUserProfileQuery(undefined);
 
@@ -62,11 +71,14 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
       <SafeAreaView className="flex-1 px-6">
         {/* Header / Profile Section */}
         <View className="py-10">
-          <View className="w-16 h-16 bg-gray-200 rounded-full items-center justify-center border-2 border-[#FF4B3A]/10 overflow-hidden">
+          <View
+            className="w-16 h-16 bg-gray-200 rounded-full items-center justify-center border-2 border-[#FF4B3A]/10"
+            style={styles.avatarContainer}
+          >
             {imageUri ? (
               <Image
                 source={{ uri: imageUri }}
-                className="w-full h-full"
+                style={styles.avatarImage}
                 resizeMode="cover"
               />
             ) : (
@@ -119,12 +131,23 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
             icon="log-out-sharp"
             label="Log out"
             isLast
-            onPress={() => {}}
+            onPress={handleLogout}
           />
         </View>
       </SafeAreaView>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  avatarContainer: {
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 9999,
+  },
+});
 
 export default CustomDrawer;
