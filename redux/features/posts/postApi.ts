@@ -159,6 +159,39 @@ const postApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Posts"],
     }),
+
+    // Get user stats (total likes and link clicks)
+    getUserStats: builder.query({
+      query: () => ({
+        url: "social/user/stats/",
+        method: "GET",
+      }),
+    }),
+
+    // Get link engagement (monthly clicks for a year)
+    getLinkEngagement: builder.query({
+      query: (year: number) => ({
+        url: "social/user/link-engagement/",
+        method: "GET",
+        params: { year },
+      }),
+    }),
+
+    // Get top clicked posts
+    getTopClickedPosts: builder.query({
+      query: () => ({
+        url: "social/posts/top-clicked/",
+        method: "GET",
+      }),
+    }),
+
+    // Get post statuses (approved, pending, rejected)
+    getPostStatuses: builder.query({
+      query: () => ({
+        url: "social/user/post-statuses/",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -179,4 +212,8 @@ export const {
   useUpdatePostMutation,
   useDeletePostMutation,
   useGetWishlistPostsQuery,
+  useGetUserStatsQuery,
+  useGetLinkEngagementQuery,
+  useGetTopClickedPostsQuery,
+  useGetPostStatusesQuery,
 } = postApi;

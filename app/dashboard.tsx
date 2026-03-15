@@ -1,10 +1,22 @@
+import {
+  useGetLinkEngagementQuery,
+  useGetPostStatusesQuery,
+  useGetTopClickedPostsQuery,
+  useGetUserStatsQuery,
+} from "@/redux/features/posts/postApi";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-
+import {
+  ActivityIndicator,
+  Image,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { BarChart } from "react-native-gifted-charts";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const StatCard = ({
   label,
@@ -111,71 +123,65 @@ const SubmissionRow = ({
 
 const DashboardScreen = () => {
   const router = useRouter();
-  const [selectedYear, setSelectedYear] = React.useState(2025);
+  const [selectedYear, setSelectedYear] = React.useState(2026);
   const [isYearDropdownVisible, setIsYearDropdownVisible] =
     React.useState(false);
 
-  const annualData: Record<number, any[]> = {
-    2025: [
-      { label: "Jan", value: 40 },
-      { label: "Feb", value: 85 },
-      { label: "Mar", value: 55 },
-      { label: "Apr", value: 85 },
-      { label: "May", value: 30 },
-      { label: "Jun", value: 65 },
-      { label: "Jul", value: 85 },
-      { label: "Aug", value: 35 },
-      { label: "Sep", value: 65 },
-      { label: "Oct", value: 85 },
-      { label: "Nov", value: 35 },
-      { label: "Dec", value: 65 },
-    ],
-    2024: [
-      { label: "Jan", value: 30 },
-      { label: "Feb", value: 50 },
-      { label: "Mar", value: 70 },
-      { label: "Apr", value: 45 },
-      { label: "May", value: 80 },
-      { label: "Jun", value: 55 },
-      { label: "Jul", value: 40 },
-      { label: "Aug", value: 60 },
-      { label: "Sep", value: 75 },
-      { label: "Oct", value: 50 },
-      { label: "Nov", value: 90 },
-      { label: "Dec", value: 45 },
-    ],
-  };
+  // ── API Hooks ─────────────────────────────────────────────────────────────
+  const { data: stats, isLoading: isStatsLoading } =
+    useGetUserStatsQuery(undefined);
+  const { data: engagement, isLoading: isEngagementLoading } =
+    useGetLinkEngagementQuery(selectedYear);
+  const { data: topItemsData, isLoading: isTopItemsLoading } =
+    useGetTopClickedPostsQuery(undefined);
+  const { data: postStatuses, isLoading: isStatusesLoading } =
+    useGetPostStatusesQuery(undefined);
 
-  const years = [2025, 2024, 2023]; // Added 2023 for a better dropdown feel
+  const years = [2026, 2025, 2024];
 
-  // Add mock data for 2023 if selected
-  if (!annualData[2023]) {
-    annualData[2023] = annualData[2024].map((item) => ({
-      ...item,
-      value: Math.floor(Math.random() * 60) + 20,
+  // Process chart data
+  const chartData = React.useMemo(() => {
+    if (!engagement || !Array.isArray(engagement)) return [];
+    return engagement.map((item: any) => ({
+      label: item.month,
+      value: item.clicks,
     }));
-  }
+  }, [engagement]);
 
-  const topItems = [
-    {
-      id: "1",
-      image: "https://picsum.photos/200?random=1",
-      title: "Precision Precision Me..",
-      clicks: 124,
-    },
-    {
-      id: "2",
-      image: "https://picsum.photos/200?random=2",
-      title: "Precision Precision Me..",
-      clicks: 124,
-    },
-    {
-      id: "3",
-      image: "https://picsum.photos/200?random=3",
-      title: "Precision Precision Me..",
-      clicks: 124,
-    },
-  ];
+  const processedStackData = React.useMemo(() => {
+    return chartData.map((item: any) => ({
+      label: item.label,
+      stacks: [
+        {
+          value: item.value,
+          color: "#2B7FFF",
+          marginBottom: 1,
+        },
+        {
+          value: Math.max(5, 20 - item.value), // Placeholder "shadow" effect to maintain height
+          color: "#EFF6FF",
+          borderTopLeftRadius: 4,
+          borderTopRightRadius: 4,
+        },
+      ],
+    }));
+  }, [chartData]);
+
+  const isLoading =
+    isStatsLoading ||
+    isEngagementLoading ||
+    isTopItemsLoading ||
+    isStatusesLoading;
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#2B7FFF" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -203,7 +209,7 @@ const DashboardScreen = () => {
         {/* Link Clicks Stat */}
         <StatCard
           label="LINK CLICKS"
-          value="1786"
+          value={String(stats?.total_link_clicks ?? 0)}
           icon={
             <MaterialCommunityIcons
               name="cursor-default-click"
@@ -215,10 +221,10 @@ const DashboardScreen = () => {
           iconBg="bg-[#EFF6FF]"
         />
 
-        {/* Total Impact Stat */}
+        {/* Total Impact Stat/ or Total Likes */}
         <StatCard
           label="TOTAL IMPACT"
-          value="17786 Likes"
+          value={`${stats?.total_likes ?? 0} Likes`}
           icon={<Ionicons name="heart" size={28} color="#FF4B3A" />}
           iconColor="#FF4B3A"
           iconBg="bg-[#FFF1F0]"
@@ -287,66 +293,41 @@ const DashboardScreen = () => {
           </View>
 
           <View className="items-center justify-center pb-4 pr-4">
-            {(() => {
-              const currentYearData = annualData[selectedYear] || [];
-              const prevYearData =
-                annualData[selectedYear - 1] || annualData[selectedYear] || [];
-
-              const processedStackData = currentYearData.map((item, index) => {
-                const prevValue = prevYearData[index]?.value || item.value;
-                // We show the current value as the main bar.
-                // The "background" effect is achieved by stacking the remainder or a track segment.
-                return {
-                  label: item.label,
-                  stacks: [
-                    {
-                      value: item.value,
-                      color: "#2B7FFF",
-                      marginBottom: 1, // Slight gap for visual separation
-                    },
-                    {
-                      value: Math.max(
-                        10,
-                        prevValue - item.value > 0 ? prevValue - item.value : 15
-                      ),
-                      color: "#EFF6FF", // The "off color" for the background/prev year
-                      borderTopLeftRadius: 4,
-                      borderTopRightRadius: 4,
-                    },
-                  ],
-                };
-              });
-
-              return (
-                <BarChart
-                  stackData={processedStackData}
-                  barWidth={14}
-                  noOfSections={4}
-                  barBorderRadius={4}
-                  yAxisThickness={0.5}
-                  yAxisColor="#F3F4F6"
-                  xAxisThickness={0}
-                  rulesType="dashed"
-                  rulesColor="#F3F4F6"
-                  dashGap={4}
-                  hideYAxisText={false}
-                  yAxisTextStyle={{
-                    fontFamily: "QuickSand-Medium",
-                    fontSize: 10,
-                    color: "#9CA3AF",
-                  }}
-                  spacing={10}
-                  height={140}
-                  xAxisLabelTextStyle={{
-                    fontFamily: "QuickSand-Medium",
-                    fontSize: 9,
-                    color: "#9CA3AF",
-                  }}
-                  isAnimated
-                  animationDuration={800}
-                />
-              );
-            })()}
+            {chartData.length > 0 ? (
+              <BarChart
+                stackData={processedStackData}
+                barWidth={14}
+                noOfSections={4}
+                barBorderRadius={4}
+                yAxisThickness={0.5}
+                yAxisColor="#F3F4F6"
+                xAxisThickness={0}
+                rulesType="dashed"
+                rulesColor="#F3F4F6"
+                dashGap={4}
+                hideYAxisText={false}
+                yAxisTextStyle={{
+                  fontFamily: "QuickSand-Medium",
+                  fontSize: 10,
+                  color: "#9CA3AF",
+                }}
+                spacing={10}
+                height={140}
+                xAxisLabelTextStyle={{
+                  fontFamily: "QuickSand-Medium",
+                  fontSize: 9,
+                  color: "#9CA3AF",
+                }}
+                isAnimated
+                animationDuration={800}
+              />
+            ) : (
+              <View className="h-36 items-center justify-center">
+                <Text className="text-gray-400 text-xs font-quicksand-medium">
+                  No engagement data found for this year.
+                </Text>
+              </View>
+            )}
           </View>
         </View>
 
@@ -358,15 +339,27 @@ const DashboardScreen = () => {
           >
             TOP CLICK ITEM
           </Text>
-          {topItems.map((item, index) => (
-            <TopItemRow
-              key={item.id}
-              image={item.image}
-              title={item.title}
-              clicks={item.clicks}
-              isLast={index === topItems.length - 1}
-            />
-          ))}
+          {topItemsData && topItemsData.length > 0 ? (
+            topItemsData.map((item: any, index: number) => (
+              <TopItemRow
+                key={item.id}
+                image={
+                  item.amazon_product_image_url ||
+                  (item.images && item.images[0]?.image) ||
+                  "https://picsum.photos/200"
+                }
+                title={item.amazon_product_name || item.content || "Untitled"}
+                clicks={item.link_clicks}
+                isLast={index === topItemsData.length - 1}
+              />
+            ))
+          ) : (
+            <View className="px-2 py-4">
+              <Text className="text-gray-400 text-xs font-quicksand-medium">
+                No top clicked items yet.
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* Submission Pulse */}
@@ -377,9 +370,21 @@ const DashboardScreen = () => {
           >
             SUBMISSION PULSE
           </Text>
-          <SubmissionRow label="Approved" value={10} color="bg-[#10B981]" />
-          <SubmissionRow label="Pending" value={10} color="bg-[#F59E0B]" />
-          <SubmissionRow label="Reject" value={0} color="bg-[#EF4444]" />
+          <SubmissionRow
+            label="Approved"
+            value={postStatuses?.approved ?? 0}
+            color="bg-[#10B981]"
+          />
+          <SubmissionRow
+            label="Pending"
+            value={postStatuses?.pending ?? 0}
+            color="bg-[#F59E0B]"
+          />
+          <SubmissionRow
+            label="Reject"
+            value={postStatuses?.rejected ?? 0}
+            color="bg-[#EF4444]"
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
