@@ -11,6 +11,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useLoginMutation } from "@/redux/features/auth/authApi";
 import { setCredentials } from "@/redux/features/auth/authSlice";
 import { useAppDispatch } from "@/redux/hooks";
+import { persistor } from "@/redux/store";
 
 const SignIn = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -21,7 +22,6 @@ const SignIn = () => {
   const [login] = useLoginMutation();
   const dispatch = useAppDispatch();
 
-  // Best Practice: Memoize the submit function
   const submit = useCallback(async () => {
     const { email, password } = form;
 
@@ -32,7 +32,7 @@ const SignIn = () => {
       );
     }
 
-    Keyboard.dismiss(); // Best Practice: Dismiss keyboard on submit
+    Keyboard.dismiss();
     setIsSubmitting(true);
 
     try {
@@ -50,6 +50,13 @@ const SignIn = () => {
             device_token: response.data.device_token || "",
           }),
         );
+
+        // Remember Me OFF → purge SecureStore so credentials are not saved.
+        // User stays logged in this session only; next launch goes to sign-in.
+        if (!rememberMe) {
+          await persistor.purge();
+        }
+
         router.replace("/(drawer)/(tabs)");
       } else if (response?.error) {
         const errorData = response.error?.data;
@@ -65,13 +72,12 @@ const SignIn = () => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [form, login, dispatch]);
+  }, [form, login, dispatch, rememberMe]);
 
   return (
     <SafeAreaView className="flex-1 bg-[#FFFFFF]" edges={["top"]}>
       <KeyboardAwareScrollView
         className="flex-1"
-        // FIX: Added 'grow' to allow centering
         contentContainerClassName="grow justify-center items-center px-5 py-10"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
