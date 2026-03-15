@@ -88,6 +88,15 @@ const postApi = baseApi.injectEndpoints({
       invalidatesTags: ["SavedPosts"],
     }),
 
+    // Get wishlist posts
+    getWishlistPosts: builder.query({
+      query: () => ({
+        url: "social/post/wishlist/",
+        method: "GET",
+      }),
+      providesTags: ["SavedPosts"],
+    }),
+
     // Get recommended posts
     getRecommendedPosts: builder.query({
       query: () => ({
@@ -169,4 +178,5 @@ export const {
   useGetUserPostsQuery,
   useUpdatePostMutation,
   useDeletePostMutation,
+  useGetWishlistPostsQuery,
 } = postApi;

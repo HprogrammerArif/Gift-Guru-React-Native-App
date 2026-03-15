@@ -1,91 +1,100 @@
 import SocialPost from "@/components/home/SocialPost";
-import { POSTS_DATA } from "@/constants";
+import { useGetWishlistPostsQuery } from "@/redux/features/posts/postApi";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React from "react";
-import { FlatList, Platform, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+// The API wraps each saved post: { id, user, post: ApiPost, created_at }
+type WishlistItem = {
+  id: number;
+  user: any;
+  post: any;
+  created_at: string;
+};
+
 export default function MyWishListScreen() {
-  const wishListData = React.useMemo(
-    () => POSTS_DATA.filter((item) => item.isBookmarked),
-    []
+  const { data, isLoading, isFetching, refetch } =
+    useGetWishlistPostsQuery(undefined);
+
+  // Each item in the response has a nested `post` — extract it for SocialPost
+  const wishListData: WishlistItem[] = React.useMemo(
+    () => (Array.isArray(data) ? data : []),
+    [data],
   );
 
   const renderItem = React.useCallback(
-    ({ item }: { item: (typeof POSTS_DATA)[0] }) => (
+    ({ item }: { item: WishlistItem }) => (
       <View className="mb-2 border-b border-gray-50">
-        <SocialPost
-          user={item.user}
-          title={item.title}
-          description={item.description}
-          postImage={item.postImage}
-          likes={item.likes}
-          comments={item.comments}
-          isMyPost={item.isMyPost}
-          isLiked={item.isLiked}
-          isBookmarked={item.isBookmarked}
-        />
+        <SocialPost post={item.post} isMyPost={false} />
       </View>
     ),
-    []
+    [],
   );
 
-  // Smoothness optimization: Pre-calculating layouts prevents the list from jumping
-  // as items are discovered during scrolling.
-  const getItemLayout = React.useCallback(
-    (_: any, index: number) => ({
-      length: 520, // Estimated base height of a SocialPost
-      offset: 520 * index,
-      index,
-    }),
-    []
+  const keyExtractor = React.useCallback(
+    (item: WishlistItem) => String(item.id),
+    [],
   );
+
+  // ── Loading state ─────────────────────────────────────────────────────────
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+        <Header />
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#FF4B3A" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
-      {/* Header */}
-      <View className="flex-row items-center justify-between px-5 h-16 border-b border-gray-50 bg-white">
-        <TouchableOpacity
-          onPress={() => router.back()}
-          className="w-10 h-10 items-center justify-center -ml-2"
-        >
-          <Ionicons name="chevron-back" size={22} color="#1F2937" />
-        </TouchableOpacity>
-        <Text
-          style={{ fontFamily: "QuickSand-Bold" }}
-          className="text-xl text-[#1F2937]"
-        >
-          My Wish List
-        </Text>
-        <View className="w-10" />
-      </View>
+      <Header />
 
-      {/* Main Content List */}
       <FlatList
         data={wishListData}
-        keyExtractor={(item) => item.id}
+        keyExtractor={keyExtractor}
         renderItem={renderItem}
-        getItemLayout={getItemLayout}
         contentContainerStyle={{
           paddingHorizontal: 16,
           paddingVertical: 10,
           paddingBottom: 40,
-          flexGrow: 1, // Ensures empty component centers correctly
+          flexGrow: 1,
         }}
         showsVerticalScrollIndicator={false}
+        // ── Performance props ─────────────────────────────────────────────
         initialNumToRender={4}
         maxToRenderPerBatch={4}
-        windowSize={7} // Reduced from 21 (default) to 7 for better memory/transition balance
-        removeClippedSubviews={Platform.OS === "android"} // Significant performance gain on Android
+        windowSize={7}
+        removeClippedSubviews={Platform.OS === "android"}
+        // ── Pull-to-refresh ───────────────────────────────────────────────
+        onRefresh={refetch}
+        refreshing={isFetching && !isLoading}
+        // ── Empty state ───────────────────────────────────────────────────
         ListEmptyComponent={
           <View className="flex-1 items-center justify-center py-20">
             <Ionicons name="bookmark-outline" size={64} color="#E5E7EB" />
             <Text
               style={{ fontFamily: "QuickSand-Medium" }}
-              className="text-gray-400 mt-4 text-lg"
+              className="text-gray-400 mt-4 text-lg text-center"
             >
               No items in your wish list yet.
+            </Text>
+            <Text
+              style={{ fontFamily: "QuickSand-Regular" }}
+              className="text-gray-300 text-sm mt-1 text-center"
+            >
+              Save posts to see them here.
             </Text>
           </View>
         }
@@ -93,3 +102,22 @@ export default function MyWishListScreen() {
     </SafeAreaView>
   );
 }
+
+// ── Extracted header to avoid re-render cost ──────────────────────────────────
+const Header = React.memo(() => (
+  <View className="flex-row items-center justify-between px-5 h-16 border-b border-gray-50 bg-white">
+    <TouchableOpacity
+      onPress={() => router.back()}
+      className="w-10 h-10 items-center justify-center -ml-2"
+    >
+      <Ionicons name="chevron-back" size={22} color="#1F2937" />
+    </TouchableOpacity>
+    <Text
+      style={{ fontFamily: "QuickSand-Bold" }}
+      className="text-xl text-[#1F2937]"
+    >
+      My Wish List
+    </Text>
+    <View className="w-10" />
+  </View>
+));

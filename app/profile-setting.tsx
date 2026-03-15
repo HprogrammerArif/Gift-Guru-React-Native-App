@@ -2,13 +2,28 @@ import CustomInput from "@/components/CustomInput";
 import CustomInputModified from "@/components/CustomInputModified";
 import { GradientButton } from "@/components/GradientButton";
 import RolePicker from "@/components/RolePicker";
+import { API_IMAGE_URL } from "@/redux/api/baseApi";
+import {
+  useGetUserProfileQuery,
+  useUpdateUserProfileMutation,
+} from "@/redux/features/profileService/profileApi";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { Ionicons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { Image, Text, TextInput, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 const countries = [
   {
@@ -25,21 +40,49 @@ const ProfileSettingScreen = () => {
   const router = useRouter();
   const { showActionSheetWithOptions } = useActionSheet();
 
-  const [selectedCountry, setSelectedCountry] = useState(countries[1]); // Default to US to match your image
-  const [form, setForm] = useState({
-    firstName: "Buffalo",
-    lastName: "College",
-    phone: "7975 777666",
-    email: "buffalo@gmail.com",
-    gender: "Male" as "Male" | "Female" | "",
-  });
+  // ─── API ────────────────────────────────────────────────────────────────────
+  const { data: profile, isLoading: profileLoading } =
+    useGetUserProfileQuery(undefined);
+  const [updateUserProfile] = useUpdateUserProfileMutation();
 
+  // ─── Local state ────────────────────────────────────────────────────────────
+  const [selectedCountry, setSelectedCountry] = useState(countries[1]);
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    gender: "" as "Male" | "Female" | "",
+  });
+  const [localImage, setLocalImage] = useState<string | null>(null); // newly picked URI
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // ─── Pre-fill form from API ──────────────────────────────────────────────────
+  useEffect(() => {
+    if (profile) {
+      setForm({
+        firstName: profile.first_name ?? "",
+        lastName: profile.last_name ?? "",
+        phone: profile.phone ?? "",
+        email: profile.email ?? "",
+        gender: (profile.gender as "Male" | "Female" | "") ?? "",
+      });
+    }
+  }, [profile]);
+
+  // ─── Displayed avatar ───────────────────────────────────────────────────────
+  const avatarUri = localImage
+    ? localImage
+    : profile?.image
+      ? profile.image.startsWith("http")
+        ? profile.image
+        : `${API_IMAGE_URL}${profile.image}`
+      : null;
+
+  // ─── Country picker ─────────────────────────────────────────────────────────
   const handleCountryPress = () => {
     const options = countries.map((c) => `${c.name} (${c.code})`);
     options.push("Cancel");
-
     showActionSheetWithOptions(
       {
         options,
@@ -50,22 +93,97 @@ const ProfileSettingScreen = () => {
         if (selectedIndex !== undefined && selectedIndex < countries.length) {
           setSelectedCountry(countries[selectedIndex]);
         }
-      }
+      },
     );
   };
 
-  const handleUpdate = async () => {
-    setIsSubmitting(true);
-    // Simulate API call
-    console.log("Updating with:", {
-      ...form,
-      phone: `${selectedCountry.code} ${form.phone}`,
-    });
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    router.back();
+  // ─── Image picker ────────────────────────────────────────────────────────────
+  const handlePickImage = () => {
+    showActionSheetWithOptions(
+      {
+        options: ["Take Photo", "Choose from Library", "Cancel"],
+        cancelButtonIndex: 2,
+        title: "Change Profile Photo",
+      },
+      async (index?: number) => {
+        if (index === 0) {
+          const { status } = await ImagePicker.requestCameraPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert("Permission needed", "Camera access is required.");
+            return;
+          }
+          const result = await ImagePicker.launchCameraAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.7,
+          });
+          if (!result.canceled) setLocalImage(result.assets[0].uri);
+        } else if (index === 1) {
+          const { status } =
+            await ImagePicker.requestMediaLibraryPermissionsAsync();
+          if (status !== "granted") {
+            Alert.alert(
+              "Permission needed",
+              "Photo library access is required.",
+            );
+            return;
+          }
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.7,
+          });
+          if (!result.canceled) setLocalImage(result.assets[0].uri);
+        }
+      },
+    );
   };
 
+  // ─── Submit ──────────────────────────────────────────────────────────────────
+  const handleUpdate = async () => {
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+
+      // ── Only these 4 keys go to PUT auth/profile/ ──
+      formData.append("first_name", form.firstName);
+      formData.append("last_name", form.lastName);
+      formData.append("phone", form.phone);
+      formData.append("gender", form.gender);
+
+      // Image is optional — only append when the user picked a new one
+      if (localImage) {
+        const filename = localImage.split("/").pop() ?? "photo.jpg";
+        const match = /\.(\w+)$/.exec(filename);
+        const type = match ? `image/${match[1]}` : "image/jpeg";
+        formData.append("image", {
+          uri: localImage,
+          name: filename,
+          type,
+        } as any);
+      }
+
+      const res: any = await updateUserProfile(formData);
+      if (res?.data) {
+        Toast.show({ type: "success", text1: "Profile updated successfully!" });
+        router.back();
+      } else {
+        const msg =
+          res?.error?.data?.detail ||
+          res?.error?.data?.message ||
+          "Update failed. Please try again.";
+        Alert.alert("Error", msg);
+      }
+    } catch (e: any) {
+      Alert.alert("Error", e.message || "Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // ─── Render ──────────────────────────────────────────────────────────────────
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
       {/* Header */}
@@ -94,6 +212,32 @@ const ProfileSettingScreen = () => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        {/* ── Profile Photo ── */}
+        <View className="items-center mb-8">
+          <TouchableOpacity onPress={handlePickImage} activeOpacity={0.8}>
+            <View style={styles.avatarWrapper}>
+              {avatarUri ? (
+                <Image
+                  source={{ uri: avatarUri }}
+                  style={styles.avatarImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.avatarPlaceholder}>
+                  <Ionicons name="person" size={40} color="#9CA3AF" />
+                </View>
+              )}
+              {/* Edit badge */}
+              <View style={styles.editBadge}>
+                <Ionicons name="camera" size={14} color="#fff" />
+              </View>
+            </View>
+          </TouchableOpacity>
+          <Text className="mt-3 text-sm text-gray-400">
+            Tap to change photo
+          </Text>
+        </View>
+
         {/* First & Last Name */}
         <View className="flex-row gap-4 mb-5">
           <CustomInputModified
@@ -112,7 +256,7 @@ const ProfileSettingScreen = () => {
           />
         </View>
 
-        {/* Dynamic Phone Number */}
+        {/* Phone */}
         <View className="mb-5">
           <Text className="label">Phone</Text>
           <View className="flex-row items-center border border-gray-300 rounded-xl px-4 h-[52px] bg-white">
@@ -169,8 +313,11 @@ const ProfileSettingScreen = () => {
           />
         </View>
 
-        {/* Change Password Link */}
-        <TouchableOpacity onPress={() => router.push("/change-password")} className="mb-8">
+        {/* Change Password */}
+        <TouchableOpacity
+          onPress={() => router.push("/change-password")}
+          className="mb-8"
+        >
           <Text className="text-[#2B7FFF] text-lg font-quicksand-bold underline">
             Change password
           </Text>
@@ -181,12 +328,46 @@ const ProfileSettingScreen = () => {
           <GradientButton
             title="Update profile"
             onPress={handleUpdate}
-            isLoading={isSubmitting}
+            isLoading={isSubmitting || profileLoading}
           />
         </View>
       </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 };
+
+const styles = StyleSheet.create({
+  avatarWrapper: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    overflow: "hidden",
+    position: "relative",
+    backgroundColor: "#F3F4F6",
+    borderWidth: 2,
+    borderColor: "rgba(255, 75, 58, 0.15)",
+  },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 50,
+  },
+  avatarPlaceholder: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  editBadge: {
+    position: "absolute",
+    bottom: 4,
+    right: 4,
+    backgroundColor: "#2B7FFF",
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+});
 
 export default ProfileSettingScreen;
