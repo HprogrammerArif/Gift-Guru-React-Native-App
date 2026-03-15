@@ -155,6 +155,7 @@ export const baseApi = createApi({
     "Milestones",
     "NotificationPreferences",
     "NotificationHistory",
+    "NotificationCount",
     "HomeScreenSentimentGraph",
     "LegalAndPrivacyPolicy",
     "Posts",

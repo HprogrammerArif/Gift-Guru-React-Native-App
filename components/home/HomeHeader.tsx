@@ -1,10 +1,12 @@
 import { RECOMMENDED_DATA } from "@/constants";
+import { useGetUnreadCountQuery } from "@/redux/features/notifications/notificationApi";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   FlatList,
+  Text,
   TextInput,
   TouchableOpacity,
   View,
@@ -29,11 +31,14 @@ const HomeHeader = ({
   const flatListRef = useRef<FlatList>(null);
   const CARD_WIDTH = width / 3;
 
+  const { data: countData } = useGetUnreadCountQuery();
+  const unreadCount = countData?.unread_count || 0;
+
   // Create a large dataset for "infinite" scrolling simulation
   // This is a common high-performance pattern for React Native carousels
   const infiniteData = React.useMemo(
     () => Array.from({ length: 1000 }).flatMap(() => RECOMMENDED_DATA),
-    []
+    [],
   );
 
   useEffect(() => {
@@ -91,7 +96,18 @@ const HomeHeader = ({
         >
           <View className="relative">
             <Ionicons name="notifications-outline" size={28} color="white" />
-            <View className="absolute top-0 right-0 w-3 h-3 bg-yellow-400 rounded-full border-2 border-[#FF4B3A]" />
+            {unreadCount > 0 && (
+              <View
+                className="absolute -top-1 -right-1 bg-yellow-400 rounded-full border-2 border-[#FF4B3A] items-center justify-center min-w-[18px] h-[18px] px-1"
+                style={{ zIndex: 10 }}
+              >
+                <Text
+                  style={{ color: "#FF4B3A", fontSize: 10, fontWeight: "bold" }}
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Text>
+              </View>
+            )}
           </View>
         </TouchableOpacity>
       </View>
