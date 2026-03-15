@@ -1,10 +1,7 @@
 // src/api/baseApi.ts
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import Toast from "react-native-toast-message"; // or your toast library
-import {
-    logout,
-    updateToken
-} from "../features/auth/authSlice";
+import { logout, updateToken } from "../features/auth/authSlice";
 import { RootState } from "../store";
 
 export const API_IMAGE_URL = "https://intensely-optimal-unicorn.ngrok-free.app";
@@ -168,6 +165,7 @@ export const baseApi = createApi({
     "SavedPosts",
     "Likes",
     "Wishlists",
+    "Subscription",
   ],
   endpoints: () => ({}),
 });

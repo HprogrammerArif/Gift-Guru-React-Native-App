@@ -1,7 +1,12 @@
+import {
+  useGetMySubscriptionQuery,
+  useGetSubscriptionPlansQuery,
+} from "@/redux/features/subscription/subscriptionApi";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   LayoutAnimation,
   Platform,
   ScrollView,
@@ -69,6 +74,12 @@ const FAQItem = ({
 const MembershipScreen = () => {
   const router = useRouter();
 
+  // ── API Hooks ─────────────────────────────────────────────────────────────
+  const { data: plans, isLoading: isPlansLoading } =
+    useGetSubscriptionPlansQuery(undefined);
+  const { data: mySubscription, isLoading: isMySubLoading } =
+    useGetMySubscriptionQuery(undefined);
+
   const faqData = [
     {
       question: "How does the Free plan work?",
@@ -107,13 +118,17 @@ const MembershipScreen = () => {
     },
   ];
 
-  const features = [
-    "Add unlimited Amazon product links",
-    "Use your own Amazon affiliate ID",
-    "Automatic affiliate tag replacement",
-    "Manage affiliate ID from account settings",
-    "Priority support",
-  ];
+  const isLoading = isPlansLoading || isMySubLoading;
+
+  if (isLoading) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#2B7FFF" />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -129,7 +144,7 @@ const MembershipScreen = () => {
           style={{ fontFamily: "QuickSand-Bold" }}
           className="text-xl text-[#1F2937]"
         >
-          Dashboard
+          Membership
         </Text>
         <View className="w-10" />
       </View>
@@ -138,66 +153,116 @@ const MembershipScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
       >
-        {/* Pro Card */}
-        <View
-          style={{
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.05,
-            shadowRadius: 10,
-            elevation: 3,
-          }}
-          className="bg-white rounded-2xl border border-[#BFDBFE] p-6 mb-10"
-        >
-          <Text
-            style={{ fontFamily: "QuickSand-Bold" }}
-            className="text-md text-[#1F2937] font-bold mb-3 tracking-[2px]"
-          >
-            PRO
-          </Text>
-          <View className="flex-row items-baseline mb-10">
-            <Text
-              style={{ fontFamily: "QuickSand-Bold" }}
-              className="text-4xl text-[#1F2937]"
-            >
-              $19.99
-            </Text>
-            <Text
-              style={{ fontFamily: "QuickSand-Medium" }}
-              className="text-gray-400 text-lg ml-1"
-            >
-              /month
-            </Text>
-          </View>
+        {/* Render Plans Dynamically */}
+        {plans?.map((plan: any) => {
+          const isCurrentPlan = mySubscription?.plan?.id === plan.id;
+          const isPro = plan.slug === "pro";
 
-          <View className="space-y-4 mb-6">
-            {features.map((feature, index) => (
-              <View key={index} className="flex-row items-center mb-5">
-                <View className="w-6 h-6 rounded-full bg-[#2B7FFF] items-center justify-center mr-4">
-                  <Ionicons name="checkmark" size={14} color="white" />
-                </View>
+          return (
+            <View
+              key={plan.id}
+              style={{
+                shadowColor: "#000",
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.05,
+                shadowRadius: 10,
+                elevation: 3,
+              }}
+              className={`bg-white rounded-2xl border ${isCurrentPlan ? "border-[#2B7FFF]" : "border-gray-100"} p-6 mb-8`}
+            >
+              <View className="flex-row justify-between items-start mb-3">
+                <Text
+                  style={{ fontFamily: "QuickSand-Bold" }}
+                  className="text-md text-[#1F2937] font-bold tracking-[2px] uppercase"
+                >
+                  {plan.name}
+                </Text>
+                {isCurrentPlan && (
+                  <View className="bg-[#EBF4FF] px-3 py-1 rounded-full">
+                    <Text
+                      style={{ fontFamily: "QuickSand-Bold" }}
+                      className="text-[#2B7FFF] text-[10px] uppercase"
+                    >
+                      Current Plan
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              <View className="flex-row items-baseline mb-8">
+                <Text
+                  style={{ fontFamily: "QuickSand-Bold" }}
+                  className="text-4xl text-[#1F2937]"
+                >
+                  ${plan.price}
+                </Text>
                 <Text
                   style={{ fontFamily: "QuickSand-Medium" }}
-                  className="text-[#4B5563] text-[15px]"
+                  className="text-gray-400 text-lg ml-1"
                 >
-                  {feature}
+                  /{plan.duration_days === 30 ? "month" : "one-time"}
                 </Text>
               </View>
-            ))}
-          </View>
 
-          <TouchableOpacity
-            activeOpacity={0.8}
-            className="w-full bg-[#2B7FFF] py-4 rounded-2xl items-center shadow-md"
-          >
+              <View className="space-y-4 mb-6">
+                {plan.features?.map((feature: string, idx: number) => (
+                  <View key={idx} className="flex-row items-center mb-4">
+                    <View className="w-5 h-5 rounded-full bg-[#2B7FFF]/10 items-center justify-center mr-3">
+                      <Ionicons name="checkmark" size={12} color="#2B7FFF" />
+                    </View>
+                    <Text
+                      style={{ fontFamily: "QuickSand-Medium" }}
+                      className="text-[#4B5563] text-[14px] flex-1"
+                    >
+                      {feature}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+
+              {!isCurrentPlan && (
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  className={`w-full ${isPro ? "bg-[#2B7FFF]" : "bg-gray-800"} py-4 rounded-2xl items-center shadow-md`}
+                >
+                  <Text className="text-white text-md uppercase tracking-[1px] font-bold">
+                    {isPro ? "Upgrade to Pro" : "Get Started"}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          );
+        })}
+
+        {/* Current Subscription Detail (if active) */}
+        {mySubscription && (
+          <View className="bg-gray-50 rounded-2xl p-5 mb-10 border border-gray-100">
             <Text
-              
-              className="text-white text-md uppercase tracking-[1px] font-bold"
+              style={{ fontFamily: "QuickSand-Bold" }}
+              className="text-[#1F2937] text-sm mb-3"
             >
-              Upgrade to Pro
+              Subscription Details
             </Text>
-          </TouchableOpacity>
-        </View>
+            <View className="flex-row justify-between mb-2">
+              <Text className="text-gray-500 text-xs">Status</Text>
+              <Text className="text-green-600 text-xs font-bold uppercase">
+                {mySubscription.status}
+              </Text>
+            </View>
+            <View className="flex-row justify-between mb-2">
+              <Text className="text-gray-500 text-xs">Remaining Days</Text>
+              <Text className="text-[#1F2937] text-xs font-bold">
+                {mySubscription.days_remaining} days
+              </Text>
+            </View>
+            <View className="flex-row justify-between">
+              <Text className="text-gray-500 text-xs">Renews on</Text>
+              <Text className="text-[#1F2937] text-xs font-bold">
+                {new Date(mySubscription.end_date).toLocaleDateString()}
+              </Text>
+            </View>
+          </View>
+        )}
 
         {/* FAQ Section */}
         <View className="px-2">
