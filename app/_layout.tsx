@@ -1,6 +1,8 @@
 import SplashScreenView from "@/components/SplashScreen";
 import { selectCurrentToken } from "@/redux/features/auth/authSlice";
-import { useAppSelector } from "@/redux/hooks";
+import { setPremiumStatus } from "@/redux/features/revenuecat/revenuecatSlice";
+import { useAppDispatch, useAppSelector } from "@/redux/hooks";
+import { addCustomerInfoListener, initializeRevenueCat } from "@/utils/revenuecat";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { useFonts } from "expo-font";
 import { useKeepAwake } from "expo-keep-awake";
@@ -93,6 +95,8 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
   useKeepAwake();
+  const dispatch = useAppDispatch();
+  const token = useAppSelector(selectCurrentToken);
   const [appIsReady, setAppIsReady] = useState(false);
 
   const [fontsLoaded, error] = useFonts({
@@ -102,6 +106,29 @@ export default function RootLayout() {
     "QuickSand-SemiBold": require("../assets/fonts/Quicksand-SemiBold.ttf"),
     "QuickSand-Light": require("../assets/fonts/Quicksand-Light.ttf"),
   });
+
+  // ── RevenueCat: initialize and listen for subscription changes ──
+  useEffect(() => {
+    // Initialize RevenueCat with the user's ID (if logged in)
+    // This links purchases to your user account
+    initializeRevenueCat(token ? String(token) : undefined).catch(console.error);
+
+    // Listen for real-time updates (renewals, expiry, etc.)
+    const removeListener = addCustomerInfoListener((customerInfo) => {
+      const premiumEntitlement = customerInfo.entitlements.active['premium'];
+      dispatch(
+        setPremiumStatus({
+          isPremium: premiumEntitlement !== undefined,
+          entitlementId: premiumEntitlement?.identifier ?? null,
+          expirationDate: premiumEntitlement?.expirationDate ?? null,
+        })
+      );
+    });
+
+    return () => {
+      removeListener();
+    };
+  }, [token]);
 
   useEffect(() => {
     if (error) throw error;

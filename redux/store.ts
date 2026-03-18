@@ -1,6 +1,7 @@
 // src/app/redux/store.ts
 import { configureStore, combineReducers } from "@reduxjs/toolkit";
 import authReducer from "./features/auth/authSlice";
+import revenuecatReducer from "./features/revenuecat/revenuecatSlice";
 import childReducer from "./features/child/childSlice";
 import {
   persistReducer,
@@ -19,6 +20,7 @@ import { baseApi } from "./api/baseApi";
 const rootReducer = combineReducers({
   auth: authReducer,
   child: childReducer,
+  revenuecat: revenuecatReducer,
   [baseApi.reducerPath]: baseApi.reducer,
 });
 
@@ -27,7 +29,7 @@ const persistConfig = {
   key: "root",
   version: 1,
   storage: secureStorage, // Use SecureStore
-  whitelist: ["auth", "child"], // Persist only auth and child states, not the API cache
+  whitelist: ["auth", "child", "revenuecat"], // Persist auth, child, and premium status
   keyPrefix: "persist_", // Use underscore instead of colon for SecureStore compatibility
 };
 
