@@ -70,6 +70,8 @@ export default function Home() {
     refetch,
   } = useGetPostsQuery({ page: 1, page_size: 20 });
 
+  
+
   const posts: ApiPost[] = useMemo(
     () =>
       Array.isArray(postsData)
@@ -82,6 +84,8 @@ export default function Home() {
     ({ item }: { item: ApiPost }) => <PostItem item={item} />,
     [],
   );
+
+  console.log({posts})
 
   const keyExtractor = useCallback((item: ApiPost) => String(item.id), []);
 
