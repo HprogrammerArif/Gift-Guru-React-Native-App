@@ -93,7 +93,8 @@ if (__DEV__) {
 // Prevent the splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
-export default function RootLayout() {
+// Inner component — can safely use Redux hooks because <Provider> is above it
+function AppLayout() {
   useKeepAwake();
   const dispatch = useAppDispatch();
   const token = useAppSelector(selectCurrentToken);
@@ -109,11 +110,8 @@ export default function RootLayout() {
 
   // ── RevenueCat: initialize and listen for subscription changes ──
   useEffect(() => {
-    // Initialize RevenueCat with the user's ID (if logged in)
-    // This links purchases to your user account
     initializeRevenueCat(token ? String(token) : undefined).catch(console.error);
 
-    // Listen for real-time updates (renewals, expiry, etc.)
     const removeListener = addCustomerInfoListener((customerInfo) => {
       const premiumEntitlement = customerInfo.entitlements.active['premium'];
       dispatch(
@@ -138,9 +136,7 @@ export default function RootLayout() {
     async function prepare() {
       try {
         if (fontsLoaded) {
-          // reveal custom splash
           await SplashScreen.hideAsync();
-          // Give it that "premium" delay
           await new Promise((resolve) => setTimeout(resolve, 2000));
           setAppIsReady(true);
         }
@@ -156,38 +152,35 @@ export default function RootLayout() {
   }
 
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ActionSheetProvider>
+        <AuthGuard>
+          <KeyboardProvider statusBarTranslucent={true}>
+            <StatusBar style="dark" />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: "white" },
+                animation: "fade_from_bottom",
+              }}
+            >
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
+            </Stack>
+            <Toast config={toastConfig} />
+          </KeyboardProvider>
+        </AuthGuard>
+      </ActionSheetProvider>
+    </GestureHandlerRootView>
+  );
+}
+
+// Outer component — only provides the Redux store & persistence layer
+export default function RootLayout() {
+  return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <ActionSheetProvider>
-            {/* 2. statusBarTranslucent={true} makes keyboard animations perfect on Android */}
-            <AuthGuard>
-              <KeyboardProvider statusBarTranslucent={true}>
-                {/* 3. Explicitly set your global status bar style */}
-                <StatusBar style="dark" />
-
-                <Stack
-                  screenOptions={{
-                    headerShown: false,
-                    contentStyle: { backgroundColor: "white" },
-                    // Enable native stack animations
-                    animation: "fade_from_bottom",
-                  }}
-                >
-                  <Stack.Screen
-                    name="(auth)"
-                    options={{ headerShown: false }}
-                  />
-                  <Stack.Screen
-                    name="(drawer)"
-                    options={{ headerShown: false }}
-                  />
-                </Stack>
-                <Toast config={toastConfig} />
-              </KeyboardProvider>
-            </AuthGuard>
-          </ActionSheetProvider>
-        </GestureHandlerRootView>
+        <AppLayout />
       </PersistGate>
     </Provider>
   );
