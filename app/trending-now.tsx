@@ -1,5 +1,6 @@
 import { PostSkeletonList } from "@/components/home/PostSkeleton";
 import SocialPost, { ApiPost } from "@/components/home/SocialPost";
+import { useGetUnreadCountQuery } from "@/redux/features/notifications/notificationApi";
 import { useGetTrendingPostsQuery } from "@/redux/features/posts/postApi";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -29,6 +30,9 @@ export default function TrendingNowScreen() {
   const [isReady, setIsReady] = useState(false);
   const { data, isLoading, isFetching, refetch } =
     useGetTrendingPostsQuery(undefined);
+
+      const { data: countData } = useGetUnreadCountQuery();
+      const unreadCount = countData?.unread_count || 0;
 
   useEffect(() => {
     const task = InteractionManager.runAfterInteractions(() => {
@@ -115,7 +119,14 @@ export default function TrendingNowScreen() {
           onPress={() => router.push("/notifications")}
           className="p-1"
         >
-          <Ionicons name="notifications-outline" size={24} color="#111827" />
+          <Ionicons name="notifications-outline" size={28} color="#111827" />
+          {unreadCount > 0 && (
+            <View className="absolute top-0 right-0 bg-red-500 rounded-full  w-5 h-5 items-center justify-center border-2 border-white">
+              <Text className="text-white text-[10px] font-bold ">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </Text>
+            </View>
+          )}
         </TouchableOpacity>
       </View>
 
