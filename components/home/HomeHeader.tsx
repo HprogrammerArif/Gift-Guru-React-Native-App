@@ -71,22 +71,17 @@ const HomeHeader = ({
         </TouchableOpacity>
 
         <View className="flex-1">
-          <View className="relative">
-            <TextInput
-              autoCapitalize="none"
-              autoCorrect={false}
-              value={value}
-              onChangeText={onSearch}
-              placeholder="Search products..."
-              placeholderTextColor="#9CA3AF"
-              className="bg-white rounded-full px-5 py-3 text-base text-black pr-12 shadow-sm"
-              style={{ height: 44 }}
-            />
-
-            <View className="absolute right-4 top-0 bottom-0 justify-center">
-              <Ionicons name="search-outline" size={20} color="#9CA3AF" />
-            </View>
-          </View>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={() => router.push("/search-with-filter")}
+            className="flex-row items-center bg-white rounded-full px-5 shadow-sm"
+            style={{ height: 44 }}
+          >
+            <Text className="flex-1 text-base text-[#9CA3AF]">
+              Search products...
+            </Text>
+            <Ionicons name="search-outline" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
         </View>
 
         {/* Notification Icon */}
