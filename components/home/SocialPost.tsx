@@ -75,49 +75,6 @@ function formatDate(iso: string): string {
   return date.toLocaleDateString("en-GB");
 }
 
-// --- Single Comment Row (matches web design) ---
-const CommentItem = ({
-  comment,
-  isLast,
-}: {
-  comment: ApiComment;
-  isLast: boolean;
-}) => {
-  const name =
-    `${comment.user?.first_name || ""} ${comment.user?.last_name || ""}`.trim() ||
-    comment.user?.username ||
-    "User";
-
-  // Short date: "Mar 5"
-  const shortDate = new Date(comment.created_at).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-
-  return (
-    <View>
-      <View className="flex-row items-start gap-3 py-3">
-        {/* Avatar icon */}
-        <View className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center shrink-0 mt-0.5">
-          <Ionicons name="person" size={16} color="#9CA3AF" />
-        </View>
-
-        {/* Name + date + content */}
-        <View className="flex-1">
-          <View className="flex-row items-center gap-2 mb-0.5">
-            <Text className="text-sm font-bold text-gray-900">{name}</Text>
-            <Text className="text-xs text-gray-400">{shortDate}</Text>
-          </View>
-          <Text className="text-sm text-gray-700 leading-5">
-            {comment.content}
-          </Text>
-        </View>
-      </View>
-      {/* Divider between comments, not after last */}
-      {!isLast && <View className="h-px bg-gray-300 ml-11" />}
-    </View>
-  );
-};
 
 // --- Main SocialPost ---
 const SocialPost = ({ post, isMyPost }: SocialPostProps) => {

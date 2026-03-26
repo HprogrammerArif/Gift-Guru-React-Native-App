@@ -42,6 +42,16 @@ const postApi = baseApi.injectEndpoints({
       providesTags: ["Posts"],
     }),
 
+    // Search posts with filters
+    searchPosts: builder.query({
+      query: (params?: { query?: string; occasion?: string; category?: string; target?: string; page?: number; page_size?: number }) => ({
+        url: "social/posts/search/",
+        method: "GET",
+        params,
+      }),
+      providesTags: ["Posts"],
+    }),
+
     // Like post
     likePost: builder.mutation({
       query: (postId: string | number) => ({
@@ -200,6 +210,7 @@ export const {
   useGetCategoriesQuery,
   useGetOccasionsQuery,
   useGetPostsQuery,
+  useSearchPostsQuery,
   useLikePostMutation,
   useSubmitCommentMutation,
   useGetCommentsQuery,
