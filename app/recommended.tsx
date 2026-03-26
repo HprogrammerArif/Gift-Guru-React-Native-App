@@ -99,16 +99,20 @@ export default function RecommendedScreen() {
           <Ionicons name="chevron-back" size={28} color="#111827" />
         </TouchableOpacity>
 
-        <View className="flex-1 relative">
-          <View className="absolute left-3 top-2.5 z-10">
-            <Ionicons name="search-outline" size={18} color="#9CA3AF" />
-          </View>
-          <TextInput
-            placeholder="Search recommended"
-            placeholderTextColor="#9CA3AF"
-            className="w-full bg-gray-50 border border-gray-100 rounded-full py-2 pl-10 pr-4 text-[#111827] text-[15px]"
-          />
-        </View>
+         <View className="flex-1">
+                         <TouchableOpacity
+                           activeOpacity={0.9}
+                           onPress={() => router.push("/search-with-filter")}
+                           className="flex-row items-center bg-white rounded-full px-5 shadow-sm border border-gray-300"
+                           style={{ height: 44 }}
+                         >
+                           <Text className="flex-1 text-base text-[#9CA3AF]">
+                             Search products...
+                           </Text>
+                           <Ionicons name="search-outline" size={20} color="#9CA3AF" />
+                         </TouchableOpacity>
+                       </View>
+        
 
         <TouchableOpacity
           onPress={() => router.push("/notifications")}
