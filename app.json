@@ -22,7 +22,10 @@
       "softwareKeyboardLayoutMode": "pan",
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.rakibhasan2.giftguru"
+      "package": "com.rakibhasan2.giftguru",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "output": "static",
@@ -58,6 +61,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "9bf97c99-fdfd-4a88-b066-51a250b5f89f"
+      }
     }
   }
 }
