@@ -5,11 +5,14 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": ["giftguru"],
+    "scheme": [
+      "giftguru"
+    ],
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.rakibhasan2.giftguru"
     },
     "android": {
       "adaptiveIcon": {
@@ -44,7 +47,13 @@
         }
       ],
       "@react-native-community/datetimepicker",
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.121177195587-54gcm44mr8vqp94lde2ti36tlkpedtss"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

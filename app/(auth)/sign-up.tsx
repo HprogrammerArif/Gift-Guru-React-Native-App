@@ -2,7 +2,17 @@ import CustomInput from "@/components/CustomInput";
 import CustomInputModified from "@/components/CustomInputModified";
 import { GradientButton } from "@/components/GradientButton";
 import RolePicker from "@/components/RolePicker";
-import { useRegisterMutation } from "@/redux/features/auth/authApi";
+import { useRegisterMutation, useGoogleLoginMutation } from "@/redux/features/auth/authApi";
+import { setCredentials } from "@/redux/features/auth/authSlice";
+import { useAppDispatch } from "@/redux/hooks";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
+
+// GoogleSignin.configure({
+//   webClientId: "121177195587-54gcm44mr8vqp94lde2ti36tlkpedtss.apps.googleusercontent.com",
+// });
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Image as ExpoImage } from "expo-image";
@@ -31,6 +41,8 @@ interface FormData {
 
 const SignUp = () => {
   const [register] = useRegisterMutation();
+  const [googleLoginMutation] = useGoogleLoginMutation();
+  const dispatch = useAppDispatch();
   const [form, setForm] = useState<FormData>({
     firstName: "",
     lastName: "",
@@ -136,6 +148,47 @@ const SignUp = () => {
       setIsSubmitting(false);
     }
   }, [form, date, register]);
+
+  const handleGoogleLogin = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      const idToken = response?.data?.idToken;
+
+      if (!idToken) throw new Error("No ID token found from Google");
+
+      setIsSubmitting(true);
+      const apiResponse: any = await googleLoginMutation({ idToken });
+
+      // Assuming the backend returns standard auth tokens on google signup
+      if (apiResponse?.data) {
+        dispatch(
+          setCredentials({
+            user: apiResponse.data.user,
+            token: apiResponse.data.access,
+            refreshToken: apiResponse.data.refresh,
+            device_token: apiResponse.data.device_token || "",
+          }),
+        );
+        router.replace("/(drawer)/(tabs)");
+      } else if (apiResponse?.error) {
+        const errorData = apiResponse.error?.data;
+        Alert.alert("Google Signup Failed", errorData?.error || "Registration failed.");
+      }
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled the login flow
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        // operation in progress
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        Alert.alert("Error", "Play services are not available.");
+      } else {
+        Alert.alert("Google Login Error", error.message || "Something went wrong.");
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const onDateChange = (event: any, selectedDate?: Date) => {
     // On Android, the picker closes itself after selection
@@ -286,9 +339,8 @@ const SignUp = () => {
               <TouchableOpacity
                 activeOpacity={0.8}
                 className="w-full bg-[#e1e2e9] rounded-xl py-3 flex-row items-center justify-center gap-3"
-                onPress={() =>
-                  Alert.alert("Google Login", "This feature is coming soon!")
-                }
+                onPress={handleGoogleLogin}
+                disabled={isSubmitting}
               >
                 <ExpoImage
                   source={{

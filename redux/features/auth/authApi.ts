@@ -36,6 +36,19 @@ const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    googleLogin: builder.mutation({
+      query: (body: { 
+        idToken: string; 
+        email?: string; 
+        first_name?: string; 
+        last_name?: string; 
+      }) => ({
+        url: "auth/social-auth/",
+        method: "POST",
+        body: { ...body, provider: "google" },
+      }),
+    }),
+
     forgetPassword: builder.mutation({
       query: (userInfo) => ({
         url: "auth/password-reset/request/",
@@ -150,6 +163,7 @@ const authApi = baseApi.injectEndpoints({
 
 export const {
   useLoginMutation,
+  useGoogleLoginMutation,
   useRegisterMutation,
   useForgetPasswordMutation,
   useVerifyOtpMutation,

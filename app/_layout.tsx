@@ -22,6 +22,13 @@ import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
 import { persistor, store } from "../redux/store";
 import "./global.css";
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+  isErrorWithCode,
+  isSuccessResponse,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
 
 const toastConfig = {
   success: (props: any) => (
@@ -65,6 +72,12 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   const segments = useSegments();
   const router = useRouter();
   const navigationState = useRootNavigationState();
+
+    useEffect(() => {
+      GoogleSignin.configure({
+        webClientId: "121177195587-epvcsmto6nlmnrbif9q9u2c39tl2vl4v.apps.googleusercontent.com",
+      });
+     }, []);
 
   useEffect(() => {
     // 1) Wait for Expo Router navigation state to fully initialize

@@ -8,18 +8,40 @@ import { Alert, Keyboard, Text, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useLoginMutation } from "@/redux/features/auth/authApi";
+import {
+  useGoogleLoginMutation,
+  useLoginMutation,
+} from "@/redux/features/auth/authApi";
 import { setCredentials } from "@/redux/features/auth/authSlice";
 import { useAppDispatch } from "@/redux/hooks";
 import { persistor } from "@/redux/store";
+import {
+  GoogleSignin,
+  isErrorWithCode,
+  isSuccessResponse,
+  statusCodes
+} from "@react-native-google-signin/google-signin";
+
+// GoogleSignin.configure({
+//   "webClientId": "121177195587-epvcsmto6nlmnrbif9q9u2c39tl2vl4v.apps.googleusercontent.com",
+// });
 
 const SignIn = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+  const [userInfo, setUserInfo] = useState<any>(null);
+  console.log({ userInfo });
+
+  //  useEffect(() => {
+  //   GoogleSignin.configure({
+  //     webClientId: "121177195587-epvcsmto6nlmnrbif9q9u2c39tl2vl4v.apps.googleusercontent.com",
+  //   });
+  //  }, []);
 
   const [login] = useLoginMutation();
+  const [googleLoginMutation] = useGoogleLoginMutation();
   const dispatch = useAppDispatch();
 
   const submit = useCallback(async () => {
@@ -69,10 +91,92 @@ const SignIn = () => {
       }
     } catch (error: any) {
       Alert.alert("Error", error.message || "Something went wrong.");
+      if (isErrorWithCode(error)) {
+        switch (error.code) {
+          case statusCodes.IN_PROGRESS:
+            Alert.alert("Error", "Operation already in progress.");
+            break;
+          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
+            Alert.alert("Error", "Play services are not available.");
+            break;
+          default:
+            Alert.alert("Error", "Something went wrong.");
+        }
+      } else {
+        Alert.alert("Error", "Something went wrong.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   }, [form, login, dispatch, rememberMe]);
+
+  const handleGoogleLogin = async () => {
+    try {
+      await GoogleSignin.hasPlayServices();
+      try {
+        await GoogleSignin.signOut();
+      } catch (err) {
+        // Safe to ignore if they weren't signed in
+      }
+      const response = await GoogleSignin.signIn();
+
+      console.log({ response });
+      const idToken = response?.data?.idToken;
+
+      if (isSuccessResponse(response)) {
+        setUserInfo({ userInfo: response.data });
+      } else {
+        Alert.alert("Google Sign-In Failed", "Something went wrong.");
+        console.log("Google Sign-In Failed", "Something went wrong.");
+      }
+
+      const user = response?.data?.user;
+      const finalIdToken = idToken || response?.data?.idToken;
+
+      if (!finalIdToken) throw new Error("No ID token found from Google");
+
+      setIsSubmitting(true);
+      const apiResponse: any = await googleLoginMutation({
+        idToken: finalIdToken,
+        email: user?.email,
+        first_name: user?.givenName ?? undefined,
+        last_name: user?.familyName ?? undefined,
+      });
+
+      if (apiResponse?.data) {
+        dispatch(
+          setCredentials({
+            user: apiResponse.data.user,
+            token: apiResponse.data.access,
+            refreshToken: apiResponse.data.refresh,
+            device_token: apiResponse.data.device_token || "",
+          }),
+        );
+        router.replace("/(drawer)/(tabs)");
+      } else if (apiResponse?.error) {
+        const errorData = apiResponse.error?.data;
+        Alert.alert(
+          "Google Login Failed",
+          errorData?.error || "Invalid credentials.",
+        );
+      }
+    } catch (error: any) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        // user cancelled the login flow
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        // operation in progress
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        Alert.alert("Error", "Play services are not available.");
+      } else {
+        console.log(
+          "Google Login Error",
+          error.message || "Something went wrong.",
+        );
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-[#FFFFFF]" edges={["top"]}>
@@ -149,9 +253,8 @@ const SignIn = () => {
               <TouchableOpacity
                 activeOpacity={0.8}
                 className="w-full bg-[#e1e2e9] rounded-xl py-3 flex-row items-center justify-center gap-3"
-                onPress={() =>
-                  Alert.alert("Google Login", "This feature is coming soon!")
-                }
+                onPress={handleGoogleLogin}
+                disabled={isSubmitting}
               >
                 <ExpoImage
                   source={{
@@ -176,11 +279,6 @@ const SignIn = () => {
                 </TouchableOpacity>
               </View>
             </View>
-            <TouchableOpacity
-              onPress={() => router.replace("/(drawer)/(tabs)")}
-            >
-              <Text className="text-[#2B7FFF] font-bold">HOME</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </KeyboardAwareScrollView>
