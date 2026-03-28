@@ -50,7 +50,7 @@
     "react-native-keyboard-controller": "1.18.5",
     "react-native-pager-view": "6.9.1",
     "react-native-purchases": "^9.14.0",
-    "react-native-purchases-ui": "^9.14.0",
+    "react-native-purchases-ui": "^9.15.0",
     "react-native-reanimated": "~4.1.1",
     "react-native-reanimated-carousel": "^4.0.3",
     "react-native-safe-area-context": "~5.6.0",

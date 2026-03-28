@@ -1,10 +1,8 @@
-import {
-  useGetMySubscriptionQuery,
-  useGetSubscriptionPlansQuery,
-} from "@/redux/features/subscription/subscriptionApi";
+import { getOfferings, purchasePackage, restorePurchases } from "@/utils/revenuecat";
+import { usePremium } from "@/hooks/usePremium";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   ActivityIndicator,
   LayoutAnimation,
@@ -14,8 +12,10 @@ import {
   TouchableOpacity,
   UIManager,
   View,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { PurchasesPackage, PurchasesOffering, PACKAGE_TYPE } from "react-native-purchases";
 
 if (
   Platform.OS === "android" &&
@@ -73,58 +73,108 @@ const FAQItem = ({
 
 const MembershipScreen = () => {
   const router = useRouter();
+  const { isPremium, isLoading: isStatusLoading } = usePremium();
 
-  // ── API Hooks ─────────────────────────────────────────────────────────────
-  const { data: plans, isLoading: isPlansLoading } =
-    useGetSubscriptionPlansQuery(undefined);
-  const { data: mySubscription, isLoading: isMySubLoading } =
-    useGetMySubscriptionQuery(undefined);
+  const [offering, setOffering] = useState<PurchasesOffering | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isPurchasing, setIsPurchasing] = useState(false);
+
+  const loadOfferings = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const currentOffering = await getOfferings();
+      setOffering(currentOffering);
+    } catch (error) {
+      console.error("[Membership] Error loading offerings:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadOfferings();
+  }, [loadOfferings]);
+
+  const handlePurchase = async (pkg: PurchasesPackage) => {
+    setIsPurchasing(true);
+    try {
+      const customerInfo = await purchasePackage(pkg);
+      if (customerInfo?.entitlements.active["premium"]) {
+        Alert.alert("🎉 Success!", "Welcome to Premium! Your features are now unlocked.");
+        // The addCustomerInfoUpdateListener in _layout.tsx will automatically update Redux
+      }
+    } catch (error: any) {
+      if (!error?.userCancelled) {
+        Alert.alert("Purchase Error", error.message || "Something went wrong.");
+      }
+    } finally {
+      setIsPurchasing(false);
+    }
+  };
+
+  const handleRestore = async () => {
+    setIsPurchasing(true);
+    try {
+      const customerInfo = await restorePurchases();
+      if (customerInfo?.entitlements.active["premium"]) {
+        Alert.alert("✅ Restored!", "Your premium subscription has been restored.");
+      } else {
+        Alert.alert("No Purchase Found", "We couldn't find any active subscriptions to restore.");
+      }
+    } catch (error) {
+      Alert.alert("Restore Error", "An error occurred while restoring purchases.");
+    } finally {
+      setIsPurchasing(false);
+    }
+  };
+
+  const getPackageLabel = (pkg: PurchasesPackage) => {
+    const type = pkg.packageType;
+    switch (type) {
+      case PACKAGE_TYPE.MONTHLY: return "Monthly";
+      case PACKAGE_TYPE.ANNUAL: return "Yearly";
+      case PACKAGE_TYPE.LIFETIME: return "Lifetime";
+      default: return pkg.product.title;
+    }
+  };
 
   const faqData = [
     {
       question: "How does the Free plan work?",
-      answer:
-        "The free plan allows you to explore basic features with some limitations on product links and affiliate customization. It's a great way to get started with the community.",
+      answer: "The free plan allows you to explore basic features with some limitations on product links and affiliate customization. It's a great way to get started with the community.",
     },
     {
       question: "Can I earn commissions on the Free plan?",
-      answer:
-        "Yes, you can still participate in the affiliate program, but the commission structure and customization options are limited compared to the Pro plan.",
+      answer: "Yes, you can still participate in the affiliate program, but the commission structure and customization options are limited compared to the Pro plan.",
     },
     {
       question: "How does the Pro plan work?",
-      answer:
-        "The Pro plan gives you full control over your affiliate links, allows you to use your own affiliate ID, provides automatic tag replacement, and priority support.",
+      answer: "The Pro plan gives you full control over your affiliate links, allows you to use your own affiliate ID, provides automatic tag replacement, and priority support.",
     },
     {
       question: "Do I need technical knowledge to use my affiliate ID?",
-      answer:
-        "Not at all. Our dashboard makes it incredibly simple to manage your affiliate ID. Just enter it in your account settings and we handle the rest.",
+      answer: "Not at all. Our dashboard makes it incredibly simple to manage your affiliate ID. Just enter it in your account settings and we handle the rest.",
     },
     {
       question: "What happens to my existing links after upgrading?",
-      answer:
-        "Once you upgrade to Pro, your existing links can be automatically updated to use your own affiliate tag, ensuring you earn commissions from all your content.",
+      answer: "Once you upgrade to Pro, your existing links can be automatically updated to use your own affiliate tag, ensuring you earn commissions from all your content.",
     },
     {
       question: "Is this compliant with Amazon's affiliate policy?",
-      answer:
-        "Yes, our link conversion and management system is designed to adhere to Amazon's affiliate program guidelines and best practices.",
+      answer: "Yes, our link conversion and management system is designed to adhere to Amazon's affiliate program guidelines and best practices.",
     },
     {
       question: "Is there a limit on how many links I can create?",
-      answer:
-        "The Pro plan offers unlimited link management, allowing you to scale your affiliate marketing efforts without any volume-based restrictions.",
+      answer: "The Pro plan offers unlimited link management, allowing you to scale your affiliate marketing efforts without any volume-based restrictions.",
     },
   ];
 
-  const isLoading = isPlansLoading || isMySubLoading;
-
-  if (isLoading) {
+  if (isLoading || isStatusLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#2B7FFF" />
+          <Text className="mt-4 text-gray-500">Loading plans...</Text>
         </View>
       </SafeAreaView>
     );
@@ -153,14 +203,13 @@ const MembershipScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
       >
-        {/* Render Plans Dynamically */}
-        {plans?.map((plan: any) => {
-          const isCurrentPlan = mySubscription?.plan?.id === plan.id;
-          const isPro = plan.slug === "pro";
+        {/* Render RevenueCat Packages */}
+        {offering?.availablePackages.map((pkg) => {
+          const isAnnual = pkg.packageType === PACKAGE_TYPE.ANNUAL;
 
           return (
             <View
-              key={plan.id}
+              key={pkg.identifier}
               style={{
                 shadowColor: "#000",
                 shadowOffset: { width: 0, height: 4 },
@@ -168,22 +217,22 @@ const MembershipScreen = () => {
                 shadowRadius: 10,
                 elevation: 3,
               }}
-              className={`bg-white rounded-2xl border ${isCurrentPlan ? "border-[#2B7FFF]" : "border-gray-100"} p-6 mb-8`}
+              className={`bg-white rounded-2xl border ${isAnnual ? "border-[#2B7FFF]" : "border-gray-100"} p-6 mb-8`}
             >
               <View className="flex-row justify-between items-start mb-3">
                 <Text
                   style={{ fontFamily: "QuickSand-Bold" }}
                   className="text-md text-[#1F2937] font-bold tracking-[2px] uppercase"
                 >
-                  {plan.name}
+                  {getPackageLabel(pkg)}
                 </Text>
-                {isCurrentPlan && (
+                {isAnnual && (
                   <View className="bg-[#EBF4FF] px-3 py-1 rounded-full">
                     <Text
                       style={{ fontFamily: "QuickSand-Bold" }}
                       className="text-[#2B7FFF] text-[10px] uppercase"
                     >
-                      Current Plan
+                      Best Value
                     </Text>
                   </View>
                 )}
@@ -194,18 +243,24 @@ const MembershipScreen = () => {
                   style={{ fontFamily: "QuickSand-Bold" }}
                   className="text-4xl text-[#1F2937]"
                 >
-                  ${plan.price}
+                  {pkg.product.priceString}
                 </Text>
                 <Text
                   style={{ fontFamily: "QuickSand-Medium" }}
                   className="text-gray-400 text-lg ml-1"
                 >
-                  /{plan.duration_days === 30 ? "month" : "one-time"}
+                  {pkg.packageType === PACKAGE_TYPE.ANNUAL ? "/year" : pkg.packageType === PACKAGE_TYPE.MONTHLY ? "/month" : ""}
                 </Text>
               </View>
 
               <View className="space-y-4 mb-6">
-                {plan.features?.map((feature: string, idx: number) => (
+                {/* Default features if not provided by product description */}
+                {[
+                  "Unlimited AI gift suggestions",
+                  "Save unlimited gift lists",
+                  "Smart reminders & alerts",
+                  "Priority support",
+                ].map((feature, idx) => (
                   <View key={idx} className="flex-row items-center mb-4">
                     <View className="w-5 h-5 rounded-full bg-[#2B7FFF]/10 items-center justify-center mr-3">
                       <Ionicons name="checkmark" size={12} color="#2B7FFF" />
@@ -220,49 +275,52 @@ const MembershipScreen = () => {
                 ))}
               </View>
 
-              {!isCurrentPlan && (
+              {!isPremium && (
                 <TouchableOpacity
                   activeOpacity={0.8}
-                  className={`w-full ${isPro ? "bg-[#2B7FFF]" : "bg-gray-800"} py-4 rounded-2xl items-center shadow-md`}
+                  onPress={() => handlePurchase(pkg)}
+                  disabled={isPurchasing}
+                  className={`w-full ${isAnnual ? "bg-[#2B7FFF]" : "bg-gray-800"} py-4 rounded-2xl items-center shadow-md`}
                 >
-                  <Text className="text-white text-md uppercase tracking-[1px] font-bold">
-                    {isPro ? "Upgrade to Pro" : "Get Started"}
-                  </Text>
+                  {isPurchasing ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text className="text-white text-md uppercase tracking-[1px] font-bold">
+                      Upgrade Now
+                    </Text>
+                  )}
                 </TouchableOpacity>
               )}
             </View>
           );
         })}
 
-        {/* Current Subscription Detail (if active) */}
-        {mySubscription && (
-          <View className="bg-gray-50 rounded-2xl p-5 mb-10 border border-gray-100">
+        {/* Current status info */}
+        {isPremium && (
+          <View className="bg-green-50 rounded-2xl p-5 mb-10 border border-green-100 items-center">
+            <Ionicons name="checkmark-circle" size={40} color="#10B981" />
             <Text
               style={{ fontFamily: "QuickSand-Bold" }}
-              className="text-[#1F2937] text-sm mb-3"
+              className="text-[#1F2937] text-lg mt-2"
             >
-              Subscription Details
+              Premium is Active
             </Text>
-            <View className="flex-row justify-between mb-2">
-              <Text className="text-gray-500 text-xs">Status</Text>
-              <Text className="text-green-600 text-xs font-bold uppercase">
-                {mySubscription.status}
-              </Text>
-            </View>
-            <View className="flex-row justify-between mb-2">
-              <Text className="text-gray-500 text-xs">Remaining Days</Text>
-              <Text className="text-[#1F2937] text-xs font-bold">
-                {mySubscription.days_remaining} days
-              </Text>
-            </View>
-            <View className="flex-row justify-between">
-              <Text className="text-gray-500 text-xs">Renews on</Text>
-              <Text className="text-[#1F2937] text-xs font-bold">
-                {new Date(mySubscription.end_date).toLocaleDateString()}
-              </Text>
-            </View>
+            <Text className="text-gray-500 text-center mt-1">
+              You have full access to all features.
+            </Text>
           </View>
         )}
+
+        {/* Restore Button */}
+        <TouchableOpacity 
+          onPress={handleRestore} 
+          disabled={isPurchasing}
+          className="items-center mb-8"
+        >
+          <Text className="text-[#2B7FFF] underline text-sm">
+            Restore Purchases
+          </Text>
+        </TouchableOpacity>
 
         {/* FAQ Section */}
         <View className="px-2">

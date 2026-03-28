@@ -8,6 +8,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
+import { usePremium } from "@/hooks/usePremium";
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
@@ -33,6 +34,7 @@ MemoizedProfilePost.displayName = "MemoizedProfilePost";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
+  const { isPremium } = usePremium();
   const searchParams = useLocalSearchParams();
   const idParam = Array.isArray(searchParams.id)
     ? searchParams.id[0]
@@ -132,10 +134,18 @@ export default function ProfileScreen() {
           )}
         </View>
         <View className="flex-1">
-          <Text className="text-3xl font-bold text-gray-900 mb-1 leading-tight">
-            {name}
-          </Text>
-
+          <View className="flex-row items-center mb-1">
+            <Text className="text-3xl font-bold text-gray-900 leading-tight">
+              {name}
+            </Text>
+            {isPremium && (
+              <View className="bg-[#2B7FFF] px-2 py-0.5 rounded-md ml-2">
+                <Text className="text-white text-[10px] uppercase font-bold">
+                  PRO
+                </Text>
+              </View>
+            )}
+          </View>
           <View className="flex-row gap-8 mt-1">
             <View>
               <Text className="text-xl font-bold text-gray-900">

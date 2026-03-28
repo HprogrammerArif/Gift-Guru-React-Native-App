@@ -8,6 +8,8 @@ import { useDispatch } from "react-redux";
 import { API_IMAGE_URL, baseApi } from "../../redux/api/baseApi";
 import { logout } from "../../redux/features/auth/authSlice";
 import { useGetUserProfileQuery } from "../../redux/features/profileService/profileApi";
+import { logOutRevenueCat } from "../../utils/revenuecat";
+import { usePremium } from "@/hooks/usePremium";
 
 interface MenuItemProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -44,8 +46,14 @@ const MenuItem = ({ icon, label, badge, onPress, isLast }: MenuItemProps) => (
 const CustomDrawer = (props: DrawerContentComponentProps) => {
   const router = useRouter();
   const dispatch = useDispatch();
+  const { isPremium } = usePremium();
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logOutRevenueCat();
+    } catch (error) {
+      console.error("RevenueCat logout error:", error);
+    }
     dispatch(logout());
     dispatch(baseApi.util.resetApiState());
     router.replace("/sign-in");
@@ -85,9 +93,18 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
               <Ionicons name="person" size={32} color="#9CA3AF" />
             )}
           </View>
-          <Text className="mt-4 text-xl font-bold text-gray-900">
-            {fullName}
-          </Text>
+          <View className="flex-row items-center gap-2 mt-4">
+            <Text className="text-xl font-bold text-gray-900">
+              {fullName}
+            </Text>
+            {isPremium && (
+              <View className="bg-[#2B7FFF] px-2 py-0.5 rounded-md">
+                <Text className="text-white text-[10px] uppercase font-bold">
+                  PRO
+                </Text>
+              </View>
+            )}
+          </View>
           <Text className="text-sm text-gray-500">{email}</Text>
         </View>
 
