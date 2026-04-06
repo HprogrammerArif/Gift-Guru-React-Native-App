@@ -16,11 +16,20 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // 1. Memoized Post Item with stable props
-const PostItem = memo(({ item }: { item: ApiPost }) => (
-  <View className="px-2">
-    <SocialPost post={item} />
-  </View>
-));
+const PostItem = memo(
+  ({ item }: { item: ApiPost }) => (
+    <View className="px-2">
+      <SocialPost post={item} />
+    </View>
+  ),
+  (prev, next) =>
+    prev.item.id === next.item.id &&
+    prev.item.likes_count === next.item.likes_count &&
+    prev.item.comments_count === next.item.comments_count &&
+    prev.item.is_liked === next.item.is_liked &&
+    prev.item.is_saved === next.item.is_saved &&
+    prev.item.is_following === next.item.is_following
+);
 PostItem.displayName = "PostItem";
 
 // 2. Optimized Carousels Wrapper — only renders children when Home is ready
@@ -133,7 +142,7 @@ export default function Home() {
         }}
         style={{ backgroundColor: "#FF4B3A" }}
         // --- Smart Performance Tuning ---
-        removeClippedSubviews={false}
+        removeClippedSubviews={true}
         initialNumToRender={4}
         maxToRenderPerBatch={4}
         windowSize={5}

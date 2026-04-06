@@ -7,9 +7,8 @@ import {
   Dimensions,
   FlatList,
   Text,
-  TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 
 const { width } = Dimensions.get("window");

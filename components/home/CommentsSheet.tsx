@@ -34,7 +34,7 @@ import { ApiComment } from "./SocialPost";
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 // --- FB Comment Item ---
-const CommentItem = ({ comment }: { comment: ApiComment }) => {
+const CommentItem = React.memo(({ comment }: { comment: ApiComment }) => {
   const name =
     `${comment.user?.first_name || ""} ${comment.user?.last_name || ""}`.trim() ||
     comment.user?.username ||
@@ -73,7 +73,7 @@ const CommentItem = ({ comment }: { comment: ApiComment }) => {
       </View>
     </View>
   );
-};
+});
 
 interface CommentsSheetProps {
   visible: boolean;
@@ -234,7 +234,7 @@ const CommentsSheet = ({
               <FlatList
                 data={comments}
                 keyExtractor={(item) => String(item.id)}
-                renderItem={({ item }) => <CommentItem comment={item} />}
+                renderItem={useCallback(({ item }: any) => <CommentItem comment={item} />, [])}
                 onScroll={handleScroll}
                 scrollEventThrottle={16}
                 showsVerticalScrollIndicator={false}

@@ -243,21 +243,26 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
       </View>
 
       {/* Content */}
-      <TouchableOpacity
-        activeOpacity={1}
-        onPress={() => setExpanded(!expanded)}
-        className="mb-3"
-      >
-        <Text
-          numberOfLines={expanded ? 0 : 3}
-          className="text-[14px] text-gray-700 leading-5"
+      {post.content ? (
+        <TouchableOpacity
+          activeOpacity={post.content.length > 60 ? 0.7 : 1}
+          onPress={() => {
+            if (post.content.length > 60) {
+              setExpanded(!expanded);
+            }
+          }}
+          className="mb-3"
         >
-          {post.content}
-          {!expanded && (
-            <Text className="text-black font-semibold"> ...see more</Text>
-          )}
-        </Text>
-      </TouchableOpacity>
+          <Text className="text-[14px] text-gray-700 leading-5">
+            {!expanded && post.content.length > 60
+              ? post.content.substring(0, 60).trim()
+              : post.content}
+            {!expanded && post.content.length > 60 && (
+              <Text className="text-black font-semibold"> ...see more</Text>
+            )}
+          </Text>
+        </TouchableOpacity>
+      ) : null}
 
       {/* Post Image */}
       {cardImage ? (
