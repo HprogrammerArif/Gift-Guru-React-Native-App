@@ -170,6 +170,15 @@ const postApi = baseApi.injectEndpoints({
       invalidatesTags: ["Posts"],
     }),
 
+    // Track amazon link click
+    trackLinkClick: builder.mutation({
+      query: (postId: string | number) => ({
+        url: `social/posts/${postId}/link-click/`,
+        method: "POST",
+      }),
+      // optionally invalidate stats if desired
+    }),
+
     // Get user stats (total likes and link clicks)
     getUserStats: builder.query({
       query: () => ({
@@ -227,4 +236,5 @@ export const {
   useGetLinkEngagementQuery,
   useGetTopClickedPostsQuery,
   useGetPostStatusesQuery,
+  useTrackLinkClickMutation,
 } = postApi;

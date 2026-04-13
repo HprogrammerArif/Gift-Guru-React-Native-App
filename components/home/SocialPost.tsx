@@ -2,6 +2,7 @@ import {
   useFollowUserMutation,
   useLikePostMutation,
   useSavePostMutation,
+  useTrackLinkClickMutation,
 } from "@/redux/features/posts/postApi";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
@@ -90,6 +91,7 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
   const [likePost] = useLikePostMutation();
   const [followUser] = useFollowUserMutation();
   const [savePost] = useSavePostMutation();
+  const [trackLinkClick] = useTrackLinkClickMutation();
 
   const displayName =
     `${post.user?.first_name || ""} ${post.user?.last_name || ""}`.trim() ||
@@ -302,6 +304,7 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
             className="bg-[#3B82F6] px-4 py-2 rounded-lg shadow-sm"
             onPress={() => {
               if (post.amazon_link) {
+                trackLinkClick(post.id).catch(console.error);
                 Linking.openURL(post.amazon_link).catch(() =>
                   Alert.alert("Error", "Unable to open the link."),
                 );

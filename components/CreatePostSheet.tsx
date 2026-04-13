@@ -156,6 +156,7 @@ const CreatePostSheet = ({ visible, onClose }: CreatePostSheetProps) => {
           errorData?.error ||
           errorData?.detail ||
           errorData?.message ||
+          errorData ||
           "Failed to create post. Please check required fields.";
         Alert.alert("Post Failed", errorMessage);
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);

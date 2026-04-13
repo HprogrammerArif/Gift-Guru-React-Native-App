@@ -4,11 +4,23 @@ import Purchases, {
   CustomerInfo,
   PurchasesOffering,
   CustomerInfoUpdateListener,
+  PurchasesError,
 } from 'react-native-purchases';
 import { Platform } from 'react-native';
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type RevenueCatResult<T> =
+  | { success: true; data: T }
+  | { success: false; error: string; userCancelled?: boolean };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Configuration
+// ─────────────────────────────────────────────────────────────────────────────
+
 // ✅ These are read from your .env.local file
-// EXPO_PUBLIC_REVENUECAT_ANDROID_KEY=goog_xxxxxxxxxxxxxxxxxxxx
 const REVENUECAT_API_KEY = {
   android: process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY ?? '',
   ios: process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY ?? '', // Add if you ever build for iOS
@@ -38,16 +50,12 @@ export async function initializeRevenueCat(userId?: string | null): Promise<void
     return;
   }
 
-  await Purchases.configure({ apiKey });
-
-  // If a user is already logged in, identify them immediately
-  if (userId) {
-    try {
-      await Purchases.logIn(String(userId));
-    } catch (error) {
-      console.error('[RevenueCat] Error logging in user:', error);
-    }
-  }
+  await Purchases.configure({ 
+    apiKey,
+    appUserID: userId ? String(userId) : undefined, 
+  });
+  
+  console.log("[RevenueCat] SDK configured successfully.");
 }
 
 /**
@@ -56,9 +64,15 @@ export async function initializeRevenueCat(userId?: string | null): Promise<void
  */
 export async function loginRevenueCat(userId: string): Promise<void> {
   try {
-    await Purchases.logIn(userId);
+    const { customerInfo } = await Purchases.logIn(userId);
+    console.log(
+      "[RevenueCat] Logged in user:",
+      userId,
+      "| Active entitlements:",
+      Object.keys(customerInfo.entitlements.active)
+    );
   } catch (error) {
-    console.error('[RevenueCat] logIn error:', error);
+    console.error('[RevenueCat] Login error:', error);
   }
 }
 
@@ -68,10 +82,15 @@ export async function loginRevenueCat(userId: string): Promise<void> {
 export async function logOutRevenueCat(): Promise<void> {
   try {
     await Purchases.logOut();
+    console.log("[RevenueCat] Logged out, reset to anonymous.");
   } catch (error) {
-    console.error('[RevenueCat] logOut error:', error);
+    console.log('[RevenueCat] logOut (already anonymous):', error);
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Offerings
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Get the current offering from RevenueCat.
@@ -81,9 +100,12 @@ export async function logOutRevenueCat(): Promise<void> {
 export async function getOfferings(): Promise<PurchasesOffering | null> {
   try {
     const offerings = await Purchases.getOfferings();
+    
+    // DEBUG: Log offerings locally
+    console.log("[RevenueCat] Offerings fetched successfully");
 
     if (!offerings.current) {
-      console.warn('[RevenueCat] No current offering found. Check your RevenueCat dashboard.');
+      console.warn('[RevenueCat] No current offering found. Check your RevenueCat dashboard to ensure one is marked as current.');
     }
 
     return offerings.current;
@@ -93,45 +115,69 @@ export async function getOfferings(): Promise<PurchasesOffering | null> {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Purchases & Restoring
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
  * Purchase a specific package.
- * This shows the Google Play payment sheet to the user.
+ * This shows the native payment sheet to the user.
  *
- * @returns CustomerInfo if purchase succeeded, null if user cancelled
- * @throws error if purchase genuinely failed (network error, billing unavailable, etc.)
+ * @returns success + customerInfo on purchase, or error if failed/cancelled
  */
 export async function purchasePackage(
   pkg: PurchasesPackage
-): Promise<CustomerInfo | null> {
+): Promise<RevenueCatResult<CustomerInfo>> {
   try {
     const { customerInfo } = await Purchases.purchasePackage(pkg);
-    return customerInfo;
-  } catch (error: any) {
-    // This is normal — user tapped the X button on the payment sheet
-    if (error.userCancelled) {
-      console.log('[RevenueCat] User cancelled purchase.');
-      return null;
+    
+    // Log the active premium entitlement if present
+    const premiumEntitlement = customerInfo.entitlements.active['premium'];
+    if (premiumEntitlement) {
+      console.log(
+        "[RevenueCat] ✅ Premium entitlement active! Expires:",
+        premiumEntitlement.expirationDate
+      );
     }
-    // This is a real error — surface it to the caller
-    console.error('[RevenueCat] purchasePackage error:', error);
-    throw error;
+    
+    return { success: true, data: customerInfo };
+  } catch (error) {
+    const rcError = error as PurchasesError;
+    const userCancelled = (rcError as any).userCancelled === true;
+
+    if (userCancelled) {
+      console.log('[RevenueCat] User cancelled purchase.');
+      return { success: false, error: 'Purchase cancelled.', userCancelled: true };
+    }
+    
+    const message = rcError?.message ?? "An error occurred during purchase. Please try again.";
+    console.error('[RevenueCat] purchasePackage error:', message);
+    return { success: false, error: message };
   }
 }
 
 /**
- * Check if the current user has an active "premium" entitlement.
- *
- * The entitlement ID "premium" must match what you set in the RevenueCat dashboard.
+ * Restore purchases — required by both Apple and Google policies.
+ * Users can recover their purchases after reinstalling the app.
  */
-export async function checkPremiumStatus(): Promise<boolean> {
+export async function restorePurchases(): Promise<RevenueCatResult<CustomerInfo>> {
   try {
-    const customerInfo = await Purchases.getCustomerInfo();
-    return customerInfo.entitlements.active['premium'] !== undefined;
+    const customerInfo = await Purchases.restorePurchases();
+    const hasPremium = !!customerInfo.entitlements.active['premium'];
+    console.log("[RevenueCat] Restore complete. Premium active:", hasPremium);
+    
+    return { success: true, data: customerInfo };
   } catch (error) {
-    console.error('[RevenueCat] checkPremiumStatus error:', error);
-    return false;
+    const rcError = error as PurchasesError;
+    const message = rcError?.message ?? "Could not restore purchases.";
+    console.error('[RevenueCat] restorePurchases error:', message);
+    return { success: false, error: message };
   }
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Customer Info and Listeners
+// ─────────────────────────────────────────────────────────────────────────────
 
 /**
  * Get the full CustomerInfo object for the current user.
@@ -147,35 +193,31 @@ export async function getCustomerInfo(): Promise<CustomerInfo | null> {
 }
 
 /**
- * Restore purchases — required by both Apple and Google policies.
- * Users can recover their purchases after reinstalling the app.
- */
-export async function restorePurchases(): Promise<CustomerInfo | null> {
-  try {
-    const customerInfo = await Purchases.restorePurchases();
-    return customerInfo;
-  } catch (error) {
-    console.error('[RevenueCat] restorePurchases error:', error);
-    return null;
-  }
-}
-
-/**
  * Listen to real-time CustomerInfo updates.
  * Use this in _layout.tsx to keep Redux in sync with subscription state.
- *
- * @param callback - Called whenever the user's subscription status changes
- * @returns A cleanup function to remove the listener (call in useEffect cleanup)
  */
 export function addCustomerInfoListener(
   callback: CustomerInfoUpdateListener
 ): () => void {
   Purchases.addCustomerInfoUpdateListener(callback);
-
-  // Return cleanup function
   return () => {
     Purchases.removeCustomerInfoUpdateListener(callback);
   };
+}
+
+/**
+ * Check if the user currently has an active "premium" entitlement.
+ */
+export async function hasPremiumAccess(): Promise<boolean> {
+  const info = await getCustomerInfo();
+  return !!info?.entitlements.active['premium'];
+}
+
+/**
+ * Check if the user had premium from checkPremiumStatus legacy
+ */
+export async function checkPremiumStatus(): Promise<boolean> {
+  return await hasPremiumAccess();
 }
 
 /**

@@ -4,12 +4,12 @@ import Toast from "react-native-toast-message"; // or your toast library
 import { logout, updateToken } from "../features/auth/authSlice";
 import { RootState } from "../store";
 
-export const API_IMAGE_URL = "https://intensely-optimal-unicorn.ngrok-free.app";
+export const API_IMAGE_URL = "https://api.findrya.co.uk";
 // export const API_IMAGE_URL = "http://10.10.13.61:8002"
 
 const API_URL = (
   process.env.EXPO_PUBLIC_API_URL ||
-  "https://intensely-optimal-unicorn.ngrok-free.app"
+  "https://api.findrya.co.uk"
 )
   .replace(/"/g, "")
   .replace(/\/$/, "");

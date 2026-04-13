@@ -12,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
+import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
 import {
   Alert,
   Image,
@@ -25,16 +26,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
-const countries = [
-  {
-    name: "United Kingdom",
-    code: "+44",
-    flag: "https://flagcdn.com/w40/gb.png",
-  },
-  { name: "United States", code: "+1", flag: "https://flagcdn.com/w40/us.png" },
-  { name: "Canada", code: "+1", flag: "https://flagcdn.com/w40/ca.png" },
-  { name: "Australia", code: "+61", flag: "https://flagcdn.com/w40/au.png" },
-];
+
 
 const ProfileSettingScreen = () => {
   const router = useRouter();
@@ -43,10 +35,13 @@ const ProfileSettingScreen = () => {
   // ─── API ────────────────────────────────────────────────────────────────────
   const { data: profile, isLoading: profileLoading } =
     useGetUserProfileQuery(undefined);
+    console.log({profile})
   const [updateUserProfile] = useUpdateUserProfileMutation();
 
   // ─── Local state ────────────────────────────────────────────────────────────
-  const [selectedCountry, setSelectedCountry] = useState(countries[1]);
+  const [countryCode, setCountryCode] = useState<CountryCode>("US");
+  const [callingCode, setCallingCode] = useState("1");
+  const [isCountryPickerVisible, setCountryPickerVisible] = useState(false);
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -81,20 +76,7 @@ const ProfileSettingScreen = () => {
 
   // ─── Country picker ─────────────────────────────────────────────────────────
   const handleCountryPress = () => {
-    const options = countries.map((c) => `${c.name} (${c.code})`);
-    options.push("Cancel");
-    showActionSheetWithOptions(
-      {
-        options,
-        cancelButtonIndex: options.length - 1,
-        title: "Select Country",
-      },
-      (selectedIndex?: number) => {
-        if (selectedIndex !== undefined && selectedIndex < countries.length) {
-          setSelectedCountry(countries[selectedIndex]);
-        }
-      },
-    );
+    setCountryPickerVisible(true);
   };
 
   // ─── Image picker ────────────────────────────────────────────────────────────
@@ -147,11 +129,20 @@ const ProfileSettingScreen = () => {
     try {
       const formData = new FormData();
 
-      // ── Only these 4 keys go to PUT auth/profile/ ──
+      // ── Append scalar fields ──
       formData.append("first_name", form.firstName);
       formData.append("last_name", form.lastName);
-      formData.append("phone", form.phone);
-      formData.append("gender", form.gender);
+      
+      // ── Assemble global phone number ──
+      let cleanPhone = form.phone.replace(/[^\d+]/g, ''); // strip spaces, dashes, parens
+      if (cleanPhone && !cleanPhone.startsWith("+")) {
+        cleanPhone = `+${callingCode}${cleanPhone}`; // Add calling code if missing
+      }
+      formData.append("phone", cleanPhone);
+
+      if (form.gender) {
+        formData.append("gender", form.gender);
+      }
 
       // Image is optional — only append when the user picked a new one
       if (localImage) {
@@ -266,7 +257,7 @@ const ProfileSettingScreen = () => {
               className="flex-row items-center mr-3"
             >
               <Image
-                source={{ uri: selectedCountry.flag }}
+                source={{ uri: `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` }}
                 className="w-6 h-4 rounded-sm"
               />
               <Ionicons
@@ -281,7 +272,7 @@ const ProfileSettingScreen = () => {
               style={{ fontFamily: "QuickSand-SemiBold" }}
               className="text-base text-gray-700 mr-1"
             >
-              {selectedCountry.code}
+              +{callingCode}
             </Text>
             <TextInput
               value={form.phone}
@@ -332,6 +323,23 @@ const ProfileSettingScreen = () => {
           />
         </View>
       </KeyboardAwareScrollView>
+
+      {isCountryPickerVisible && (
+        <CountryPicker
+          visible={isCountryPickerVisible}
+          countryCode={countryCode} // <-- ADDED THIS REQUIRED PROP
+          onClose={() => setCountryPickerVisible(false)}
+          onSelect={(country) => {
+            setCountryCode(country.cca2);
+            setCallingCode(country.callingCode[0] || "1");
+            setCountryPickerVisible(false);
+          }}
+          withFilter
+          withCallingCode
+          withAlphaFilter
+          containerButtonStyle={{ display: "none" }}
+        />
+      )}
     </SafeAreaView>
   );
 };

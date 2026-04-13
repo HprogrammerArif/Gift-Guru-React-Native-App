@@ -98,14 +98,13 @@ const MembershipScreen = () => {
   const handlePurchase = async (pkg: PurchasesPackage) => {
     setIsPurchasing(true);
     try {
-      const customerInfo = await purchasePackage(pkg);
-      if (customerInfo?.entitlements.active["premium"]) {
-        Alert.alert("🎉 Success!", "Welcome to Premium! Your features are now unlocked.");
-        // The addCustomerInfoUpdateListener in _layout.tsx will automatically update Redux
-      }
-    } catch (error: any) {
-      if (!error?.userCancelled) {
-        Alert.alert("Purchase Error", error.message || "Something went wrong.");
+      const result = await purchasePackage(pkg);
+      if (result.success) {
+        if (result.data.entitlements.active["premium"]) {
+          Alert.alert("🎉 Success!", "Welcome to Premium! Your features are now unlocked.");
+        }
+      } else if (!result.userCancelled) {
+        Alert.alert("Purchase Error", result.error);
       }
     } finally {
       setIsPurchasing(false);
@@ -115,14 +114,16 @@ const MembershipScreen = () => {
   const handleRestore = async () => {
     setIsPurchasing(true);
     try {
-      const customerInfo = await restorePurchases();
-      if (customerInfo?.entitlements.active["premium"]) {
-        Alert.alert("✅ Restored!", "Your premium subscription has been restored.");
+      const result = await restorePurchases();
+      if (result.success) {
+        if (result.data.entitlements.active["premium"]) {
+          Alert.alert("✅ Restored!", "Your premium subscription has been restored.");
+        } else {
+          Alert.alert("No Purchase Found", "We couldn't find any active subscriptions to restore.");
+        }
       } else {
-        Alert.alert("No Purchase Found", "We couldn't find any active subscriptions to restore.");
+        Alert.alert("Restore Error", result.error);
       }
-    } catch (error) {
-      Alert.alert("Restore Error", "An error occurred while restoring purchases.");
     } finally {
       setIsPurchasing(false);
     }

@@ -1,8 +1,8 @@
 import SplashScreenView from "@/components/SplashScreen";
-import { selectCurrentToken } from "@/redux/features/auth/authSlice";
+import { selectCurrentToken, selectCurrentUser } from "@/redux/features/auth/authSlice";
 import { setPremiumStatus } from "@/redux/features/revenuecat/revenuecatSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { addCustomerInfoListener, initializeRevenueCat } from "@/utils/revenuecat";
+import { addCustomerInfoListener, initializeRevenueCat, loginRevenueCat, logOutRevenueCat } from "@/utils/revenuecat";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { useFonts } from "expo-font";
 import { useKeepAwake } from "expo-keep-awake";
@@ -111,6 +111,7 @@ function AppLayout() {
   useKeepAwake();
   const dispatch = useAppDispatch();
   const token = useAppSelector(selectCurrentToken);
+  const user = useAppSelector(selectCurrentUser);
   const [appIsReady, setAppIsReady] = useState(false);
 
   const [fontsLoaded, error] = useFonts({
@@ -123,7 +124,8 @@ function AppLayout() {
 
   // ── RevenueCat: initialize and listen for subscription changes ──
   useEffect(() => {
-    initializeRevenueCat(token ? String(token) : undefined).catch(console.error);
+    // Configure RevenueCat ONCE using the persisted user ID
+    initializeRevenueCat(user?.user_id ? String(user.user_id) : undefined).catch(console.error);
 
     const removeListener = addCustomerInfoListener((customerInfo) => {
       const premiumEntitlement = customerInfo.entitlements.active['premium'];
@@ -139,7 +141,16 @@ function AppLayout() {
     return () => {
       removeListener();
     };
-  }, [token]);
+  }, []); // Run only once on mount to avoid configuring multiple times
+
+  // Listen for login events and tie RevenueCat purchases to the user ID
+  useEffect(() => {
+    if (user?.user_id) {
+       loginRevenueCat(String(user.user_id)).catch(console.error);
+    } else {
+       logOutRevenueCat().catch(console.error);
+    }
+  }, [user?.user_id]);
 
   useEffect(() => {
     if (error) throw error;
