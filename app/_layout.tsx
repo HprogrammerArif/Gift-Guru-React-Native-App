@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { addCustomerInfoListener, initializeRevenueCat, loginRevenueCat, logOutRevenueCat } from "@/utils/revenuecat";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { useFonts } from "expo-font";
-import { useKeepAwake } from "expo-keep-awake";
+
 import {
   SplashScreen,
   Stack,
@@ -108,7 +108,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 
 // Inner component — can safely use Redux hooks because <Provider> is above it
 function AppLayout() {
-  useKeepAwake();
+
   const dispatch = useAppDispatch();
   const token = useAppSelector(selectCurrentToken);
   const user = useAppSelector(selectCurrentUser);

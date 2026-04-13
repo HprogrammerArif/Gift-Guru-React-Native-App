@@ -289,9 +289,17 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
               />
             </View>
             <View className="flex-1">
-              <Text className="text-[10px] font-bold text-[#0071e3] mb-0.5">
-                AVAILABLE ON AMAZON
-              </Text>
+              <View className="flex-row items-center gap-2 mb-0.5">
+                <Text className="text-[10px] font-bold text-[#0071e3]">
+                  AVAILABLE ON AMAZON
+                </Text>
+                {/* FTC/ASA required affiliate disclosure */}
+                <View className="bg-gray-200 px-1.5 py-0.5 rounded">
+                  <Text className="text-[8px] text-gray-500 font-bold uppercase tracking-wide">
+                    Affiliate
+                  </Text>
+                </View>
+              </View>
               <Text
                 className="text-xs text-gray-700 font-medium"
                 numberOfLines={1}

@@ -83,10 +83,10 @@ const SignUp = () => {
       );
     }
 
-    if (password.length < 6) {
+    if (password.length < 8) {
       return Alert.alert(
         "Weak Password",
-        "Password must be at least 6 characters",
+        "Password must be at least 8 characters",
       );
     }
 

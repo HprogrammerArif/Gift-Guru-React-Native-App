@@ -63,10 +63,10 @@ const SignIn = () => {
           }),
         );
 
-        // Remember Me OFF → purge SecureStore so credentials are not saved.
-        // User stays logged in this session only; next launch goes to sign-in.
+        // If "Remember Me" is OFF, purge the persisted store on NEXT launch
+        // by scheduling this AFTER navigation so the token write completes first.
         if (!rememberMe) {
-          await persistor.purge();
+          setTimeout(() => persistor.purge(), 500);
         }
 
         router.replace("/(drawer)/(tabs)");

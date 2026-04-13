@@ -313,12 +313,18 @@ const MembershipScreen = () => {
         )}
 
         {/* Restore Button */}
-        <TouchableOpacity 
-          onPress={handleRestore} 
+        <TouchableOpacity
+          onPress={handleRestore}
           disabled={isPurchasing}
-          className="items-center mb-8"
+          className="flex-row items-center justify-center gap-2 mb-8 border border-gray-200 rounded-2xl py-3 px-6"
+          accessibilityLabel="Restore previous purchases"
+          accessibilityRole="button"
         >
-          <Text className="text-[#2B7FFF] underline text-sm">
+          <Ionicons name="refresh" size={16} color="#2B7FFF" />
+          <Text
+            style={{ fontFamily: "QuickSand-SemiBold" }}
+            className="text-[#2B7FFF] text-sm"
+          >
             Restore Purchases
           </Text>
         </TouchableOpacity>

@@ -131,7 +131,8 @@ const DashboardScreen = () => {
   const { data: stats, isLoading: isStatsLoading } =
     useGetUserStatsQuery(undefined);
 
-  console.log({ stats });
+
+
   const { data: engagement, isLoading: isEngagementLoading } =
     useGetLinkEngagementQuery(selectedYear);
   const { data: topItemsData, isLoading: isTopItemsLoading } =

@@ -44,29 +44,28 @@ const baseQueryWithReauth: any = async (
   extraOptions: any,
 ) => {
   const requestUrl = typeof args === "string" ? args : args.url;
-  console.log(`[RTK Query] 📡 Requesting: ${API_URL}/${requestUrl}`);
+  if (__DEV__) console.log(`[RTK Query] 📡 Requesting: ${API_URL}/${requestUrl}`);
 
   let result = await baseQuery(args, api, extraOptions);
 
   const is403Error = result.error?.status === 403;
 
-  if (result.error) {
-    // Only log errors that aren't expected 403s on approve/reject
-    if (!is403Error) {
-      console.log(`[RTK Query] ❌ Error for ${requestUrl}:`, result.error);
+  if (__DEV__) {
+    if (result.error) {
+      if (!is403Error) console.log(`[RTK Query] ❌ Error for ${requestUrl}:`, result.error);
+    } else {
+      console.log(`[RTK Query] ✅ Success for ${requestUrl}:`, result.data);
     }
-  } else {
-    console.log(`[RTK Query] ✅ Success for ${requestUrl}:`, result.data);
   }
 
   // Handle known errors
   if (result.error?.status === 401) {
-    console.log("Token expired — attempting refresh");
+    if (__DEV__) console.log("Token expired — attempting refresh");
 
     const refreshToken = (api.getState() as RootState).auth.refreshToken;
 
     if (!refreshToken) {
-      console.log("No refresh token available - logging out");
+      if (__DEV__) console.log("No refresh token available - logging out");
       api.dispatch(logout());
       return result;
     }
@@ -103,7 +102,7 @@ const baseQueryWithReauth: any = async (
         throw new Error("Refresh failed");
       }
     } catch (error) {
-      console.log("Refresh failed — logging out");
+      if (__DEV__) console.log("Refresh failed — logging out");
       api.dispatch(logout());
       Toast.show({
         type: "error",

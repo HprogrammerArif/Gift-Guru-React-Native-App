@@ -35,7 +35,6 @@ const ProfileSettingScreen = () => {
   // ─── API ────────────────────────────────────────────────────────────────────
   const { data: profile, isLoading: profileLoading } =
     useGetUserProfileQuery(undefined);
-    console.log({profile})
   const [updateUserProfile] = useUpdateUserProfileMutation();
 
   // ─── Local state ────────────────────────────────────────────────────────────
