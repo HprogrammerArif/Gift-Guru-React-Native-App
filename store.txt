@@ -1,0 +1,152 @@
+## 📋 Google Play Policies for GiftGuru (Amazon Affiliate App)
+
+---
+
+### ⚠️ Key Policies You Must Follow
+
+#### 1. **Affiliate Links Policy**
+| Rule | What It Means for GiftGuru |
+|---|---|
+| ✅ Amazon links for **physical products** = ALLOWED | GiftGuru shows gift products → OK |
+| ❌ Links opening inside **WebView** = BANNED | Must open in external browser (Chrome, etc.) |
+| ❌ App that is **just a link wrapper** = BANNED | Must have genuine social/community features |
+| ✅ Clearly disclose affiliate links to users | Add "Contains affiliate links" note in app |
+| ❌ Disguising affiliate links = BANNED | Don't hide that links go to Amazon |
+
+#### 2. **Subscription/Billing Policy**
+| Rule | Status |
+|---|---|
+| Premium features must use Google Play Billing | ✅ You're using RevenueCat → Google Play Billing |
+| Free users must still access basic features | ⚠️ Make sure free tier exists |
+| Amazon purchases happen outside the app | ✅ Opens browser → Google doesn't take cut |
+
+#### 3. **Amazon Associates Rules**
+| Rule | What To Do |
+|---|---|
+| No WebViews of Amazon pages | Use `Linking.openURL()` in React Native |
+| App must have original content | ✅ Your social platform features cover this |
+| Don't copy Amazon's app functionality | Keep it social/gift-focused, not a shop clone |
+| Affiliate links must be free to access | ⚠️ Don't lock affiliate links behind paywall |
+
+---
+
+### 🏪 Play Store Listing Description
+
+Go to **Play Console → Store presence → Main store listing**
+
+---
+
+#### **App Name** (max 30 chars)
+```
+GiftGuru – Gift & Wishlist App
+```
+
+---
+
+#### **Short Description** (max 80 chars)
+```
+Share Amazon gift ideas, wishlists & earn with your affiliate links.
+```
+
+---
+
+#### **Full Description** (max 4,000 chars) — Copy & paste this:
+
+```
+🎁 GiftGuru — The Social Platform for Gift Lovers & Amazon Affiliates
+
+Discover, share, and curate the perfect gifts for every occasion. GiftGuru 
+is a social gifting community where you can build beautiful wishlists, 
+share Amazon product recommendations, and connect with friends and family 
+around the gifts that matter most.
+
+━━━━━━━━━━━━━━━━━━━━━
+🌟 WHY GIFTGURU?
+━━━━━━━━━━━━━━━━━━━━━
+
+Whether you're shopping for birthdays, holidays, weddings, or just treating 
+yourself — GiftGuru makes gift discovery social, fun, and effortless.
+
+Amazon Associates & content creators can also use GiftGuru to share their 
+affiliate product links with followers and build curated gift collections 
+in one place.
+
+━━━━━━━━━━━━━━━━━━━━━
+✨ KEY FEATURES
+━━━━━━━━━━━━━━━━━━━━━
+
+🎀 Create & Share Gift Lists
+Build beautiful, organized gift wishlists for any occasion and share them 
+with friends and family.
+
+🔗 Amazon Product Links
+Add Amazon product links to your lists and collections. Links open securely 
+in your browser. App contains affiliate links.
+
+👥 Social Community
+Follow other gift enthusiasts, discover trending gift ideas, and get 
+inspired by curated collections.
+
+🔔 Smart Reminders
+Never miss a birthday, anniversary, or holiday with personalized event 
+reminders.
+
+⭐ Premium Features
+Upgrade to GiftGuru Premium for unlimited lists, your own Amazon affiliate 
+ID integration, and priority support.
+
+━━━━━━━━━━━━━━━━━━━━━
+💎 GIFTGURU PREMIUM
+━━━━━━━━━━━━━━━━━━━━━
+
+• Add unlimited Amazon product links
+• Use your own Amazon affiliate ID
+• No account configuration required
+• Priority support
+
+━━━━━━━━━━━━━━━━━━━━━
+📌 IMPORTANT NOTE
+━━━━━━━━━━━━━━━━━━━━━
+
+GiftGuru displays Amazon product links for gifting inspiration. Clicking 
+product links will open your browser and take you to Amazon's website. 
+Some links may be affiliate links. Purchases are made directly on Amazon 
+and are subject to Amazon's terms and pricing.
+
+GiftGuru is not affiliated with or endorsed by Amazon.com, Inc.
+```
+
+---
+
+### 📍 Where to Find Store Listing in Play Console
+
+```
+Play Console
+  → Your App (GiftGuru)
+  → Grow users (left sidebar)
+  → Store presence
+  → Main store listing
+```
+
+Fill in:
+- **App name**
+- **Short description**
+- **Full description**
+- **Screenshots** (required — at least 2)
+- **Feature graphic** (1024×500 px banner image)
+
+---
+
+### ✅ Critical Checklist Before Submitting
+
+- [ ] Amazon links open in **external browser** (not WebView) in your code
+- [ ] Add "Contains affiliate links" disclosure visible in the app
+- [ ] Free users can still use **basic features** (don't lock everything)
+- [ ] App has genuine **social features** beyond just links
+- [ ] Description includes the **Amazon disclaimer** at the bottom
+
+---
+
+> 💡 **Affiliate link lock rule**: Google allows premium subscription features, but **the affiliate links themselves should be accessible to free users too**. Lock things like "unlimited links" or "custom affiliate ID" — not the links entirely.
+
+Want me to check your code to make sure Amazon links open in the **external browser** correctly? That's the most important technical compliance point!

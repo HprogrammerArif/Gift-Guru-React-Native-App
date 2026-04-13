@@ -63,7 +63,7 @@ export default function SearchWithFilterScreen() {
     
     const q = debouncedSearch.trim();
     if (q) {
-      params.query = q;
+      params.q = q;
     }
 
     if (appliedCategory !== null) {
