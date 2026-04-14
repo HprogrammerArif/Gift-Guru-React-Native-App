@@ -2,7 +2,7 @@ import { RECOMMENDED_DATA } from "@/constants";
 import { useGetUnreadCountQuery } from "@/redux/features/notifications/notificationApi";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, memo } from "react";
 import {
   Dimensions,
   FlatList,
@@ -36,30 +36,32 @@ const HomeHeader = ({
   // Create a large dataset for "infinite" scrolling simulation
   // This is a common high-performance pattern for React Native carousels
   const infiniteData = React.useMemo(
-    () => Array.from({ length: 1000 }).flatMap(() => RECOMMENDED_DATA),
+    () => Array.from({ length: 100 }).flatMap(() => RECOMMENDED_DATA),
     [],
   );
+  // ✅ Use a ref so setInterval doesn't recreate every tick
+  const currentIndexRef = useRef(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const nextIndex = currentIndex + 1;
-      // If we get huge, silently reset. But 1000 * 6 items is plenty for hours.
+      const nextIndex = currentIndexRef.current + 1;
       if (nextIndex >= infiniteData.length) {
         flatListRef.current?.scrollToIndex({ index: 0, animated: false });
+        currentIndexRef.current = 0;
         setCurrentIndex(0);
         return;
       }
-
       flatListRef.current?.scrollToIndex({
         index: nextIndex,
         animated: true,
         viewOffset: 0,
       });
+      currentIndexRef.current = nextIndex;
       setCurrentIndex(nextIndex);
     }, 2000);
-
     return () => clearInterval(interval);
-  }, [currentIndex, infiniteData.length]);
+  // ✅ No stale closure — reads from ref, only depends on data length
+  }, [infiniteData.length]);
 
   return (
     <View className=" px-2 pt-4 pb-6 ">
@@ -109,4 +111,4 @@ const HomeHeader = ({
   );
 };
 
-export default HomeHeader;
+export default memo(HomeHeader);

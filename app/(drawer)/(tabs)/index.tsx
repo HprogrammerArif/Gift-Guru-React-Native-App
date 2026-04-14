@@ -64,6 +64,13 @@ export default function Home() {
   const [isReady, setIsReady] = useState(false);
   const navigation = useNavigation();
 
+  // Stable callbacks — hoisted OUT of JSX so they never create new references on render
+  const handleMenuPress = useCallback(
+    () => (navigation as any).openDrawer(),
+    [navigation],
+  );
+  const handleNotificationPress = useCallback(() => {}, []);
+
   // Defer heavy rendering until after basic navigation/splash hide
   useEffect(() => {
     const task = InteractionManager.runAfterInteractions(() => {
@@ -94,9 +101,8 @@ export default function Home() {
     [],
   );
 
-  console.log({posts})
-
   const keyExtractor = useCallback((item: ApiPost) => String(item.id), []);
+
 
   const renderEmpty = useCallback(() => {
     if (isLoading || !isReady) return null;
@@ -120,11 +126,8 @@ export default function Home() {
       <HomeHeader
         value={search}
         onSearch={setSearch}
-        onMenuPress={useCallback(
-          () => (navigation as any).openDrawer(),
-          [navigation],
-        )}
-        onNotificationPress={useCallback(() => {}, [])}
+        onMenuPress={handleMenuPress}
+        onNotificationPress={handleNotificationPress}
       />
 
       <FlatList

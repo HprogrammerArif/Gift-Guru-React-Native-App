@@ -28,6 +28,7 @@ const RecommendedCarousel = () => {
   const { data, isLoading } = useGetRecommendedPostsQuery(undefined);
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
+  const currentIndexRef = useRef(0);
 
   const posts: ApiPost[] = useMemo(
     () => (Array.isArray(data) ? data : ((data as any)?.results ?? [])),
@@ -51,9 +52,10 @@ const RecommendedCarousel = () => {
   useEffect(() => {
     if (infiniteData.length === 0) return;
     const interval = setInterval(() => {
-      const nextIndex = currentIndex + 1;
+      const nextIndex = currentIndexRef.current + 1;
       if (nextIndex >= infiniteData.length) {
         flatListRef.current?.scrollToIndex({ index: 0, animated: false });
+        currentIndexRef.current = 0;
         setCurrentIndex(0);
         return;
       }
@@ -62,10 +64,12 @@ const RecommendedCarousel = () => {
         animated: true,
         viewOffset: 0,
       });
+      currentIndexRef.current = nextIndex;
       setCurrentIndex(nextIndex);
     }, 2500);
     return () => clearInterval(interval);
-  }, [currentIndex, infiniteData.length]);
+  // ✅ Reads index from ref — interval only recreates when data changes
+  }, [infiniteData.length]);
 
   return (
     <LinearGradient

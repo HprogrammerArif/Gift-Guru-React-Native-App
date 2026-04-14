@@ -6,6 +6,7 @@ import { API_IMAGE_URL } from "@/redux/api/baseApi";
 import {
   useGetUserProfileQuery,
   useUpdateUserProfileMutation,
+  useDeleteAccountMutation,
 } from "@/redux/features/profileService/profileApi";
 import { useActionSheet } from "@expo/react-native-action-sheet";
 import { Ionicons } from "@expo/vector-icons";
@@ -13,6 +14,11 @@ import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import CountryPicker, { CountryCode } from "react-native-country-picker-modal";
+import { useAppDispatch } from "@/redux/hooks";
+import { logout } from "@/redux/features/auth/authSlice";
+import { clearPremiumStatus } from "@/redux/features/revenuecat/revenuecatSlice";
+import { logOutRevenueCat } from "@/utils/revenuecat";
+import { baseApi } from "@/redux/api/baseApi";
 import {
   Alert,
   Image,
@@ -30,12 +36,14 @@ import Toast from "react-native-toast-message";
 
 const ProfileSettingScreen = () => {
   const router = useRouter();
+  const dispatch = useAppDispatch();
   const { showActionSheetWithOptions } = useActionSheet();
 
   // ─── API ────────────────────────────────────────────────────────────────────
   const { data: profile, isLoading: profileLoading } =
     useGetUserProfileQuery(undefined);
   const [updateUserProfile] = useUpdateUserProfileMutation();
+  const [deleteAccount] = useDeleteAccountMutation();
 
   // ─── Local state ────────────────────────────────────────────────────────────
   const [countryCode, setCountryCode] = useState<CountryCode>("US");
@@ -173,6 +181,39 @@ const ProfileSettingScreen = () => {
     }
   };
 
+  // ─── Delete Account ──────────────────────────────────────────────────────────
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to permanently delete your account? All your posts, wishlists, and data will be removed. This cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res: any = await deleteAccount(undefined);
+              if (res?.error) {
+                const msg = res.error?.data?.detail || res.error?.data?.message || "Failed to delete account. Please try again.";
+                Alert.alert("Error", msg);
+                return;
+              }
+              // Clean up all session state
+              await logOutRevenueCat().catch(console.error);
+              dispatch(clearPremiumStatus());
+              dispatch(logout());
+              dispatch(baseApi.util.resetApiState());
+              router.replace("/(auth)/sign-in");
+            } catch {
+              Alert.alert("Error", "Something went wrong. Please try again.");
+            }
+          },
+        },
+      ]
+    );
+  };
+
   // ─── Render ──────────────────────────────────────────────────────────────────
   return (
     <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
@@ -307,6 +348,8 @@ const ProfileSettingScreen = () => {
         <TouchableOpacity
           onPress={() => router.push("/change-password")}
           className="mb-8"
+          accessibilityLabel="Change password"
+          accessibilityRole="button"
         >
           <Text className="text-[#2B7FFF] text-lg font-quicksand-bold underline">
             Change password
@@ -314,13 +357,59 @@ const ProfileSettingScreen = () => {
         </TouchableOpacity>
 
         {/* Update Button */}
-        <View className="mt-auto">
+        <View className="mb-6">
           <GradientButton
             title="Update profile"
             onPress={handleUpdate}
             isLoading={isSubmitting || profileLoading}
           />
         </View>
+
+        {/* Legal Links */}
+        <View className="border-t border-gray-100 pt-6 mb-4 gap-4">
+          <TouchableOpacity
+            onPress={() => router.push("/privacy-policy")}
+            className="flex-row items-center justify-between py-3 border-b border-gray-50"
+            accessibilityLabel="Privacy Policy"
+            accessibilityRole="button"
+          >
+            <View className="flex-row items-center gap-3">
+              <Ionicons name="shield-checkmark-outline" size={20} color="#6B7280" />
+              <Text style={{ fontFamily: "QuickSand-SemiBold" }} className="text-gray-700 text-[15px]">
+                Privacy Policy
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => router.push("/terms-of-service")}
+            className="flex-row items-center justify-between py-3 border-b border-gray-50"
+            accessibilityLabel="Terms of Service"
+            accessibilityRole="button"
+          >
+            <View className="flex-row items-center gap-3">
+              <Ionicons name="document-text-outline" size={20} color="#6B7280" />
+              <Text style={{ fontFamily: "QuickSand-SemiBold" }} className="text-gray-700 text-[15px]">
+                Terms of Service
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Delete Account */}
+        <TouchableOpacity
+          onPress={handleDeleteAccount}
+          className="flex-row items-center justify-center gap-2 border border-red-200 rounded-2xl py-3 px-6 mb-8"
+          accessibilityLabel="Delete account permanently"
+          accessibilityRole="button"
+        >
+          <Ionicons name="trash-outline" size={16} color="#EF4444" />
+          <Text style={{ fontFamily: "QuickSand-SemiBold" }} className="text-red-500 text-sm">
+            Delete Account
+          </Text>
+        </TouchableOpacity>
       </KeyboardAwareScrollView>
 
       {isCountryPickerVisible && (

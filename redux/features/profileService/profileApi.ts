@@ -76,8 +76,16 @@ const profileApi = baseApi.injectEndpoints({
       }),
     }),
 
+    // DELETE ACCOUNT — required by App Store & Play Store policies
+    deleteAccount: builder.mutation({
+      query: () => ({
+        url: "auth/profile/",
+        method: "DELETE",
+      }),
+    }),
+
     // END
   }),
 });
 
-export const { useGetUserProfileQuery, useGetCoParentProfileQuery, useUpdateUserProfileMutation, useGetPendingInvitationsQuery, useAcceptInvitationMutation, useRejectInvitationMutation, useWithdrawInvitationMutation, useGetLegalAndPrivacyPolicyQuery } = profileApi;
+export const { useGetUserProfileQuery, useGetCoParentProfileQuery, useUpdateUserProfileMutation, useGetPendingInvitationsQuery, useAcceptInvitationMutation, useRejectInvitationMutation, useWithdrawInvitationMutation, useGetLegalAndPrivacyPolicyQuery, useDeleteAccountMutation } = profileApi;
