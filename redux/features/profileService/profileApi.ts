@@ -71,8 +71,15 @@ const profileApi = baseApi.injectEndpoints({
     // legal and privacy policy
     getLegalAndPrivacyPolicy: builder.query({
       query: () => ({
-        url: "about/legal-privacy/",
+        url: "auth/privacy-policy/",
        
+      }),
+    }),
+
+    // terms of service
+    getTermsOfService: builder.query({
+      query: () => ({
+        url: "auth/terms-service/",
       }),
     }),
 
@@ -88,4 +95,4 @@ const profileApi = baseApi.injectEndpoints({
   }),
 });
 
-export const { useGetUserProfileQuery, useGetCoParentProfileQuery, useUpdateUserProfileMutation, useGetPendingInvitationsQuery, useAcceptInvitationMutation, useRejectInvitationMutation, useWithdrawInvitationMutation, useGetLegalAndPrivacyPolicyQuery, useDeleteAccountMutation } = profileApi;
+export const { useGetUserProfileQuery, useGetCoParentProfileQuery, useUpdateUserProfileMutation, useGetPendingInvitationsQuery, useAcceptInvitationMutation, useRejectInvitationMutation, useWithdrawInvitationMutation, useGetLegalAndPrivacyPolicyQuery, useDeleteAccountMutation, useGetTermsOfServiceQuery } = profileApi;

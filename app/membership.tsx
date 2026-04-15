@@ -1,5 +1,6 @@
 import { getOfferings, purchasePackage, restorePurchases } from "@/utils/revenuecat";
 import { usePremium } from "@/hooks/usePremium";
+import { useGetMySubscriptionQuery } from "@/redux/features/subscription/subscriptionApi";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState, useCallback } from "react";
@@ -71,9 +72,168 @@ const FAQItem = ({
   );
 };
 
+// ── Current Subscription Status Card ──────────────────────────────────────────
+const CurrentPlanCard = ({ data }: { data: any }) => {
+  if (!data) return null;
+
+  const { plan, status, start_date, end_date, days_remaining, payment_method, is_active } = data;
+
+  const isPaidPlan = plan?.slug !== "free";
+  const isActive = is_active;
+
+  // Format date nicely
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return null;
+    return new Date(dateStr).toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  // Badge colour based on status
+  const statusBg = status === "active" ? "bg-emerald-500" : "bg-red-400";
+  const statusLabel = status === "active" ? "Active" : status;
+
+  return (
+    <View
+      className={`rounded-[28px] p-6 mb-8 ${isPaidPlan ? "bg-[#2B7FFF]" : "bg-[#1F2937]"}`}
+      style={{
+        shadowColor: isPaidPlan ? "#2B7FFF" : "#000",
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.25,
+        shadowRadius: 16,
+        elevation: 8,
+      }}
+    >
+      {/* Top row */}
+      <View className="flex-row justify-between items-center mb-4">
+        <Text
+          style={{ fontFamily: "QuickSand-Bold" }}
+          className="text-white/70 text-xs uppercase tracking-widest"
+        >
+          Current Plan
+        </Text>
+        <View className={`${statusBg} px-3 py-1 rounded-full`}>
+          <Text
+            style={{ fontFamily: "QuickSand-Bold" }}
+            className="text-white text-[10px] uppercase tracking-wider"
+          >
+            {statusLabel}
+          </Text>
+        </View>
+      </View>
+
+      {/* Plan name */}
+      <Text
+        style={{ fontFamily: "QuickSand-Bold" }}
+        className="text-white text-4xl mb-1 uppercase tracking-tight"
+      >
+        {plan?.name ?? "—"}
+      </Text>
+
+      {/* Price */}
+      <Text
+        style={{ fontFamily: "QuickSand-Medium" }}
+        className="text-white/60 text-sm mb-5"
+      >
+        {parseFloat(plan?.price ?? "0") === 0
+          ? "Free — no payment required"
+          : `$${plan?.price} / ${(plan?.duration_days ?? 30) >= 300 ? "year" : "month"}`}
+      </Text>
+
+      {/* Feature pills */}
+      {plan?.features?.length > 0 && (
+        <View className="mb-5 gap-2">
+          {plan.features.map((f: string, i: number) => (
+            <View key={i} className="flex-row items-start">
+              <View className="bg-white/20 rounded-full p-0.5 mr-2 mt-0.5">
+                <Ionicons name="checkmark" size={10} color="white" />
+              </View>
+              <Text
+                style={{ fontFamily: "QuickSand-Medium" }}
+                className="text-white/80 text-xs flex-1 leading-5"
+              >
+                {f}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
+
+      {/* Divider */}
+      <View className="border-t border-white/20 mb-4" />
+
+      {/* Meta row */}
+      <View className="flex-row justify-between flex-wrap gap-y-2">
+        {start_date && (
+          <View className="flex-row items-center">
+            <Ionicons name="calendar-outline" size={13} color="rgba(255,255,255,0.6)" />
+            <Text
+              style={{ fontFamily: "QuickSand-Medium" }}
+              className="text-white/60 text-xs ml-1"
+            >
+              Started {formatDate(start_date)}
+            </Text>
+          </View>
+        )}
+        {end_date ? (
+          <View className="flex-row items-center">
+            <Ionicons name="time-outline" size={13} color="rgba(255,255,255,0.6)" />
+            <Text
+              style={{ fontFamily: "QuickSand-Medium" }}
+              className="text-white/60 text-xs ml-1"
+            >
+              Expires {formatDate(end_date)}
+            </Text>
+          </View>
+        ) : (
+          <View className="flex-row items-center">
+            <Ionicons name="infinite-outline" size={13} color="rgba(255,255,255,0.6)" />
+            <Text
+              style={{ fontFamily: "QuickSand-Medium" }}
+              className="text-white/60 text-xs ml-1"
+            >
+              No expiry
+            </Text>
+          </View>
+        )}
+        {days_remaining !== null && days_remaining !== undefined && (
+          <View className="flex-row items-center">
+            <Ionicons name="hourglass-outline" size={13} color="rgba(255,255,255,0.6)" />
+            <Text
+              style={{ fontFamily: "QuickSand-Medium" }}
+              className="text-white/60 text-xs ml-1"
+            >
+              {days_remaining} days left
+            </Text>
+          </View>
+        )}
+        {payment_method && (
+          <View className="flex-row items-center">
+            <Ionicons name="card-outline" size={13} color="rgba(255,255,255,0.6)" />
+            <Text
+              style={{ fontFamily: "QuickSand-Medium" }}
+              className="text-white/60 text-xs ml-1 capitalize"
+            >
+              {payment_method}
+            </Text>
+          </View>
+        )}
+      </View>
+    </View>
+  );
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 const MembershipScreen = () => {
   const router = useRouter();
   const { isPremium, isLoading: isStatusLoading } = usePremium();
+
+  // ── Current subscription from backend ──────────────────────────────────────
+  const { data: currentSubscription, isLoading: isSubLoading } =
+    useGetMySubscriptionQuery(undefined);
 
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -170,7 +330,7 @@ const MembershipScreen = () => {
     },
   ];
 
-  if (isLoading || isStatusLoading) {
+  if (isLoading || isStatusLoading || isSubLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 items-center justify-center">
@@ -204,7 +364,20 @@ const MembershipScreen = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
       >
-        {/* Render RevenueCat Packages */}
+        {/* ── Current Plan Card ─────────────────────────────────────────────── */}
+        <CurrentPlanCard data={currentSubscription} />
+
+        {/* ── Section header for upgrade plans ─────────────────────────────── */}
+        {!isPremium && (offering?.availablePackages?.length ?? 0) > 0 && (
+          <Text
+            style={{ fontFamily: "QuickSand-Bold" }}
+            className="text-[#1F2937] text-lg mb-4 tracking-tight"
+          >
+            Upgrade Your Plan
+          </Text>
+        )}
+
+        {/* ── Render RevenueCat Packages ────────────────────────────────────── */}
         {offering?.availablePackages.map((pkg) => {
           const isAnnual = pkg.packageType === PACKAGE_TYPE.ANNUAL;
 
@@ -255,7 +428,6 @@ const MembershipScreen = () => {
               </View>
 
               <View className="space-y-4 mb-6">
-                {/* Default features if not provided by product description */}
                 {[
                   "Unlimited AI gift suggestions",
                   "Save unlimited gift lists",
@@ -296,7 +468,7 @@ const MembershipScreen = () => {
           );
         })}
 
-        {/* Current status info */}
+        {/* ── Premium active banner ─────────────────────────────────────────── */}
         {isPremium && (
           <View className="bg-green-50 rounded-2xl p-5 mb-10 border border-green-100 items-center">
             <Ionicons name="checkmark-circle" size={40} color="#10B981" />
@@ -312,7 +484,7 @@ const MembershipScreen = () => {
           </View>
         )}
 
-        {/* Restore Button */}
+        {/* ── Restore Button ────────────────────────────────────────────────── */}
         <TouchableOpacity
           onPress={handleRestore}
           disabled={isPurchasing}
@@ -329,7 +501,7 @@ const MembershipScreen = () => {
           </Text>
         </TouchableOpacity>
 
-        {/* FAQ Section */}
+        {/* ── FAQ Section ───────────────────────────────────────────────────── */}
         <View className="px-2">
           <Text
             style={{ fontFamily: "QuickSand-Bold" }}
