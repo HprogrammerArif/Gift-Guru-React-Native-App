@@ -2,7 +2,7 @@ import SplashScreenView from "@/components/SplashScreen";
 import { selectCurrentToken, selectCurrentUser } from "@/redux/features/auth/authSlice";
 import { setPremiumStatus } from "@/redux/features/revenuecat/revenuecatSlice";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
-import { addCustomerInfoListener, initializeRevenueCat, loginRevenueCat, logOutRevenueCat } from "@/utils/revenuecat";
+import { addCustomerInfoListener, getCustomerInfo, initializeRevenueCat, loginRevenueCat, logOutRevenueCat } from "@/utils/revenuecat";
 import { ActionSheetProvider } from "@expo/react-native-action-sheet";
 import { useFonts } from "expo-font";
 
@@ -124,9 +124,28 @@ function AppLayout() {
 
   // ── RevenueCat: initialize and listen for subscription changes ──
   useEffect(() => {
-    // Configure RevenueCat ONCE using the persisted user ID
-    initializeRevenueCat(user?.user_id ? String(user.user_id) : undefined).catch(console.error);
+    const setup = async () => {
+      // 1. Configure RC SDK with the user's ID
+      await initializeRevenueCat(user?.user_id ? String(user.user_id) : undefined).catch(console.error);
 
+      // 2. Immediately fetch cached CustomerInfo so premium status is available
+      //    RIGHT after launch — don't wait for the listener to fire.
+      const customerInfo = await getCustomerInfo();
+      if (customerInfo) {
+        const premiumEntitlement = customerInfo.entitlements.active['premium'];
+        dispatch(
+          setPremiumStatus({
+            isPremium: premiumEntitlement !== undefined,
+            entitlementId: premiumEntitlement?.identifier ?? null,
+            expirationDate: premiumEntitlement?.expirationDate ?? null,
+          })
+        );
+      }
+    };
+
+    setup();
+
+    // 3. Listen for real-time updates (purchases, restores, etc.)
     const removeListener = addCustomerInfoListener((customerInfo) => {
       const premiumEntitlement = customerInfo.entitlements.active['premium'];
       dispatch(

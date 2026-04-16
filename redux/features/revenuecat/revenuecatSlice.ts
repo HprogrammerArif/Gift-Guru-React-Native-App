@@ -20,7 +20,9 @@ const initialState: RevenueCatState = {
   isPremium: false,
   entitlementId: null,
   expirationDate: null,
-  isLoading: true,
+  // NOTE: Must be false — this state is persisted to disk via redux-persist.
+  // If true were persisted, the membership screen would be stuck loading on cold start.
+  isLoading: false,
 };
 
 // ─── Slice ────────────────────────────────────────────────────────────────────

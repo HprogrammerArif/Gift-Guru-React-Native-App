@@ -232,8 +232,13 @@ const MembershipScreen = () => {
   const { isPremium, isLoading: isStatusLoading } = usePremium();
 
   // ── Current subscription from backend ──────────────────────────────────────
-  const { data: currentSubscription, isLoading: isSubLoading } =
-    useGetMySubscriptionQuery(undefined);
+  // NOTE: Do NOT include isSubLoading in the full-screen loading gate.
+  // If the API is slow/retrying it causes the whole screen to reload repeatedly.
+  const { data: currentSubscription, isLoading: isSubLoading, isError: isSubError } =
+    useGetMySubscriptionQuery(undefined, {
+      // Don't refetch on every mount — avoids reload loop when navigating back
+      refetchOnMountOrArgChange: false,
+    });
 
   const [offering, setOffering] = useState<PurchasesOffering | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -330,7 +335,8 @@ const MembershipScreen = () => {
     },
   ];
 
-  if (isLoading || isStatusLoading || isSubLoading) {
+  // Only block on RC offerings — subscription API and Redux state are handled inline
+  if (isLoading) {
     return (
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1 items-center justify-center">
@@ -365,7 +371,34 @@ const MembershipScreen = () => {
         contentContainerStyle={{ padding: 20, paddingBottom: 60 }}
       >
         {/* ── Current Plan Card ─────────────────────────────────────────────── */}
-        <CurrentPlanCard data={currentSubscription} />
+        {isSubLoading ? (
+          // Inline skeleton — does NOT block the whole screen
+          <View
+            className="rounded-[28px] bg-gray-100 p-6 mb-8 items-center justify-center"
+            style={{ height: 180 }}
+          >
+            <ActivityIndicator size="small" color="#2B7FFF" />
+            <Text
+              style={{ fontFamily: "QuickSand-Medium" }}
+              className="text-gray-400 text-xs mt-2"
+            >
+              Loading subscription...
+            </Text>
+          </View>
+        ) : isSubError ? (
+          // Graceful fallback — don't crash if API is down
+          <View className="rounded-[28px] bg-gray-50 border border-gray-100 p-6 mb-8 items-center">
+            <Ionicons name="cloud-offline-outline" size={28} color="#9CA3AF" />
+            <Text
+              style={{ fontFamily: "QuickSand-Medium" }}
+              className="text-gray-400 text-sm mt-2 text-center"
+            >
+              Could not load subscription status
+            </Text>
+          </View>
+        ) : (
+          <CurrentPlanCard data={currentSubscription} />
+        )}
 
         {/* ── Section header for upgrade plans ─────────────────────────────── */}
         {!isPremium && (offering?.availablePackages?.length ?? 0) > 0 && (
