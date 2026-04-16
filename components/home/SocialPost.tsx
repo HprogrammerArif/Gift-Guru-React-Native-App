@@ -1,15 +1,20 @@
 import {
   useFollowUserMutation,
-  useLikePostMutation,
   useSavePostMutation,
   useTrackLinkClickMutation,
+  useDeletePostMutation,
+  useReportPostMutation,
+  useBlockUserMutation,
+  useLikePostMutation,
 } from "@/redux/features/posts/postApi";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
 import React, { useState } from "react";
 import { Alert, Linking, Text, TouchableOpacity, View } from "react-native";
+import Toast from "react-native-toast-message";
 import CommentsSheet from "./CommentsSheet";
+import PostOptionsSheet from "./PostOptionsSheet";
 
 // --- Types matching the backend API shape ---
 export interface PostUser {
@@ -85,6 +90,8 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
   const [isBookmarked, setIsBookmarked] = useState(post.is_saved ?? false);
   const [expanded, setExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showOptionsSheet, setShowOptionsSheet] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
   const [commentsCount, setCommentsCount] = useState(post.comments_count ?? 0);
 
   // API mutations
@@ -92,6 +99,9 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
   const [followUser] = useFollowUserMutation();
   const [savePost] = useSavePostMutation();
   const [trackLinkClick] = useTrackLinkClickMutation();
+  const [deletePost] = useDeletePostMutation();
+  const [reportPost] = useReportPostMutation();
+  const [blockUser] = useBlockUserMutation();
 
   const displayName =
     `${post.user?.first_name || ""} ${post.user?.last_name || ""}`.trim() ||
@@ -149,10 +159,6 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
       const res: any = await followUser(post.user.id);
       if (res?.error) {
         setIsFollowed(prev);
-        Alert.alert(
-          res?.error?.data?.error || "Error",
-          "Failed to follow user!",
-        );
       }
     } catch {
       setIsFollowed(prev);
@@ -162,6 +168,82 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
   const truncateText = (text: string, limit: number) => {
     return text.length > limit ? text.substring(0, limit) + ".." : text;
   };
+
+  const handleReport = () => {
+    Alert.alert("Report Content", "Are you sure you want to report this post?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Report",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const res: any = await reportPost(post.id);
+            if (res.error) throw new Error();
+            setIsHidden(true); // Hide immediately
+            Toast.show({
+              type: "success",
+              text1: "Post reported successfully.",
+              text2: "Our team will review this content shortly."
+            });
+          } catch (e) {
+            Toast.show({ type: "error", text1: "Failed to report post."});
+          }
+        },
+      },
+    ]);
+  };
+
+  const handleBlock = () => {
+    Alert.alert(
+      "Block User",
+      `Are you sure you want to block ${displayName}? You will no longer see their posts.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Block",
+          style: "destructive",
+        onPress: async () => {
+             try {
+              const res: any = await blockUser(post.user.id);
+              if (res.error) throw new Error();
+              setIsHidden(true); // Hide immediately
+              Toast.show({
+                type: "success",
+                text1: "User blocked successfully.",
+              });
+            } catch (e) {
+              Toast.show({ type: "error", text1: "Failed to block user."});
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDelete = () => {
+    Alert.alert("Delete Post", "Are you sure you want to delete this post?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+           try {
+              const res: any = await deletePost(post.id);
+              if (res.error) throw new Error();
+              setIsHidden(true); // Hide immediately
+              Toast.show({
+                type: "success",
+                text1: "Post deleted successfully.",
+              });
+            } catch (e) {
+              Toast.show({ type: "error", text1: "Failed to delete post."});
+            }
+        },
+      },
+    ]);
+  };
+
+  if (isHidden) return null;
 
   return (
     <View className="bg-white p-1 mb-4 border-gray-100 pb-4">
@@ -223,25 +305,12 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
           </View>
         </TouchableOpacity>
 
-        {/* Follow / dots */}
-        <TouchableOpacity
-          onPress={handleFollow}
-          className={`px-4 py-1.5 rounded-lg border ${
-            isFollowed
-              ? "bg-[#EEF2F6] text-[#006edb] border-[#006edb]"
-              : "border-gray-200 bg-white"
-          }`}
-        >
-          {isMyPost ? (
-            <Text className="text-xs text-gray-500 font-medium">• • •</Text>
-          ) : (
-            <Text
-              className={`text-xs font-semibold ${isFollowed ? "text-blue-500" : "text-gray-900"}`}
-            >
-              {isFollowed ? "Following" : "Follow"}
-            </Text>
-          )}
-        </TouchableOpacity>
+        {/* More Options / Dots */}
+        <View className="flex-row items-center gap-1">
+          <TouchableOpacity onPress={() => setShowOptionsSheet(true)} className="p-2">
+            <Ionicons name="ellipsis-horizontal" size={20} color="#65676B" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Content */}
@@ -385,6 +454,19 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
         postId={post.id}
         initialComments={initialComments}
         onCommentPosted={() => setCommentsCount((prev) => prev + 1)}
+      />
+
+      {/* Post Action Sheet */}
+      <PostOptionsSheet
+        visible={showOptionsSheet}
+        onClose={() => setShowOptionsSheet(false)}
+        isMyPost={!!isMyPost}
+        isFollowed={isFollowed}
+        displayName={displayName}
+        onFollowToggle={handleFollow}
+        onBlock={handleBlock}
+        onReport={handleReport}
+        onDelete={handleDelete}
       />
     </View>
   );

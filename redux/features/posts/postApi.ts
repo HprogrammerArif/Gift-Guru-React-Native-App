@@ -211,6 +211,24 @@ const postApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+
+    // Report a post
+    reportPost: builder.mutation({
+      query: (postId: string | number) => ({
+        url: `social/posts/${postId}/report/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Posts"], // Refresh feed logic
+    }),
+
+    // Block a user
+    blockUser: builder.mutation({
+      query: (userId: string | number) => ({
+        url: `auth/block/${userId}/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Posts", "Follows"], // Probably invalidates posts to refresh feed without this user
+    }),
   }),
 });
 
@@ -237,4 +255,6 @@ export const {
   useGetTopClickedPostsQuery,
   useGetPostStatusesQuery,
   useTrackLinkClickMutation,
+  useReportPostMutation,
+  useBlockUserMutation,
 } = postApi;
