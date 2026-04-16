@@ -1,6 +1,6 @@
 // src/features/auth/authSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { RootState } from "../../store";
+import type { RootState } from "../../store";
 
 export type TUser = {
   user_id: number;
@@ -15,6 +15,7 @@ export type TAuthState = {
   token: string | null;
   refreshToken: string | null;
   device_token: string | null;
+  rememberMe: boolean;
 };
 
 
@@ -31,16 +32,17 @@ export type TAuthState = {
 //     }
 // }
 
-const initialState: TAuthState = {
+export const initialAuthState: TAuthState = {
   user: null,
   token: null,
   refreshToken: null,
   device_token: null,
+  rememberMe: false,
 };
 
 const authSlice = createSlice({
   name: "auth",
-  initialState,
+  initialState: initialAuthState,
   reducers: {
     // Used by login / signup / otp verification
     setCredentials: (
@@ -50,13 +52,16 @@ const authSlice = createSlice({
         token: string;
         refreshToken: string;
         device_token: string;
+        rememberMe?: boolean;
       }>,
     ) => {
-      const { user, token, refreshToken, device_token } = action.payload;
+      const { user, token, refreshToken, device_token, rememberMe } =
+        action.payload;
       state.user = user;
       state.token = token;
       state.refreshToken = refreshToken;
       state.device_token = device_token;
+      state.rememberMe = rememberMe ?? true;
     },
 
     // Used by token refresh (only updates token)
@@ -76,6 +81,7 @@ const authSlice = createSlice({
       state.token = null;
       state.refreshToken = null;
       state.device_token = null;
+      state.rememberMe = false;
     },
 
     // For partial updates to onboarding flags
@@ -112,6 +118,7 @@ export const selectCurrentRefreshToken = (state: RootState) =>
   state.auth.refreshToken;
 export const selectCredentials = (state: RootState) => state.auth;
 export const selectDeviceToken = (state: RootState) => state.auth.device_token;
+export const selectRememberMe = (state: RootState) => state.auth.rememberMe;
 
 // Add to authSlice.ts — extra selector
 export const selectUserName = (state: RootState) => {

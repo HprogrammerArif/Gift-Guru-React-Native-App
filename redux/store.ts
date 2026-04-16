@@ -12,6 +12,7 @@ import {
   PERSIST,
   PURGE,
   REGISTER,
+  createTransform,
 } from "redux-persist";
 import secureStorage from "./storage";
 import { baseApi } from "./api/baseApi";
@@ -24,6 +25,22 @@ const rootReducer = combineReducers({
   [baseApi.reducerPath]: baseApi.reducer,
 });
 
+const authTransform = createTransform(
+  (inboundState: any, key) => {
+    if (key === "auth" && inboundState.rememberMe === false) {
+      return {
+        ...inboundState,
+        user: null,
+        token: null,
+        refreshToken: null,
+      };
+    }
+    return inboundState;
+  },
+  (outboundState, key) => outboundState,
+  { whitelist: ["auth"] }
+);
+
 // Persist config
 const persistConfig = {
   key: "root",
@@ -31,9 +48,10 @@ const persistConfig = {
   storage: secureStorage, // Use SecureStore
   whitelist: ["auth", "child", "revenuecat"], // Persist auth, child, and premium status
   keyPrefix: "persist_", // Use underscore instead of colon for SecureStore compatibility
+  transforms: [authTransform],
 };
 
-const persistedReducer = persistReducer(persistConfig, rootReducer);
+const persistedReducer = persistReducer(persistConfig, rootReducer as any) as unknown as typeof rootReducer;
 
 export const store = configureStore({
   reducer: persistedReducer,
@@ -47,5 +65,5 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-export type RootState = ReturnType<typeof store.getState>;
+export type RootState = ReturnType<typeof rootReducer>;
 export type AppDispatch = typeof store.dispatch;

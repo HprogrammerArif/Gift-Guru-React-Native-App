@@ -159,10 +159,10 @@ const SignUp = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={["top"]}>
+    <SafeAreaView className="flex-1 bg-white" edges={["top", "bottom"]}>
       <KeyboardAwareScrollView
         className="flex-1"
-        contentContainerClassName="grow justify-center items-center px-6 py-10"
+        contentContainerClassName="grow justify-center items-center px-6 pt-10 pb-6"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >

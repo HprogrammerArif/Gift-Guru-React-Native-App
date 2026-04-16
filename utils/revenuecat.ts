@@ -81,10 +81,15 @@ export async function loginRevenueCat(userId: string): Promise<void> {
  */
 export async function logOutRevenueCat(): Promise<void> {
   try {
+    const isAnonymous = await Purchases.isAnonymous();
+    if (isAnonymous) {
+      console.log("[RevenueCat] Already anonymous, skipping logOut.");
+      return;
+    }
     await Purchases.logOut();
     console.log("[RevenueCat] Logged out, reset to anonymous.");
   } catch (error) {
-    console.log('[RevenueCat] logOut (already anonymous):', error);
+    console.log('[RevenueCat] logOut error:', error);
   }
 }
 

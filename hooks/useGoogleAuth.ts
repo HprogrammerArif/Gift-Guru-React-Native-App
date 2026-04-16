@@ -1,6 +1,7 @@
 import { useGoogleLoginMutation } from "@/redux/features/auth/authApi";
 import { setCredentials } from "@/redux/features/auth/authSlice";
 import { useAppDispatch } from "@/redux/hooks";
+import { persistor } from "@/redux/store";
 import {
   GoogleSignin,
   statusCodes,
@@ -24,7 +25,7 @@ export const useGoogleAuth = () => {
       // Force account picker by signing out first
       try {
         await GoogleSignin.signOut();
-      } catch (err) {
+      } catch {
         // Ignore "not signed in" errors
       }
 
@@ -50,8 +51,10 @@ export const useGoogleAuth = () => {
             token: apiResponse.data.access,
             refreshToken: apiResponse.data.refresh,
             device_token: apiResponse.data.device_token || "",
+            rememberMe: true,
           }),
         );
+        await persistor.flush();
         router.replace("/(drawer)/(tabs)");
       } else if (apiResponse?.error) {
         const errorData = apiResponse.error?.data;

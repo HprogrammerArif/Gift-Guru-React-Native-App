@@ -1,6 +1,6 @@
 import CustomInput from "@/components/CustomInput";
 import { GradientButton } from "@/components/GradientButton";
-import Checkbox from "expo-checkbox";
+import ExpoCheckbox from "expo-checkbox";
 import { Image as ExpoImage } from "expo-image";
 import { router } from "expo-router";
 import { useCallback, useState } from "react";
@@ -33,6 +33,9 @@ const SignIn = () => {
   const [login] = useLoginMutation();
   const { handleGoogleLogin, isGoogleLoading } = useGoogleAuth();
   const dispatch = useAppDispatch();
+  const toggleRememberMe = useCallback(() => {
+    setRememberMe((prev) => !prev);
+  }, []);
 
   const submit = useCallback(async () => {
     const { email, password } = form;
@@ -60,14 +63,10 @@ const SignIn = () => {
             token: response.data.access,
             refreshToken: response.data.refresh,
             device_token: response.data.device_token || "",
+            rememberMe,
           }),
         );
-
-        // If "Remember Me" is OFF, purge the persisted store on NEXT launch
-        // by scheduling this AFTER navigation so the token write completes first.
-        if (!rememberMe) {
-          setTimeout(() => persistor.purge(), 500);
-        }
+        await persistor.flush();
 
         router.replace("/(drawer)/(tabs)");
       } else if (response?.error) {
@@ -128,12 +127,14 @@ const SignIn = () => {
             <View className="flex-row justify-between items-center">
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={() => setRememberMe(!rememberMe)}
+                onPress={toggleRememberMe}
                 className="flex-row items-center gap-2"
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: rememberMe }}
               >
-                <Checkbox
+                <ExpoCheckbox
                   value={rememberMe}
-                  onValueChange={setRememberMe}
+                  onValueChange={toggleRememberMe}
                   color={rememberMe ? "#2B7FFF" : undefined}
                   style={{ width: 18, height: 18, borderRadius: 4 }}
                 />
@@ -178,7 +179,7 @@ const SignIn = () => {
 
               <View className="flex-row justify-center mt-2">
                 <Text className="text-gray-600 text-sm">
-                  Don't have an account?{" "}
+                  Don&apos;t have an account?{" "}
                 </Text>
                 <TouchableOpacity
                   onPress={() => router.replace("/(auth)/sign-up")}
