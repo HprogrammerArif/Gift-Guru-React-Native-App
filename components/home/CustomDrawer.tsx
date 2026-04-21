@@ -48,6 +48,8 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
   const dispatch = useDispatch();
   const { isPremium } = usePremium();
 
+  console.log("is premium:", isPremium);
+
   const handleLogout = async () => {
     try {
       await logOutRevenueCat();
@@ -78,7 +80,14 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
     <View className="flex-1 bg-white">
       <SafeAreaView className="flex-1 px-6">
         {/* Header / Profile Section */}
-        <View className="py-10">
+        <TouchableOpacity
+          className="py-10"
+          activeOpacity={0.7}
+          onPress={() => {
+            props.navigation.closeDrawer();
+            router.push("/profile-setting");
+          }}
+        >
           <View
             className="w-16 h-16 bg-gray-200 rounded-full items-center justify-center border-2 border-[#FF4B3A]/10"
             style={styles.avatarContainer}
@@ -106,14 +115,14 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
             )}
           </View>
           <Text className="text-sm text-gray-500">{email}</Text>
-        </View>
+        </TouchableOpacity>
 
         {/* Navigation Items */}
         <View className="flex-1">
           <MenuItem
             icon="diamond-sharp"
             label="Membership"
-            badge="pro"
+            badge={isPremium ? "pro" : "free"}
             onPress={() => {
               props.navigation.closeDrawer();
               router.push("/membership");
@@ -137,10 +146,10 @@ const CustomDrawer = (props: DrawerContentComponentProps) => {
           />
           <MenuItem
             icon="settings-sharp"
-            label="Profile setting"
+            label="Settings and privacy"
             onPress={() => {
               props.navigation.closeDrawer();
-              router.push("/profile-setting");
+              router.push("/setting-privacy");
             }}
           />
 
