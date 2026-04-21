@@ -15,6 +15,7 @@ import { Alert, Linking, Text, TouchableOpacity, View } from "react-native";
 import Toast from "react-native-toast-message";
 import CommentsSheet from "./CommentsSheet";
 import PostOptionsSheet from "./PostOptionsSheet";
+import ReportPostSheet from "./ReportPostSheet";
 
 // --- Types matching the backend API shape ---
 export interface PostUser {
@@ -91,6 +92,7 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
   const [expanded, setExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [showOptionsSheet, setShowOptionsSheet] = useState(false);
+  const [showReportSheet, setShowReportSheet] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [commentsCount, setCommentsCount] = useState(post.comments_count ?? 0);
 
@@ -170,27 +172,22 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
   };
 
   const handleReport = () => {
-    Alert.alert("Report Content", "Are you sure you want to report this post?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Report",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            const res: any = await reportPost(post.id);
-            if (res.error) throw new Error();
-            setIsHidden(true); // Hide immediately
-            Toast.show({
-              type: "success",
-              text1: "Post reported successfully.",
-              text2: "Our team will review this content shortly."
-            });
-          } catch (e) {
-            Toast.show({ type: "error", text1: "Failed to report post."});
-          }
-        },
-      },
-    ]);
+    setShowReportSheet(true);
+  };
+
+  const submitReport = async (reason: string) => {
+    try {
+      const res: any = await reportPost({ post: post.id, reason });
+      if (res.error) throw new Error();
+      setIsHidden(true); // Hide immediately
+      Toast.show({
+        type: "success",
+        text1: "Post reported successfully.",
+        text2: "Our team will review this content shortly.",
+      });
+    } catch (e) {
+      Toast.show({ type: "error", text1: "Failed to report post." });
+    }
   };
 
   const handleBlock = () => {
@@ -467,6 +464,13 @@ const SocialPost = ({ post, isMyPost }: SocialPostProps) => {
         onBlock={handleBlock}
         onReport={handleReport}
         onDelete={handleDelete}
+      />
+
+      {/* Report Sheet */}
+      <ReportPostSheet
+        visible={showReportSheet}
+        onClose={() => setShowReportSheet(false)}
+        onSubmit={submitReport}
       />
     </View>
   );

@@ -8,8 +8,10 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import RenderHTML from "react-native-render-html";
 
 const Section = ({ title, content }: { title: string; content: string }) => (
   <View className="mb-6">
@@ -30,6 +32,7 @@ const Section = ({ title, content }: { title: string; content: string }) => (
 
 export default function TermsOfServiceScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
   const { data, isLoading } = useGetTermsOfServiceQuery(undefined);
 
   return (
@@ -63,7 +66,19 @@ export default function TermsOfServiceScreen() {
           contentContainerStyle={{ padding: 24, paddingBottom: 60 }}
         >
           {/* If backend provides content, display it; else show static fallback */}
-          {data?.terms_of_service ? (
+          {data?.content ? (
+            <RenderHTML
+              contentWidth={width - 48}
+              source={{ html: data.content }}
+              baseStyle={{ fontFamily: "QuickSand-Regular", color: "#4B5563", fontSize: 14, lineHeight: 24 }}
+              tagsStyles={{
+                strong: { fontFamily: "QuickSand-Bold", color: "#1F2937" },
+                h3: { fontFamily: "QuickSand-Bold", color: "#1F2937", fontSize: 18, marginTop: 16, marginBottom: 8 },
+                p: { marginBottom: 16 },
+                a: { color: "#2B7FFF", textDecorationLine: "none" }
+              }}
+            />
+          ) : data?.terms_of_service ? (
             <Text
               style={{ fontFamily: "QuickSand-Regular" }}
               className="text-sm text-gray-600 leading-6"

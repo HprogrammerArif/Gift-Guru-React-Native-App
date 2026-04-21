@@ -8,8 +8,10 @@ import {
   Text,
   TouchableOpacity,
   View,
+  useWindowDimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import RenderHTML from "react-native-render-html";
 
 const Section = ({ title, content }: { title: string; content: string }) => (
   <View className="mb-6">
@@ -30,6 +32,7 @@ const Section = ({ title, content }: { title: string; content: string }) => (
 
 export default function PrivacyPolicyScreen() {
   const router = useRouter();
+  const { width } = useWindowDimensions();
   const { data, isLoading } = useGetLegalAndPrivacyPolicyQuery(undefined);
 
   console.log("data", data);
@@ -65,7 +68,19 @@ export default function PrivacyPolicyScreen() {
           contentContainerStyle={{ padding: 24, paddingBottom: 60 }}
         >
           {/* If backend provides content, display it; else show static fallback */}
-          {data?.privacy_policy ? (
+          {data?.content ? (
+            <RenderHTML
+              contentWidth={width - 48}
+              source={{ html: data.content }}
+              baseStyle={{ fontFamily: "QuickSand-Regular", color: "#4B5563", fontSize: 14, lineHeight: 24 }}
+              tagsStyles={{
+                strong: { fontFamily: "QuickSand-Bold", color: "#1F2937" },
+                h3: { fontFamily: "QuickSand-Bold", color: "#1F2937", fontSize: 18, marginTop: 16, marginBottom: 8 },
+                p: { marginBottom: 16 },
+                a: { color: "#2B7FFF", textDecorationLine: "none" }
+              }}
+            />
+          ) : data?.privacy_policy ? (
             <Text
               style={{ fontFamily: "QuickSand-Regular" }}
               className="text-sm text-gray-600 leading-6"
@@ -99,7 +114,7 @@ export default function PrivacyPolicyScreen() {
               </Text>
 
               {/* Section 1 */}
-              <Section
+              {/* <Section
                 title="1. Information We Collect"
                 content={
                   `a. Personal Information\n• Name\n• Email address\n\n` +
@@ -107,10 +122,10 @@ export default function PrivacyPolicyScreen() {
                   `c. Purchase Information\n• Purchase history (handled via third-party services like RevenueCat)\n\n` +
                   `d. Device & Usage Information\n• Device identifiers\n• App interactions\n• Crash logs and diagnostics`
                 }
-              />
+              /> */}
 
               {/* Section 2 */}
-              <Section
+              {/* <Section
                 title="2. How We Use Your Information"
                 content={
                   `We use your information to:\n` +
@@ -122,16 +137,16 @@ export default function PrivacyPolicyScreen() {
                   `• Monitor usage and fix bugs\n` +
                   `• Ensure security and prevent fraud`
                 }
-              />
+              /> */}
 
               {/* Section 3 */}
-              <Section
+              {/* <Section
                 title="3. Affiliate Links & Amazon Associates Program"
                 content="GiftGuru is a participant in the Amazon Services LLC Associates Program, an affiliate advertising program designed to provide a means for us to earn advertising fees by linking to Amazon.com and affiliated sites. When you click a 'Check price' button or affiliate link, you are securely redirected to Amazon. We do not share your account's personal information with Amazon. However, once you are on Amazon's platform, any data collected (e.g., cookies, purchase history) is governed entirely by Amazon's Privacy Notice."
-              />
+              /> */}
 
               {/* Section 4 */}
-              <Section
+              {/* <Section
                 title="4. Data Sharing & Third Parties"
                 content={
                   `We may share data with trusted third-party services, including:\n` +
@@ -140,10 +155,10 @@ export default function PrivacyPolicyScreen() {
                   `• Amazon Associates (for affiliate product links)\n\n` +
                   `These services only access data necessary to perform their functions. We do not sell your personal data.`
                 }
-              />
+              /> */}
 
               {/* Section 5 */}
-              <Section
+              {/* <Section
                 title="5. Data Security"
                 content={
                   `We implement appropriate security measures to protect your data:\n` +
@@ -151,10 +166,10 @@ export default function PrivacyPolicyScreen() {
                   `• Secure authentication systems\n` +
                   `• Restricted access to personal data`
                 }
-              />
+              /> */}
 
               {/* Section 6 */}
-              <Section
+              {/* <Section
                 title="6. Data Retention"
                 content={
                   `We retain your data only as long as necessary to:\n` +
@@ -162,10 +177,10 @@ export default function PrivacyPolicyScreen() {
                   `• Comply with legal obligations\n` +
                   `• Resolve disputes`
                 }
-              />
+              /> */}
 
               {/* Section 7 */}
-              <Section
+              {/* <Section
                 title="7. Your Rights"
                 content={
                   `You have the right to:\n` +
@@ -174,16 +189,16 @@ export default function PrivacyPolicyScreen() {
                   `• Request deletion of your account and data\n\n` +
                   `You can request account deletion from the Profile Settings screen inside the app, or by contacting us directly.`
                 }
-              />
+              /> */}
 
               {/* Section 8 */}
-              <Section
+              {/* <Section
                 title="8. Children's Privacy"
                 content="GiftGuru is not intended for children under 13. We do not knowingly collect data from children. If you believe a child has provided us with personal data, please contact us so we can take steps to remove it."
-              />
+              /> */}
 
               {/* Section 9 */}
-              <Section
+              {/* <Section
                 title="9. Permissions We Use"
                 content={
                   `Our app may request access to:\n` +
@@ -191,22 +206,22 @@ export default function PrivacyPolicyScreen() {
                   `• Photo Library – to select and upload images\n\n` +
                   `These permissions are only used for app functionality. You can revoke them at any time via your device settings.`
                 }
-              />
+              /> */}
 
               {/* Section 10 */}
-              <Section
+              {/* <Section
                 title="10. Changes to This Privacy Policy"
                 content='We may update this Privacy Policy from time to time. We will notify users by updating the "Effective Date" at the top of this page.'
-              />
+              /> */}
 
               {/* Section 11 */}
-              <Section
+              {/* <Section
                 title="11. Contact Us"
                 content={
                   `If you have any questions or concerns about this Privacy Policy, please contact us:\n` +
                   `📧 Email: support@findrya.co.uk`
                 }
-              />
+              /> */}
             </>
           )}
         </ScrollView>

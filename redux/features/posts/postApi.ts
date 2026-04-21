@@ -214,9 +214,10 @@ const postApi = baseApi.injectEndpoints({
 
     // Report a post
     reportPost: builder.mutation({
-      query: (postId: string | number) => ({
-        url: `social/posts/${postId}/report/`,
+      query: (data: { post: string | number; reason: string }) => ({
+        url: `social/report/`,
         method: "POST",
+        body: data,
       }),
       invalidatesTags: ["Posts"], // Refresh feed logic
     }),
