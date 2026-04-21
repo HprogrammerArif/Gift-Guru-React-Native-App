@@ -195,6 +195,14 @@ const SettingAndPrivacyScreen = () => {
             label="Change Password"
             sublabel="Update your account password"
             onPress={() => router.push("/change-password")}
+          />
+          <SettingRow
+            icon="person-remove-outline"
+            iconBg="#FDF4FF"
+            iconColor="#9333EA"
+            label="Blocked Users"
+            sublabel="Manage people you've blocked"
+            onPress={() => router.push("/blocked-users")}
             isLast
           />
         </View>

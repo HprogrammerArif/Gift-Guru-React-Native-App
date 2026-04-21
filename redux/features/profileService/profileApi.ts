@@ -91,8 +91,25 @@ const profileApi = baseApi.injectEndpoints({
       }),
     }),
 
+    // GET BLOCKED USERS
+    getBlockedUsers: builder.query({
+      query: () => ({
+        url: "auth/blocked-users/",
+      }),
+      providesTags: ["BlockedUsers"],
+    }),
+
+    // UNBLOCK USER
+    unblockUser: builder.mutation({
+      query: (userId: string | number) => ({
+        url: `auth/block/${userId}/`,
+        method: "POST",
+      }),
+      invalidatesTags: ["BlockedUsers", "Posts"],
+    }),
+
     // END
   }),
 });
 
-export const { useGetUserProfileQuery, useGetCoParentProfileQuery, useUpdateUserProfileMutation, useGetPendingInvitationsQuery, useAcceptInvitationMutation, useRejectInvitationMutation, useWithdrawInvitationMutation, useGetLegalAndPrivacyPolicyQuery, useDeleteAccountMutation, useGetTermsOfServiceQuery } = profileApi;
+export const { useGetUserProfileQuery, useGetCoParentProfileQuery, useUpdateUserProfileMutation, useGetPendingInvitationsQuery, useAcceptInvitationMutation, useRejectInvitationMutation, useWithdrawInvitationMutation, useGetLegalAndPrivacyPolicyQuery, useDeleteAccountMutation, useGetTermsOfServiceQuery, useGetBlockedUsersQuery, useUnblockUserMutation } = profileApi;
