@@ -27,9 +27,10 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Modal,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 
@@ -38,6 +39,7 @@ const ProfileSettingScreen = () => {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { showActionSheetWithOptions } = useActionSheet();
+  const insets = useSafeAreaInsets();
 
   // ─── API ────────────────────────────────────────────────────────────────────
   const { data: profile, isLoading: profileLoading } =
@@ -412,22 +414,29 @@ const ProfileSettingScreen = () => {
         </TouchableOpacity>
       </KeyboardAwareScrollView>
 
-      {isCountryPickerVisible && (
-        <CountryPicker
-          visible={isCountryPickerVisible}
-          countryCode={countryCode} // <-- ADDED THIS REQUIRED PROP
-          onClose={() => setCountryPickerVisible(false)}
-          onSelect={(country) => {
-            setCountryCode(country.cca2);
-            setCallingCode(country.callingCode[0] || "1");
-            setCountryPickerVisible(false);
-          }}
-          withFilter
-          withCallingCode
-          withAlphaFilter
-          containerButtonStyle={{ display: "none" }}
-        />
-      )}
+      {/* Custom Modal for CountryPicker to fix Safe Area issues entirely */}
+      <Modal
+        visible={isCountryPickerVisible}
+        animationType="slide"
+        onRequestClose={() => setCountryPickerVisible(false)}
+      >
+        <View style={{ flex: 1, paddingTop: insets.top, backgroundColor: "white" }}>
+          <CountryPicker
+            withModal={false}
+            countryCode={countryCode}
+            onClose={() => setCountryPickerVisible(false)}
+            onSelect={(country) => {
+              setCountryCode(country.cca2);
+              setCallingCode(country.callingCode[0] || "1");
+              setCountryPickerVisible(false);
+            }}
+            withFilter
+            withCallingCode
+            withAlphaFilter
+            containerButtonStyle={{ display: "none" }}
+          />
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
