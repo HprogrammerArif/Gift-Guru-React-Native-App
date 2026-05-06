@@ -3,8 +3,8 @@ import { GradientButton } from "@/components/GradientButton";
 import ExpoCheckbox from "expo-checkbox";
 import { Image as ExpoImage } from "expo-image";
 import { router } from "expo-router";
-import { useCallback, useState } from "react";
-import { Alert, Keyboard, Text, TouchableOpacity, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { Alert, InteractionManager, Keyboard, Text, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -13,6 +13,7 @@ import { setCredentials } from "@/redux/features/auth/authSlice";
 import { useAppDispatch } from "@/redux/hooks";
 import { persistor } from "@/redux/store";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
+import * as SecureStore from "expo-secure-store";
 
 // GoogleSignin.configure({
 //   "webClientId": "121177195587-epvcsmto6nlmnrbif9q9u2c39tl2vl4v.apps.googleusercontent.com",
@@ -23,6 +24,7 @@ const SignIn = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+  
 
   //  useEffect(() => {
   //   GoogleSignin.configure({
@@ -33,8 +35,24 @@ const SignIn = () => {
   const [login] = useLoginMutation();
   const { handleGoogleLogin, isGoogleLoading } = useGoogleAuth();
   const dispatch = useAppDispatch();
-  const toggleRememberMe = useCallback(() => {
-    setRememberMe((prev) => !prev);
+ useEffect(() => {
+    const task = InteractionManager.runAfterInteractions(() => {
+      const loadCredentials = async () => {
+        try {
+          const savedEmail = await SecureStore.getItemAsync("user_email");
+          const savedPassword = await SecureStore.getItemAsync("user_password");
+
+          if (savedEmail && savedPassword) {
+            setForm({ email: savedEmail, password: savedPassword });
+            setRememberMe(true);
+          }
+        } catch (error) {
+          console.log("Error loading credentials", error);
+        }
+      };
+      loadCredentials();
+    });
+    return () => task.cancel();
   }, []);
 
   const submit = useCallback(async () => {
@@ -57,6 +75,15 @@ const SignIn = () => {
       });
 
       if (response?.data) {
+        // Persist or clear credentials based on the Remember Me toggle
+        if (rememberMe) {
+          await SecureStore.setItemAsync("user_email", email.toLowerCase().trim());
+          await SecureStore.setItemAsync("user_password", password);
+        } else {
+          await SecureStore.deleteItemAsync("user_email");
+          await SecureStore.deleteItemAsync("user_password");
+        }
+
         dispatch(
           setCredentials({
             user: response.data.user,
@@ -127,14 +154,14 @@ const SignIn = () => {
             <View className="flex-row justify-between items-center">
               <TouchableOpacity
                 activeOpacity={0.7}
-                onPress={toggleRememberMe}
+                onPress={() => setRememberMe((prev) => !prev)}
                 className="flex-row items-center gap-2"
                 accessibilityRole="checkbox"
                 accessibilityState={{ checked: rememberMe }}
               >
                 <ExpoCheckbox
                   value={rememberMe}
-                  onValueChange={toggleRememberMe}
+                  onValueChange={setRememberMe}
                   color={rememberMe ? "#2B7FFF" : undefined}
                   style={{ width: 18, height: 18, borderRadius: 4 }}
                 />
@@ -179,7 +206,7 @@ const SignIn = () => {
 
               <View className="flex-row justify-center mt-2">
                 <Text className="text-gray-600 text-sm">
-                  Don&apos;t have an account?{" "}
+                  Don't have an account?{" "}
                 </Text>
                 <TouchableOpacity
                   onPress={() => router.replace("/(auth)/sign-up")}
