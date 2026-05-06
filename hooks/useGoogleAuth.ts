@@ -42,6 +42,7 @@ export const useGoogleAuth = () => {
         email: user?.email,
         first_name: user?.givenName ?? undefined,
         last_name: user?.familyName ?? undefined,
+        image: user?.photo ?? undefined,
       });
 
       if (apiResponse?.data) {

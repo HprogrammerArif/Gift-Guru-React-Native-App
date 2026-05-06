@@ -42,6 +42,7 @@ const authApi = baseApi.injectEndpoints({
         email?: string; 
         first_name?: string; 
         last_name?: string; 
+        image?: string;
       }) => ({
         url: "auth/social-auth/",
         method: "POST",

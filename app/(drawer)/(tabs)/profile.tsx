@@ -114,7 +114,7 @@ export default function ProfileScreen() {
     const profileImage = profile.image
       ? profile.image.startsWith("http")
         ? profile.image
-        : `http://intensely-optimal-unicorn.ngrok-free.app${profile.image}`
+        : `${process.env.EXPO_PUBLIC_API_URL}${profile.image}`
       : null;
 
     return (
