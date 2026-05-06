@@ -6,12 +6,14 @@ import { useRegisterMutation } from "@/redux/features/auth/authApi";
 import { setCredentials } from "@/redux/features/auth/authSlice";
 import { useAppDispatch } from "@/redux/hooks";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
+import { authAssets } from "@/constants";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { Image as ExpoImage } from "expo-image";
 import { router } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   Keyboard,
   Platform,
@@ -251,6 +253,7 @@ const SignUp = () => {
               }
               keyboardType="email-address"
               autoCapitalize="none"
+              autoComplete="email"
             />
 
             <CustomInput
@@ -262,6 +265,7 @@ const SignUp = () => {
               showEye
               passwordVisible={showPwd}
               onTogglePassword={setShowPwd}
+              autoComplete="new-password"
             />
 
             <CustomInput
@@ -275,6 +279,7 @@ const SignUp = () => {
               showEye
               passwordVisible={showConfirm}
               onTogglePassword={setShowConfirm}
+              autoComplete="new-password"
             />
 
             <View className="mt-4 gap-3">
@@ -293,16 +298,22 @@ const SignUp = () => {
                 className="w-full bg-[#e1e2e9] rounded-xl py-3 flex-row items-center justify-center gap-3"
                 onPress={handleGoogleLogin}
                 disabled={isSubmitting || isGoogleLoading}
+                accessibilityRole="button"
+                accessibilityLabel="Continue with Google"
+                accessibilityHint="Opens Google Sign-In to create your account"
+                accessibilityState={{ disabled: isSubmitting || isGoogleLoading }}
               >
-                <ExpoImage
-                  source={{
-                    uri: "https://authjs.dev/img/providers/google.svg",
-                  }}
-                  style={{ width: 24, height: 24 }}
-                  contentFit="contain"
-                />
+                {isGoogleLoading ? (
+                  <ActivityIndicator size="small" color="#5f6368" />
+                ) : (
+                  <ExpoImage
+                    source={authAssets.googleLogo}
+                    style={{ width: 24, height: 24 }}
+                    contentFit="contain"
+                  />
+                )}
                 <Text className="text-lg font-medium text-black">
-                  Continue with Google
+                  {isGoogleLoading ? "Signing in..." : "Continue with Google"}
                 </Text>
               </TouchableOpacity>
 

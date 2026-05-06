@@ -19,6 +19,7 @@ import gg_time from "@/assets/images/homeAsset/gg_time.png";
 import Ellipse from "@/assets/images/homeAsset/Ellipse.png";
 
 import back from "@/assets/images/notifications/back.png";
+import googleLogo from "@/assets/images/google-logo.png";
 
 import postLiked from "@/assets/icons/notification/postLiked.png";
 import linkClick from "@/assets/icons/notification/linkClick.png";
@@ -33,6 +34,10 @@ export const homeAssets = {
   schedule,
   gg_time,
   Ellipse,
+};
+
+export const authAssets = {
+  googleLogo,
 };
 
 export const notificationIcons = {

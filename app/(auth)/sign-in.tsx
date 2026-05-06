@@ -1,10 +1,11 @@
 import CustomInput from "@/components/CustomInput";
 import { GradientButton } from "@/components/GradientButton";
+import { authAssets } from "@/constants";
 import ExpoCheckbox from "expo-checkbox";
 import { Image as ExpoImage } from "expo-image";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { Alert, InteractionManager, Keyboard, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, InteractionManager, Keyboard, Text, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -15,9 +16,6 @@ import { persistor } from "@/redux/store";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import * as SecureStore from "expo-secure-store";
 
-// GoogleSignin.configure({
-//   "webClientId": "121177195587-epvcsmto6nlmnrbif9q9u2c39tl2vl4v.apps.googleusercontent.com",
-// });
 
 const SignIn = () => {
   const [form, setForm] = useState({ email: "", password: "" });
@@ -26,16 +24,10 @@ const SignIn = () => {
   const [showPwd, setShowPwd] = useState(false);
   
 
-  //  useEffect(() => {
-  //   GoogleSignin.configure({
-  //     webClientId: "121177195587-epvcsmto6nlmnrbif9q9u2c39tl2vl4v.apps.googleusercontent.com",
-  //   });
-  //  }, []);
-
   const [login] = useLoginMutation();
   const { handleGoogleLogin, isGoogleLoading } = useGoogleAuth();
   const dispatch = useAppDispatch();
- useEffect(() => {
+  useEffect(() => {
     const task = InteractionManager.runAfterInteractions(() => {
       const loadCredentials = async () => {
         try {
@@ -47,7 +39,7 @@ const SignIn = () => {
             setRememberMe(true);
           }
         } catch (error) {
-          console.log("Error loading credentials", error);
+          console.warn("Error loading credentials", error);
         }
       };
       loadCredentials();
@@ -136,6 +128,7 @@ const SignIn = () => {
               }
               keyboardType="email-address"
               autoCapitalize="none"
+              autoComplete="email"
             />
 
             <CustomInput
@@ -149,6 +142,8 @@ const SignIn = () => {
               showEye
               passwordVisible={showPwd}
               onTogglePassword={setShowPwd}
+              autoComplete="password"
+              textContentType="password"
             />
 
             <View className="flex-row justify-between items-center">
@@ -191,16 +186,22 @@ const SignIn = () => {
                 className="w-full bg-[#e1e2e9] rounded-xl py-3 flex-row items-center justify-center gap-3"
                 onPress={handleGoogleLogin}
                 disabled={isSubmitting || isGoogleLoading}
+                accessibilityRole="button"
+                accessibilityLabel="Continue with Google"
+                accessibilityHint="Opens Google Sign-In to authenticate your account"
+                accessibilityState={{ disabled: isSubmitting || isGoogleLoading }}
               >
-                <ExpoImage
-                  source={{
-                    uri: "https://authjs.dev/img/providers/google.svg",
-                  }}
-                  style={{ width: 24, height: 24 }}
-                  contentFit="contain"
-                />
+                {isGoogleLoading ? (
+                  <ActivityIndicator size="small" color="#5f6368" />
+                ) : (
+                  <ExpoImage
+                    source={authAssets.googleLogo}
+                    style={{ width: 24, height: 24 }}
+                    contentFit="contain"
+                  />
+                )}
                 <Text className="text-lg font-medium text-black">
-                  Continue with Google
+                  {isGoogleLoading ? "Signing in..." : "Continue with Google"}
                 </Text>
               </TouchableOpacity>
 
