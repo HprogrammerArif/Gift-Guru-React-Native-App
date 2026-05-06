@@ -2,27 +2,33 @@ import CustomInput from "@/components/CustomInput";
 import { GradientButton } from "@/components/GradientButton";
 import { authAssets } from "@/constants";
 import ExpoCheckbox from "expo-checkbox";
-import { Image as ExpoImage } from "expo-image";
+
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, InteractionManager, Keyboard, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  InteractionManager,
+  Keyboard,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { useLoginMutation } from "@/redux/features/auth/authApi";
 import { setCredentials } from "@/redux/features/auth/authSlice";
 import { useAppDispatch } from "@/redux/hooks";
 import { persistor } from "@/redux/store";
-import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import * as SecureStore from "expo-secure-store";
-
 
 const SignIn = () => {
   const [form, setForm] = useState({ email: "", password: "" });
   const [rememberMe, setRememberMe] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
-  
 
   const [login] = useLoginMutation();
   const { handleGoogleLogin, isGoogleLoading } = useGoogleAuth();
@@ -69,7 +75,10 @@ const SignIn = () => {
       if (response?.data) {
         // Persist or clear credentials based on the Remember Me toggle
         if (rememberMe) {
-          await SecureStore.setItemAsync("user_email", email.toLowerCase().trim());
+          await SecureStore.setItemAsync(
+            "user_email",
+            email.toLowerCase().trim(),
+          );
           await SecureStore.setItemAsync("user_password", password);
         } else {
           await SecureStore.deleteItemAsync("user_email");
@@ -189,16 +198,14 @@ const SignIn = () => {
                 accessibilityRole="button"
                 accessibilityLabel="Continue with Google"
                 accessibilityHint="Opens Google Sign-In to authenticate your account"
-                accessibilityState={{ disabled: isSubmitting || isGoogleLoading }}
+                accessibilityState={{
+                  disabled: isSubmitting || isGoogleLoading,
+                }}
               >
                 {isGoogleLoading ? (
                   <ActivityIndicator size="small" color="#5f6368" />
                 ) : (
-                  <ExpoImage
-                    source={authAssets.googleLogo}
-                    style={{ width: 24, height: 24 }}
-                    contentFit="contain"
-                  />
+                  <authAssets.googleLogo width={24} height={24} />
                 )}
                 <Text className="text-lg font-medium text-black">
                   {isGoogleLoading ? "Signing in..." : "Continue with Google"}

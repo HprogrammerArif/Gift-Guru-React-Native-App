@@ -2,14 +2,13 @@ import CustomInput from "@/components/CustomInput";
 import CustomInputModified from "@/components/CustomInputModified";
 import { GradientButton } from "@/components/GradientButton";
 import RolePicker from "@/components/RolePicker";
-import { useRegisterMutation } from "@/redux/features/auth/authApi";
-import { setCredentials } from "@/redux/features/auth/authSlice";
-import { useAppDispatch } from "@/redux/hooks";
-import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 import { authAssets } from "@/constants";
+import { useGoogleAuth } from "@/hooks/useGoogleAuth";
+import { useRegisterMutation } from "@/redux/features/auth/authApi";
+import { useAppDispatch } from "@/redux/hooks";
 import { Ionicons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { Image as ExpoImage } from "expo-image";
+
 import { router } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
@@ -301,16 +300,14 @@ const SignUp = () => {
                 accessibilityRole="button"
                 accessibilityLabel="Continue with Google"
                 accessibilityHint="Opens Google Sign-In to create your account"
-                accessibilityState={{ disabled: isSubmitting || isGoogleLoading }}
+                accessibilityState={{
+                  disabled: isSubmitting || isGoogleLoading,
+                }}
               >
                 {isGoogleLoading ? (
                   <ActivityIndicator size="small" color="#5f6368" />
                 ) : (
-                  <ExpoImage
-                    source={authAssets.googleLogo}
-                    style={{ width: 24, height: 24 }}
-                    contentFit="contain"
-                  />
+                  <authAssets.googleLogo width={24} height={24} />
                 )}
                 <Text className="text-lg font-medium text-black">
                   {isGoogleLoading ? "Signing in..." : "Continue with Google"}
