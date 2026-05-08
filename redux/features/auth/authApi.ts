@@ -140,6 +140,16 @@ const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["Profile"],
     }),
 
+    // For Google/social users who have no existing password
+    setPasswordFromProfile: builder.mutation({
+      query: (body) => ({
+        url: "auth/set-password/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Profile"],
+    }),
+
     // DELETE ACCOUNT
     deleteAccount: builder.mutation({
       query: () => ({
@@ -173,6 +183,7 @@ export const {
   // useGetUserProfileQuery,
 
   useChangePasswordFromProfileMutation,
+  useSetPasswordFromProfileMutation,
   useAddChildMutation,
   useInviteCoParentMutation,
   useGetChildrenQuery,

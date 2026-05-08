@@ -1,6 +1,11 @@
 import CustomInput from "@/components/CustomInput";
 import { GradientButton } from "@/components/GradientButton";
-import { useChangePasswordFromProfileMutation } from "@/redux/features/auth/authApi";
+import {
+  useChangePasswordFromProfileMutation,
+  useSetPasswordFromProfileMutation,
+} from "@/redux/features/auth/authApi";
+import { selectLoginMethod } from "@/redux/features/auth/authSlice";
+import { useAppSelector } from "@/redux/hooks";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -11,9 +16,15 @@ import Toast from "react-native-toast-message";
 
 const ChangePasswordScreen = () => {
   const router = useRouter();
+  const loginMethod = useAppSelector(selectLoginMethod);
+  const isGoogleUser = loginMethod === "google";
 
-  const [changePassword, { isLoading }] =
+  const [changePassword, { isLoading: isChanging }] =
     useChangePasswordFromProfileMutation();
+  const [setPassword, { isLoading: isSetting }] =
+    useSetPasswordFromProfileMutation();
+
+  const isLoading = isChanging || isSetting;
 
   const [form, setForm] = useState({
     currentPassword: "",
@@ -29,7 +40,10 @@ const ChangePasswordScreen = () => {
     const { currentPassword, newPassword, confirmPassword } = form;
 
     // ── Client-side validation ─────────────────────────────────────────────
-    if (!currentPassword || !newPassword || !confirmPassword) {
+    if (!isGoogleUser && !currentPassword) {
+      return Alert.alert("Error", "Please enter your current password.");
+    }
+    if (!newPassword || !confirmPassword) {
       return Alert.alert("Error", "Please fill in all fields.");
     }
     if (newPassword !== confirmPassword) {
@@ -38,24 +52,34 @@ const ChangePasswordScreen = () => {
     if (newPassword.length < 6) {
       return Alert.alert(
         "Error",
-        "New password must be at least 6 characters.",
+        "Password must be at least 6 characters.",
       );
     }
 
-    // ── Build FormData ─────────────────────────────────────────────────────
-    const formData = new FormData();
-    formData.append("old_password", currentPassword);
-    formData.append("new_password", newPassword);
-    formData.append("confirm_password", confirmPassword);
-
-    // ── API call ───────────────────────────────────────────────────────────
     try {
-      const res: any = await changePassword(formData);
+      let res: any;
+
+      if (isGoogleUser) {
+        // ── Google user: set a password for the first time ─────────────────
+        const formData = new FormData();
+        formData.append("new_password", newPassword);
+        formData.append("confirm_password", confirmPassword);
+        res = await setPassword(formData);
+      } else {
+        // ── Email user: change existing password ───────────────────────────
+        const formData = new FormData();
+        formData.append("old_password", currentPassword);
+        formData.append("new_password", newPassword);
+        formData.append("confirm_password", confirmPassword);
+        res = await changePassword(formData);
+      }
 
       if (res?.data) {
         Toast.show({
           type: "success",
-          text1: "Password updated successfully!",
+          text1: isGoogleUser
+            ? "Password set successfully!"
+            : "Password updated successfully!",
         });
         router.back();
       } else {
@@ -88,7 +112,7 @@ const ChangePasswordScreen = () => {
           style={{ fontFamily: "QuickSand-Bold" }}
           className="text-2xl text-[#171717] flex-1 text-center pr-8"
         >
-          Change Password
+          {isGoogleUser ? "Set Password" : "Change Password"}
         </Text>
       </View>
 
@@ -102,18 +126,31 @@ const ChangePasswordScreen = () => {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        {/* Info banner for Google users */}
+        {isGoogleUser && (
+          <View className="flex-row items-start bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 mb-6 gap-3">
+            <Ionicons name="logo-google" size={18} color="#2B7FFF" style={{ marginTop: 1 }} />
+            <Text className="text-sm text-blue-700 flex-1" style={{ fontFamily: "QuickSand-Medium" }}>
+              Your account uses Google Sign-In. You can set a password to also log in with your email.
+            </Text>
+          </View>
+        )}
+
         {/* Form Fields */}
         <View className="gap-6 mb-10">
-          <CustomInput
-            label="Current Password"
-            placeholder="••••••••"
-            value={form.currentPassword}
-            onChangeText={(t) => setForm((p) => ({ ...p, currentPassword: t }))}
-            secureTextEntry={!showCurrent}
-            showEye
-            passwordVisible={showCurrent}
-            onTogglePassword={setShowCurrent}
-          />
+          {/* Current password — only for email users */}
+          {!isGoogleUser && (
+            <CustomInput
+              label="Current Password"
+              placeholder="••••••••"
+              value={form.currentPassword}
+              onChangeText={(t) => setForm((p) => ({ ...p, currentPassword: t }))}
+              secureTextEntry={!showCurrent}
+              showEye
+              passwordVisible={showCurrent}
+              onTogglePassword={setShowCurrent}
+            />
+          )}
 
           <CustomInput
             label="New Password"
@@ -138,10 +175,10 @@ const ChangePasswordScreen = () => {
           />
         </View>
 
-        {/* Update Button */}
+        {/* Submit Button */}
         <View className="mt-auto">
           <GradientButton
-            title="Update password"
+            title={isGoogleUser ? "Set password" : "Update password"}
             onPress={handleUpdatePassword}
             isLoading={isLoading}
           />

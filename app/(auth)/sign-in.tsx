@@ -92,6 +92,7 @@ const SignIn = () => {
             refreshToken: response.data.refresh,
             device_token: response.data.device_token || "",
             rememberMe,
+            loginMethod: "email",
           }),
         );
         await persistor.flush();

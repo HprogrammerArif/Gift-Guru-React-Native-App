@@ -16,6 +16,7 @@ export type TAuthState = {
   refreshToken: string | null;
   device_token: string | null;
   rememberMe: boolean;
+  loginMethod: "email" | "google" | null;
 };
 
 
@@ -38,6 +39,7 @@ export const initialAuthState: TAuthState = {
   refreshToken: null,
   device_token: null,
   rememberMe: false,
+  loginMethod: null,
 };
 
 const authSlice = createSlice({
@@ -53,15 +55,17 @@ const authSlice = createSlice({
         refreshToken: string;
         device_token: string;
         rememberMe?: boolean;
+        loginMethod?: "email" | "google";
       }>,
     ) => {
-      const { user, token, refreshToken, device_token, rememberMe } =
+      const { user, token, refreshToken, device_token, rememberMe, loginMethod } =
         action.payload;
       state.user = user;
       state.token = token;
       state.refreshToken = refreshToken;
       state.device_token = device_token;
       state.rememberMe = rememberMe ?? true;
+      state.loginMethod = loginMethod ?? "email";
     },
 
     // Used by token refresh (only updates token)
@@ -82,6 +86,7 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.device_token = null;
       state.rememberMe = false;
+      state.loginMethod = null;
     },
 
     // For partial updates to onboarding flags
@@ -119,6 +124,7 @@ export const selectCurrentRefreshToken = (state: RootState) =>
 export const selectCredentials = (state: RootState) => state.auth;
 export const selectDeviceToken = (state: RootState) => state.auth.device_token;
 export const selectRememberMe = (state: RootState) => state.auth.rememberMe;
+export const selectLoginMethod = (state: RootState) => state.auth.loginMethod;
 
 // Add to authSlice.ts — extra selector
 export const selectUserName = (state: RootState) => {

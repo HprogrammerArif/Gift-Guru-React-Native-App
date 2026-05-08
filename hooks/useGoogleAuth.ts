@@ -53,6 +53,7 @@ export const useGoogleAuth = () => {
             refreshToken: apiResponse.data.refresh,
             device_token: apiResponse.data.device_token || "",
             rememberMe: true,
+            loginMethod: "google",
           }),
         );
         await persistor.flush();
