@@ -129,8 +129,6 @@ const ProfileSettingScreen = () => {
           const result = await ImagePicker.launchCameraAsync({
             mediaTypes: ["images"],
             allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.7,
           });
           if (!result.canceled) setLocalImage(result.assets[0].uri);
         } else if (index === 1) {
@@ -146,8 +144,6 @@ const ProfileSettingScreen = () => {
           const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ["images"],
             allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.7,
           });
           if (!result.canceled) setLocalImage(result.assets[0].uri);
         }
