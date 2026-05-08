@@ -63,12 +63,12 @@ const CommentItem = React.memo(({ comment }: { comment: ApiComment }) => {
           <Text className="text-[12px] text-[#65676B] font-medium">
             {shortDate}
           </Text>
-          <TouchableOpacity hitSlop={12}>
+          {/* <TouchableOpacity hitSlop={12}>
             <Text className="text-[12px] font-bold text-[#65676B]">Like</Text>
           </TouchableOpacity>
           <TouchableOpacity hitSlop={12}>
             <Text className="text-[12px] font-bold text-[#65676B]">Reply</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     </View>
@@ -257,8 +257,8 @@ const CommentsSheet = ({
               />
             </View>
 
-            <KeyboardStickyView offset={{ opened: 0, closed: 0 }}>
-              <View className="bg-white border-t border-[#E4E6EB] px-4 py-3 pb-8">
+            <KeyboardStickyView offset={{ opened: 40, closed: 0 }}>
+              <View className="bg-white border-t border-[#E4E6EB] px-4 py-3 pb-14">
                 <View className="flex-row items-center gap-2.5">
                   <View className="w-9 h-9 rounded-full bg-[#E4E6EB] items-center justify-center">
                     <Ionicons name="person" size={20} color="#65676B" />
