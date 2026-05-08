@@ -58,10 +58,39 @@ const ProfileSettingScreen = () => {
   // ─── Pre-fill form from API ──────────────────────────────────────────────────
   useEffect(() => {
     if (profile) {
+      let initialPhone = profile.phone ?? "";
+      let initialCallingCode = "1";
+      let initialCountryCode: CountryCode = "US";
+
+      if (initialPhone) {
+        if (initialPhone.startsWith("+880")) {
+          initialCallingCode = "880";
+          initialCountryCode = "BD";
+          initialPhone = initialPhone.substring(4);
+        } else if (initialPhone.startsWith("+44")) {
+          initialCallingCode = "44";
+          initialCountryCode = "GB";
+          initialPhone = initialPhone.substring(3);
+        } else if (initialPhone.startsWith("+1")) {
+          initialCallingCode = "1";
+          initialCountryCode = "US";
+          initialPhone = initialPhone.substring(2);
+        } else {
+          const match = initialPhone.match(/^\+(\d{1,3})(.*)$/);
+          if (match) {
+            initialCallingCode = match[1];
+            initialPhone = match[2];
+          }
+        }
+      }
+
+      setCallingCode(initialCallingCode);
+      setCountryCode(initialCountryCode);
+
       setForm({
         firstName: profile.first_name ?? "",
         lastName: profile.last_name ?? "",
-        phone: profile.phone ?? "",
+        phone: initialPhone,
         email: profile.email ?? "",
         gender: (profile.gender as "Male" | "Female" | "") ?? "",
       });
@@ -176,10 +205,6 @@ const ProfileSettingScreen = () => {
       setIsSubmitting(false);
     }
   };
-
-  // ─── Delete Account ──────────────────────────────────────────────────────────
-  const handleDeleteAccount = () => {};  // handled in setting-privacy screen
-
 
   // ─── Render ──────────────────────────────────────────────────────────────────
   return (

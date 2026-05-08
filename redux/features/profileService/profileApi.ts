@@ -7,15 +7,15 @@ const profileApi = baseApi.injectEndpoints({
     getUserProfile: builder.query({
       query: () => ({
         url: "auth/profile/",
-        providesTags: ["Profile"],
       }),
+      providesTags: ["Profile"],
     }),
     // GET CO-PARENT PROFILE
     getCoParentProfile: builder.query({
       query: () => ({
         url: "auth/co-parent/",
-        providesTags: ["CoParentProfile"],
       }),
+      providesTags: ["CoParentProfile"],
     }),
 
     // update profile by form data using put method
@@ -26,6 +26,7 @@ const profileApi = baseApi.injectEndpoints({
         method: "PUT",
         body: formData,
       }),
+      invalidatesTags: ["Profile"],
     }),
 
 

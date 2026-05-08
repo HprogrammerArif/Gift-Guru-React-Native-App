@@ -167,6 +167,7 @@ export const baseApi = createApi({
     "Wishlists",
     "Subscription",
     "BlockedUsers",
+    "CoParentProfile"
   ],
   endpoints: () => ({}),
 });
