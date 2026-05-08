@@ -6,17 +6,20 @@ import {
 } from "@/redux/features/posts/postApi";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useCallback, useMemo, useRef, useState, useEffect } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   ActivityIndicator,
-  Animated,
   FlatList,
-  Modal,
-  Pressable,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -36,6 +39,7 @@ export default function SearchWithFilterScreen() {
   const [appliedCategory, setAppliedCategory] = useState<number | null>(null);
   const [appliedOccasion, setAppliedOccasion] = useState<number | null>(null);
   const [appliedAudience, setAppliedAudience] = useState<string | null>(null);
+  const [isApplied, setIsApplied] = useState(false);
   const inputRef = useRef<TextInput>(null);
 
   const { data: categoriesData } = useGetCategoriesQuery(undefined);
@@ -60,7 +64,7 @@ export default function SearchWithFilterScreen() {
 
   const queryParams = useMemo(() => {
     const params: Record<string, string | number> = { page: 1, page_size: 100 };
-    
+
     const q = debouncedSearch.trim();
     if (q) {
       params.q = q;
@@ -78,9 +82,16 @@ export default function SearchWithFilterScreen() {
       params.target = appliedAudience;
     }
     return params;
-  }, [appliedCategory, appliedOccasion, appliedAudience, categories, occasions, debouncedSearch]);
+  }, [
+    appliedCategory,
+    appliedOccasion,
+    appliedAudience,
+    categories,
+    occasions,
+    debouncedSearch,
+  ]);
 
-  const { data: postsData, isLoading } = useSearchPostsQuery(queryParams);
+  const { data: postsData, isLoading, refetch } = useSearchPostsQuery(queryParams);
 
   const allPosts: ApiPost[] = useMemo(
     () =>
@@ -94,7 +105,9 @@ export default function SearchWithFilterScreen() {
   const filteredPosts = allPosts;
 
   const hasActiveFilters =
-    appliedCategory !== null || appliedOccasion !== null || appliedAudience !== null;
+    appliedCategory !== null ||
+    appliedOccasion !== null ||
+    appliedAudience !== null;
   const filterCount =
     (appliedCategory !== null ? 1 : 0) +
     (appliedOccasion !== null ? 1 : 0) +
@@ -111,13 +124,19 @@ export default function SearchWithFilterScreen() {
     setAppliedCategory(pendingCategory);
     setAppliedOccasion(pendingOccasion);
     setAppliedAudience(pendingAudience);
+    setIsApplied(true);
     setFilterVisible(false);
-  }, [pendingCategory, pendingOccasion, pendingAudience]);
+    refetch();
+  }, [pendingCategory, pendingOccasion, pendingAudience, refetch]);
 
   const handleResetFilter = useCallback(() => {
     setPendingCategory(null);
     setPendingOccasion(null);
     setPendingAudience(null);
+    setAppliedCategory(null);
+    setAppliedOccasion(null);
+    setAppliedAudience(null);
+    setIsApplied(false);
   }, []);
 
   const renderItem = useCallback(
@@ -174,7 +193,12 @@ export default function SearchWithFilterScreen() {
             borderColor: search.length > 0 ? "#FF4B3A" : "transparent",
           }}
         >
-          <Ionicons name="search-outline" size={18} color="#9CA3AF" style={{ marginRight: 8 }} />
+          <Ionicons
+            name="search-outline"
+            size={18}
+            color="#9CA3AF"
+            style={{ marginRight: 8 }}
+          />
           <TextInput
             ref={inputRef}
             value={search}
@@ -276,7 +300,10 @@ export default function SearchWithFilterScreen() {
               >
                 {appliedAudience}
               </Text>
-              <TouchableOpacity onPress={() => setAppliedAudience(null)} hitSlop={8}>
+              <TouchableOpacity
+                onPress={() => setAppliedAudience(null)}
+                hitSlop={8}
+              >
                 <Ionicons name="close" size={13} color="#8B5CF6" />
               </TouchableOpacity>
             </View>
@@ -294,10 +321,16 @@ export default function SearchWithFilterScreen() {
               }}
             >
               <Ionicons name="pricetag" size={11} color="#FF4B3A" />
-              <Text style={{ fontSize: 12, color: "#FF4B3A", fontWeight: "600" }}>
-                {categories.find((c) => c.id === appliedCategory)?.name ?? "Category"}
+              <Text
+                style={{ fontSize: 12, color: "#FF4B3A", fontWeight: "600" }}
+              >
+                {categories.find((c) => c.id === appliedCategory)?.name ??
+                  "Category"}
               </Text>
-              <TouchableOpacity onPress={() => setAppliedCategory(null)} hitSlop={8}>
+              <TouchableOpacity
+                onPress={() => setAppliedCategory(null)}
+                hitSlop={8}
+              >
                 <Ionicons name="close" size={13} color="#FF4B3A" />
               </TouchableOpacity>
             </View>
@@ -315,10 +348,16 @@ export default function SearchWithFilterScreen() {
               }}
             >
               <Ionicons name="flame" size={11} color="#2B7FFF" />
-              <Text style={{ fontSize: 12, color: "#2B7FFF", fontWeight: "600" }}>
-                {occasions.find((o) => o.id === appliedOccasion)?.name ?? "Occasion"}
+              <Text
+                style={{ fontSize: 12, color: "#2B7FFF", fontWeight: "600" }}
+              >
+                {occasions.find((o) => o.id === appliedOccasion)?.name ??
+                  "Occasion"}
               </Text>
-              <TouchableOpacity onPress={() => setAppliedOccasion(null)} hitSlop={8}>
+              <TouchableOpacity
+                onPress={() => setAppliedOccasion(null)}
+                hitSlop={8}
+              >
                 <Ionicons name="close" size={13} color="#2B7FFF" />
               </TouchableOpacity>
             </View>
@@ -343,7 +382,9 @@ export default function SearchWithFilterScreen() {
 
       {/* ── Content ── */}
       {isLoading ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
           <ActivityIndicator size="large" color="#FF4B3A" />
           <Text style={{ marginTop: 12, color: "#9CA3AF", fontSize: 14 }}>
             Loading posts…
@@ -351,7 +392,7 @@ export default function SearchWithFilterScreen() {
         </View>
       ) : (
         <FlatList
-          data={search.length > 0 || hasActiveFilters ? filteredPosts : []}
+          data={search.length > 0 || hasActiveFilters || isApplied ? filteredPosts : []}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
           ItemSeparatorComponent={ItemSeparator}
@@ -363,8 +404,8 @@ export default function SearchWithFilterScreen() {
             flexGrow: 1,
           }}
           ListEmptyComponent={
-            search.length > 0 || hasActiveFilters ? (
-              <EmptyState query={search} hasFilters={hasActiveFilters} />
+            search.length > 0 || hasActiveFilters || isApplied ? (
+              <EmptyState query={search} hasFilters={hasActiveFilters || isApplied} />
             ) : (
               <View
                 style={{
@@ -388,7 +429,12 @@ export default function SearchWithFilterScreen() {
                   <Ionicons name="search-outline" size={32} color="#9CA3AF" />
                 </View>
                 <Text
-                  style={{ fontSize: 17, fontWeight: "700", color: "#111827", marginBottom: 6 }}
+                  style={{
+                    fontSize: 17,
+                    fontWeight: "700",
+                    color: "#111827",
+                    marginBottom: 6,
+                  }}
                 >
                   Search posts
                 </Text>

@@ -317,7 +317,7 @@ const FilterModal = ({
           </View>
 
           {/* Action Buttons */}
-          <View style={{ flexDirection: "row", gap: 12 }}>
+          <View style={{ flexDirection: "row", gap: 12, marginBottom: 20 }}>
             <TouchableOpacity
               onPress={onReset}
               style={{
