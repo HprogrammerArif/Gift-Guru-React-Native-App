@@ -89,6 +89,14 @@ export default function TabLayout() {
               <TabBarIcon focused={focused} icon={tabIcons.profileBlack} />
             ),
           }}
+          listeners={({ navigation }) => ({
+            tabPress: (e) => {
+              // Prevent default navigation
+              e.preventDefault();
+              // Navigate to profile without any params
+              navigation.navigate("profile", { id: undefined });
+            },
+          })}
         />
       </Tabs>
 
