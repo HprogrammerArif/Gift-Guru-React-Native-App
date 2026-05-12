@@ -7,7 +7,7 @@ import {
 } from "@/redux/features/posts/postApi";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { usePremium } from "@/hooks/usePremium";
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -16,6 +16,7 @@ import {
   InteractionManager,
   RefreshControl,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 import {
@@ -34,6 +35,7 @@ MemoizedProfilePost.displayName = "MemoizedProfilePost";
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
+  const router = useRouter();
   const { isPremium } = usePremium();
   const searchParams = useLocalSearchParams();
   const idParam = Array.isArray(searchParams.id)
@@ -56,6 +58,7 @@ export default function ProfileScreen() {
   }, []);
 
   const userId = idParam || currentUser?.user_id;
+  const isOwnProfile = !idParam || Number(idParam) === Number(currentUser?.user_id);
 
 
 
@@ -147,22 +150,40 @@ export default function ProfileScreen() {
             )}
           </View>
           <View className="flex-row gap-8 mt-1">
-            <View>
+            <TouchableOpacity
+              disabled={!isOwnProfile}
+              onPress={() =>
+                isOwnProfile &&
+                router.push({
+                  pathname: "/(drawer)/follow-list",
+                  params: { type: "followers" },
+                })
+              }
+            >
               <Text className="text-xl font-bold text-gray-900">
                 {profile.followers_count || 0}
               </Text>
               <Text className="text-[10px] text-gray-400 font-bold tracking-widest uppercase">
                 Followers
               </Text>
-            </View>
-            <View>
+            </TouchableOpacity>
+            <TouchableOpacity
+              disabled={!isOwnProfile}
+              onPress={() =>
+                isOwnProfile &&
+                router.push({
+                  pathname: "/(drawer)/follow-list",
+                  params: { type: "following" },
+                })
+              }
+            >
               <Text className="text-xl font-bold text-gray-900">
                 {profile.following_count || 0}
               </Text>
               <Text className="text-[10px] text-gray-400 font-bold tracking-widest uppercase">
                 Following
               </Text>
-            </View>
+            </TouchableOpacity>
           </View>
         </View>
       </View>

@@ -168,6 +168,27 @@ const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["Profile"],
     }),
 
+
+    // GET FOLLOWERS
+    getFollowers: builder.query<any[], { user_id?: string | number } | void>({
+      query: (params) => ({
+        url: "auth/followers/",
+        method: "GET",
+        params: params || {},
+      }),
+      providesTags: ["Follows"],
+    }),
+
+    // GET FOLLOWING
+    getFollowing: builder.query<any[], { user_id?: string | number } | void>({
+      query: (params) => ({
+        url: "auth/following/",
+        method: "GET",
+        params: params || {},
+      }),
+      providesTags: ["Follows"],
+    }),
+
     // END
   }),
 });
@@ -193,4 +214,6 @@ export const {
   useDeleteChildMutation,
   useDeleteAccountMutation,
   useChangeCurrencyMutation,
+  useGetFollowersQuery,
+  useGetFollowingQuery,
 } = authApi;
