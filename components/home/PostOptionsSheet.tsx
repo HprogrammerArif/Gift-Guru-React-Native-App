@@ -35,6 +35,7 @@ interface PostOptionsSheetProps {
   onBlock: () => void;
   onReport: () => void;
   onDelete: () => void;
+  onUpdate?: () => void;
 }
 
 const PostOptionsSheet = ({
@@ -47,6 +48,7 @@ const PostOptionsSheet = ({
   onBlock,
   onReport,
   onDelete,
+  onUpdate,
 }: PostOptionsSheetProps) => {
   const insets = useSafeAreaInsets();
   const translateY = useSharedValue(SCREEN_HEIGHT);
@@ -178,6 +180,14 @@ const PostOptionsSheet = ({
                     subtext="This action cannot be undone."
                     onPress={onDelete}
                   />
+                  {onUpdate && (
+                    <OptionItem
+                      icon="create"
+                      title="Update post"
+                      subtext="Edit the content or details of your post."
+                      onPress={onUpdate}
+                    />
+                  )}
                 </>
               ) : (
                 <>

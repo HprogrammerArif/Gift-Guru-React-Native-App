@@ -3,25 +3,23 @@ import {
   useDeletePostMutation,
   useLikePostMutation,
   useSavePostMutation,
+  useFollowUserMutation,
+  useTrackLinkClickMutation,
+  useReportPostMutation,
+  useBlockUserMutation,
 } from "@/redux/features/posts/postApi";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import React, { memo, useCallback, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  Linking,
-  Modal,
-  Text,
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-  View,
-} from "react-native";
+import React, { memo, useCallback, useState } from "react";
+import { Alert, Linking, Text, TouchableOpacity, View } from "react-native";
 import { useSelector } from "react-redux";
+import Toast from "react-native-toast-message";
 import EditPostSheet from "../EditPostSheet";
-import { ApiPost } from "./SocialPost";
+import CommentsSheet from "./CommentsSheet";
+import PostOptionsSheet from "./PostOptionsSheet";
+import ReportPostSheet from "./ReportPostSheet";
+import { ApiPost, ApiComment } from "./SocialPost";
 
 interface ProfileSocialPostProps {
   post: ApiPost;
@@ -39,26 +37,118 @@ function formatDate(iso: string): string {
 }
 
 const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
-  const [expanded, setExpanded] = useState(false);
+  const [isFollowed, setIsFollowed] = useState(post.is_following ?? false);
   const [isLiked, setIsLiked] = useState(post.is_liked ?? false);
   const [likesCount, setLikesCount] = useState(post.likes_count ?? 0);
   const [isBookmarked, setIsBookmarked] = useState(post.is_saved ?? false);
+  const [expanded, setExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showOptionsSheet, setShowOptionsSheet] = useState(false);
+  const [showReportSheet, setShowReportSheet] = useState(false);
+  const [isHidden, setIsHidden] = useState(false);
   const [commentsCount, setCommentsCount] = useState(post.comments_count ?? 0);
 
   const [showEditSheet, setShowEditSheet] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
-  const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
-  const iconRef = useRef<View>(null);
 
   const currentUser = useSelector(selectCurrentUser);
   const isMyPost = currentUser?.user_id === post.user?.id;
 
   const [likePost] = useLikePostMutation();
+  const [followUser] = useFollowUserMutation();
   const [savePost] = useSavePostMutation();
-  const [deletePost, { isLoading: isDeleting }] = useDeletePostMutation();
+  const [trackLinkClick] = useTrackLinkClickMutation();
+  const [deletePost] = useDeletePostMutation();
+  const [reportPost] = useReportPostMutation();
+  const [blockUser] = useBlockUserMutation();
 
-  const handleDelete = async () => {
+  const handleLike = async () => {
+    const prevLiked = isLiked;
+    const prevCount = likesCount;
+    setIsLiked(!prevLiked);
+    setLikesCount((prev) => (prevLiked ? prev - 1 : prev + 1));
+    try {
+      const res: any = await likePost(post.id);
+      if (res?.error) {
+        setIsLiked(prevLiked);
+        setLikesCount(prevCount);
+      }
+    } catch {
+      setIsLiked(prevLiked);
+      setLikesCount(prevCount);
+    }
+  };
+
+  const handleBookmark = async () => {
+    const prev = isBookmarked;
+    setIsBookmarked(!prev);
+    try {
+      const res: any = await savePost(post.id);
+      if (res?.error) {
+        setIsBookmarked(prev);
+        Alert.alert("Error", "Failed to save post.");
+      }
+    } catch {
+      setIsBookmarked(prev);
+    }
+  };
+
+  const handleFollow = async () => {
+    const prev = isFollowed;
+    setIsFollowed(!prev);
+    try {
+      const res: any = await followUser(post.user.id);
+      if (res?.error) {
+        setIsFollowed(prev);
+      }
+    } catch {
+      setIsFollowed(prev);
+    }
+  };
+
+  const handleReport = () => {
+    setShowReportSheet(true);
+  };
+
+  const submitReport = async (reason: string) => {
+    try {
+      const res: any = await reportPost({ post: post.id, reason });
+      if (res.error) throw new Error();
+      setIsHidden(true);
+      Toast.show({
+        type: "success",
+        text1: "Post reported successfully.",
+        text2: "Our team will review this content shortly.",
+      });
+    } catch (e) {
+      Toast.show({ type: "error", text1: "Failed to report post." });
+    }
+  };
+
+  const handleBlock = () => {
+    Alert.alert(
+      "Block User",
+      `Are you sure you want to block ${displayName}? You will no longer see their posts.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Block",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              const res: any = await blockUser(post.user.id);
+              if (res.error) throw new Error();
+              setIsHidden(true);
+              Toast.show({ type: "success", text1: "User blocked successfully." });
+            } catch (e) {
+              Toast.show({ type: "error", text1: "Failed to block user." });
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handleDelete = () => {
     Alert.alert("Delete Post", "Are you sure you want to delete this post?", [
       { text: "Cancel", style: "cancel" },
       {
@@ -67,61 +157,19 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
         onPress: async () => {
           try {
             const res: any = await deletePost(post.id);
-            if (res?.data) {
-              setShowMenu(false);
-            } else if (res?.error) {
-              Alert.alert("Error", "Failed to delete post.");
-            }
-          } catch {
-            Alert.alert("Error", "Something went wrong.");
+            if (res.error) throw new Error();
+            setIsHidden(true);
+            Toast.show({ type: "success", text1: "Post deleted successfully." });
+          } catch (e) {
+            Toast.show({ type: "error", text1: "Failed to delete post." });
           }
         },
       },
     ]);
   };
 
-  const handleLike = useCallback(async () => {
-    const previousLiked = isLiked;
-    const previousCount = likesCount;
-
-    setIsLiked(!previousLiked);
-    setLikesCount(previousLiked ? previousCount - 1 : previousCount + 1);
-
-    try {
-      const res: any = await likePost(post.id);
-      if (res?.error) {
-        setIsLiked(previousLiked);
-        setLikesCount(previousCount);
-        Alert.alert("Error", "Failed to like post.");
-      }
-    } catch {
-      setIsLiked(previousLiked);
-      setLikesCount(previousCount);
-    }
-  }, [isLiked, likesCount, post.id, likePost]);
-
-  const handleBookmark = useCallback(async () => {
-    const previousSaved = isBookmarked;
-    setIsBookmarked(!previousSaved);
-    try {
-      const res: any = await savePost(post.id);
-      if (res?.error) {
-        setIsBookmarked(previousSaved);
-        Alert.alert("Error", "Failed to save post.");
-      }
-    } catch {
-      setIsBookmarked(previousSaved);
-    }
-  }, [isBookmarked, post.id, savePost]);
-
-  const openMenu = () => {
-    iconRef.current?.measureInWindow((x, y, width, height) => {
-      setMenuPosition({
-        top: y + height,
-        right: Dimensions.get("window").width - x - width,
-      });
-      setShowMenu(true);
-    });
+  const truncateText = (text: string, limit: number) => {
+    return text.length > limit ? text.substring(0, limit) + ".." : text;
   };
 
   const displayName =
@@ -153,30 +201,34 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
                 contentFit="cover"
               />
             ) : (
-              <Ionicons name="person" size={20} color="#9CA3AF" />
+              <View className="w-10 h-10 rounded-full bg-[#2B7FFF]/20 items-center justify-center">
+                <Text className="text-[#2B7FFF] font-bold text-base">
+                  {displayName.charAt(0).toUpperCase()}
+                </Text>
+              </View>
             )}
           </View>
           <View>
             <Text className="text-[15px] font-bold text-black">
               {displayName}
             </Text>
-            <View className="flex-row items-center gap-2">
+            <View className="flex-row items-center gap-2 flex-wrap">
               <Text className="text-xs text-gray-500 font-medium">
                 {formatDate(post.created_at)}
               </Text>
-              {post.status === "recommended" && (
-                <View className="bg-[#FFF0ED] px-2 py-0.5 rounded-full flex-row items-center gap-1">
-                  <Ionicons name="flame" size={10} color="#FF4B3A" />
-                  <Text className="text-[10px] text-[#FF4B3A] font-medium">
-                    Recommended
+              {post.category && (
+                <View className="bg-[#EFF6FF] px-2 py-0.5 rounded-full flex-row items-center gap-1">
+                  <Ionicons name="pricetag" size={10} color="#2B7FFF" />
+                  <Text className="text-[10px] text-[#2B7FFF] font-medium">
+                    {truncateText(post.category.name, 10)}
                   </Text>
                 </View>
               )}
-              {post.status === "trending" && (
-                <View className="bg-[#EFF6FF] px-2 py-0.5 rounded-full flex-row items-center gap-1">
-                  <Ionicons name="trending-up" size={10} color="#2B7FFF" />
-                  <Text className="text-[10px] text-[#2B7FFF] font-medium">
-                    Trending
+              {post.occasion && (
+                <View className="bg-[#FFF0ED] px-2 py-0.5 rounded-full flex-row items-center gap-1">
+                  <Ionicons name="flame" size={10} color="#FF4B3A" />
+                  <Text className="text-[10px] text-[#FF4B3A] font-medium">
+                    {truncateText(post.occasion.name, 10)}
                   </Text>
                 </View>
               )}
@@ -184,71 +236,9 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
           </View>
         </TouchableOpacity>
 
-        {/* Three dot icon - Only for owner */}
-        {isMyPost && (
-          <View ref={iconRef} collapsable={false}>
-            <TouchableOpacity onPress={openMenu} className="p-3" hitSlop={15}>
-              <Ionicons name="ellipsis-vertical" size={16} color="black" />
-            </TouchableOpacity>
-
-            <Modal
-              transparent
-              visible={showMenu}
-              animationType="fade"
-              onRequestClose={() => setShowMenu(false)}
-            >
-              <TouchableWithoutFeedback onPress={() => setShowMenu(false)}>
-                <View className="flex-1 bg-black/5">
-                  <View
-                    className="absolute bg-white rounded-xl shadow-lg border border-gray-100 w-36 overflow-hidden"
-                    style={{
-                      top: menuPosition.top,
-                      right: menuPosition.right,
-                      elevation: 5,
-                    }}
-                  >
-                    <TouchableOpacity
-                      onPress={() => {
-                        setShowMenu(false);
-                        setShowEditSheet(true);
-                      }}
-                      className="flex-row items-center gap-2 px-4 py-3 border-b border-gray-50"
-                    >
-                      <Ionicons
-                        name="create-outline"
-                        size={16}
-                        color="#374151"
-                      />
-                      <Text className="text-gray-700 font-medium text-sm">
-                        Update
-                      </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={handleDelete}
-                      disabled={isDeleting}
-                      className="flex-row items-center gap-2 px-4 py-3"
-                    >
-                      {isDeleting ? (
-                        <ActivityIndicator size="small" color="#EF4444" />
-                      ) : (
-                        <>
-                          <Ionicons
-                            name="trash-outline"
-                            size={16}
-                            color="#EF4444"
-                          />
-                          <Text className="text-red-500 font-medium text-sm">
-                            Delete
-                          </Text>
-                        </>
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </TouchableWithoutFeedback>
-            </Modal>
-          </View>
-        )}
+        <TouchableOpacity onPress={() => setShowOptionsSheet(true)} className="p-2">
+          <Ionicons name="ellipsis-horizontal" size={20} color="#65676B" />
+        </TouchableOpacity>
       </View>
 
       {/* Content */}
@@ -304,9 +294,14 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
             </View>
           </View>
           <TouchableOpacity
-            onPress={() =>
-              post.amazon_link && Linking.openURL(post.amazon_link)
-            }
+            onPress={() => {
+              if (post.amazon_link) {
+                trackLinkClick(post.id).catch(console.error);
+                Linking.openURL(post.amazon_link).catch(() =>
+                  Alert.alert("Error", "Unable to open the link.")
+                );
+              }
+            }}
             className="bg-[#3B82F6] px-4 py-2 rounded-lg"
           >
             <Text className="text-white text-xs font-bold">Check Price</Text>
@@ -366,7 +361,36 @@ const ProfileSocialPost = ({ post }: ProfileSocialPostProps) => {
         </View>
       </View>
 
-      {/* Edit Form */}
+      <CommentsSheet
+        visible={showComments}
+        onClose={() => setShowComments(false)}
+        postId={post.id}
+        initialComments={Array.isArray(post.comments) ? post.comments : []}
+        onCommentPosted={() => setCommentsCount((prev) => prev + 1)}
+      />
+
+      <PostOptionsSheet
+        visible={showOptionsSheet}
+        onClose={() => setShowOptionsSheet(false)}
+        isMyPost={!!isMyPost}
+        isFollowed={isFollowed}
+        displayName={displayName}
+        onFollowToggle={handleFollow}
+        onBlock={handleBlock}
+        onReport={handleReport}
+        onDelete={handleDelete}
+        onUpdate={() => {
+          setShowOptionsSheet(false);
+          setShowEditSheet(true);
+        }}
+      />
+
+      <ReportPostSheet
+        visible={showReportSheet}
+        onClose={() => setShowReportSheet(false)}
+        onSubmit={submitReport}
+      />
+
       <EditPostSheet
         visible={showEditSheet}
         onClose={() => setShowEditSheet(false)}
