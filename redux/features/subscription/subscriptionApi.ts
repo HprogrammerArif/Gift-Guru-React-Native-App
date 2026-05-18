@@ -19,8 +19,31 @@ const subscriptionApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Subscription"],
     }),
+
+    // Notify backend of checkout/subscription upgrade
+    createCheckoutSession: builder.mutation({
+      query: (body: { plan_slug: string }) => ({
+        url: "subscription/create-checkout-session/",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Subscription"],
+    }),
+
+    // Notify backend of cancellation intent
+    cancelSubscription: builder.mutation({
+      query: () => ({
+        url: "subscription/cancel/",
+        method: "POST",
+      }),
+      invalidatesTags: ["Subscription"],
+    }),
   }),
 });
 
-export const { useGetSubscriptionPlansQuery, useGetMySubscriptionQuery } =
-  subscriptionApi;
+export const {
+  useGetSubscriptionPlansQuery,
+  useGetMySubscriptionQuery,
+  useCreateCheckoutSessionMutation,
+  useCancelSubscriptionMutation,
+} = subscriptionApi;
