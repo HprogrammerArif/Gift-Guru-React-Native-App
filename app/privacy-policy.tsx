@@ -35,7 +35,6 @@ export default function PrivacyPolicyScreen() {
   const { width } = useWindowDimensions();
   const { data, isLoading } = useGetLegalAndPrivacyPolicyQuery(undefined);
 
-  console.log("data", data);
 
   return (
     <SafeAreaView className="flex-1 bg-white">

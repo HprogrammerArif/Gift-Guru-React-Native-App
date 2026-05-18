@@ -599,10 +599,11 @@ const MembershipScreen = () => {
         </Text>
 
         {/* ── Terms of Service & Privacy Policy ───────────────────────────────── */}
+        {/* Both links open in-app screens so they always work, even offline. */}
         <View className="flex-row items-center justify-center pb-2">
           <TouchableOpacity
             hitSlop={8}
-            onPress={() => Linking.openURL("https://www.giftguru.app/terms-of-service")}
+            onPress={() => router.push("/terms-of-service")}
           >
             <Text
               style={{ fontFamily: "QuickSand-Medium" }}
@@ -619,7 +620,7 @@ const MembershipScreen = () => {
           </Text>
           <TouchableOpacity
             hitSlop={8}
-            onPress={() => Linking.openURL("https://www.giftguru.app/privacy-policy")}
+            onPress={() => router.push("/privacy-policy")}
           >
             <Text
               style={{ fontFamily: "QuickSand-Medium" }}
@@ -629,6 +630,7 @@ const MembershipScreen = () => {
             </Text>
           </TouchableOpacity>
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
