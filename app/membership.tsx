@@ -6,71 +6,17 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState, useCallback } from "react";
 import {
   ActivityIndicator,
-  LayoutAnimation,
   Platform,
   ScrollView,
   Text,
   TouchableOpacity,
-  UIManager,
   View,
   Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { PurchasesPackage, PurchasesOffering, PACKAGE_TYPE } from "react-native-purchases";
+import { FEATURES_BY_PLAN, PREMIUM_FEATURES } from "@/constants/subscriptionFeatures";
 
-if (
-  Platform.OS === "android" &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
-const FAQItem = ({
-  question,
-  answer,
-}: {
-  question: string;
-  answer: string;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-
-  const toggleOpen = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setIsOpen(!isOpen);
-  };
-
-  return (
-    <View className="border-b border-gray-50 py-4">
-      <TouchableOpacity
-        onPress={toggleOpen}
-        className="flex-row items-center justify-between"
-        activeOpacity={0.7}
-      >
-        <Text
-          style={{ fontFamily: "QuickSand-Medium" }}
-          className="text-[15px] text-[#4B5563] flex-1 mr-4"
-        >
-          {question}
-        </Text>
-        <Ionicons
-          name={isOpen ? "remove" : "add"}
-          size={22}
-          color={isOpen ? "#2B7FFF" : "#9CA3AF"}
-        />
-      </TouchableOpacity>
-      {isOpen && (
-        <View className="mt-4 pr-6">
-          <Text
-            style={{ fontFamily: "QuickSand-Regular" }}
-            className="text-gray-500 leading-6 text-[14px]"
-          >
-            {answer}
-          </Text>
-        </View>
-      )}
-    </View>
-  );
-};
 
 // ── Current Subscription Status Card ──────────────────────────────────────────
 const CurrentPlanCard = ({ data }: { data: any }) => {
@@ -304,36 +250,7 @@ const MembershipScreen = () => {
     }
   };
 
-  const faqData = [
-    {
-      question: "How does the Free plan work?",
-      answer: "The free plan allows you to explore basic features with some limitations on product links and affiliate customization. It's a great way to get started with the community.",
-    },
-    {
-      question: "Can I earn commissions on the Free plan?",
-      answer: "Yes, you can still participate in the affiliate program, but the commission structure and customization options are limited compared to the Pro plan.",
-    },
-    {
-      question: "How does the Pro plan work?",
-      answer: "The Pro plan gives you full control over your affiliate links, allows you to use your own affiliate ID, provides automatic tag replacement, and priority support.",
-    },
-    {
-      question: "Do I need technical knowledge to use my affiliate ID?",
-      answer: "Not at all. Our dashboard makes it incredibly simple to manage your affiliate ID. Just enter it in your account settings and we handle the rest.",
-    },
-    {
-      question: "What happens to my existing links after upgrading?",
-      answer: "Once you upgrade to Pro, your existing links can be automatically updated to use your own affiliate tag, ensuring you earn commissions from all your content.",
-    },
-    {
-      question: "Is this compliant with Amazon's affiliate policy?",
-      answer: "Yes, our link conversion and management system is designed to adhere to Amazon's affiliate program guidelines and best practices.",
-    },
-    {
-      question: "Is there a limit on how many links I can create?",
-      answer: "The Pro plan offers unlimited link management, allowing you to scale your affiliate marketing efforts without any volume-based restrictions.",
-    },
-  ];
+
 
   // Only block on RC offerings — subscription API and Redux state are handled inline
   if (isLoading) {
@@ -461,12 +378,7 @@ const MembershipScreen = () => {
               </View>
 
               <View className="space-y-4 mb-6">
-                {[
-                  "Unlimited AI gift suggestions",
-                  "Save unlimited gift lists",
-                  "Smart reminders & alerts",
-                  "Priority support",
-                ].map((feature, idx) => (
+                {(FEATURES_BY_PLAN[pkg.packageType] || PREMIUM_FEATURES).map((feature, idx) => (
                   <View key={idx} className="flex-row items-center mb-4">
                     <View className="w-5 h-5 rounded-full bg-[#2B7FFF]/10 items-center justify-center mr-3">
                       <Ionicons name="checkmark" size={12} color="#2B7FFF" />
@@ -534,25 +446,6 @@ const MembershipScreen = () => {
           </Text>
         </TouchableOpacity>
 
-        {/* ── FAQ Section ───────────────────────────────────────────────────── */}
-        <View className="px-2">
-          <Text
-            style={{ fontFamily: "QuickSand-Bold" }}
-            className="text-4xl text-[#1F2937] text-center mb-6 tracking-[4px]"
-          >
-            FAQ
-          </Text>
-
-          <View className="mb-6">
-            {faqData.map((item, index) => (
-              <FAQItem
-                key={index}
-                question={item.question}
-                answer={item.answer}
-              />
-            ))}
-          </View>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );

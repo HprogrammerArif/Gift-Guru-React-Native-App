@@ -16,6 +16,8 @@ import { clearPremiumStatus } from "@/redux/features/revenuecat/revenuecatSlice"
 import { logOutRevenueCat } from "@/utils/revenuecat";
 import { baseApi } from "@/redux/api/baseApi";
 
+
+
 // ─── Reusable Row ─────────────────────────────────────────────────────────────
 const SettingRow = ({
   icon,
@@ -248,6 +250,14 @@ const SettingAndPrivacyScreen = () => {
             label="Terms of Service"
             sublabel="Rules governing your use of GiftGuru"
             onPress={() => router.push("/terms-of-service")}
+          />
+          <SettingRow
+            icon="help-circle-outline"
+            iconBg="#EFF6FF"
+            iconColor="#2B7FFF"
+            label="FAQ"
+            sublabel="Frequently asked questions"
+            onPress={() => router.push("/faq")}
             isLast
           />
         </View>
