@@ -5,6 +5,10 @@ Your package.json setup (Expo SDK 53 + React 19 + React Native 0.79.6) is stable
 "react-native": "0.79.6"
 
 
+eas build --platform all
+eas submit -p ios
+eas submit -p android
+
 npx expo prebuild --clean
 npm run android
 npx expo start
@@ -14,6 +18,15 @@ npx expo start -c
 always use development build
 1. npx expo prebuild --clean
 2. npx expo run:android
+
+// for version mismatches fix use this Command
+npx expo install --check
+
+// for real device preview build 
+"android": {
+        "buildType": "apk"
+      }
+   eas build -p android --profile preview   
 
 for real device:
 npm install -g eas-cli
@@ -30,6 +43,18 @@ make sure git ignore
 
 
 
+# 1. Clean and generate native iOS project files
+npx expo prebuild --clean
+
+# 2. Install pods and run the iOS project
+npm run ios
+
+npx expo run:ios --device
+
+
+$ eas credentials
+
+
 
 rm -rf android ios .expo node_modules
 npm install
@@ -38,6 +63,37 @@ cd android
 ./gradlew clean
 ./gradlew assembleDebug   # for debug APK
 ./gradlew assembleRelease
+
+\
+
+# For production
+eas build --platform all --profile production
+
+# Or individually
+eas build --platform android --profile production
+eas build --platform ios --profile production
+
+
+Step 5 — Push an OTA update (your daily workflow)
+After you make JS/asset changes:
+
+# Push to production channel (live users)
+eas update --branch production --message "Fixed notification badge on iOS"
+
+# Push to staging/preview (for testers only)
+eas update --branch staging --message "Testing new home screen"
+
+
+# See all updates
+eas update:list
+
+# Rollback to previous update
+eas update:roll-back-to-embedded --branch production
+
+# View specific branch
+eas update:list --branch production
+
+
 
 
 
