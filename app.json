@@ -3,6 +3,15 @@
     "name": "GiftGuru",
     "slug": "GiftGuru",
     "version": "1.0.0",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "enabled": true,
+      "url": "https://u.expo.dev/9bf97c99-fdfd-4a88-b066-51a250b5f89f",
+      "fallbackToCacheTimeout": 0,
+      "checkAutomatically": "ON_LOAD"
+    },
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": [

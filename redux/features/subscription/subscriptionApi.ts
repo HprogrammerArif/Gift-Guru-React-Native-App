@@ -23,7 +23,7 @@ const subscriptionApi = baseApi.injectEndpoints({
     // Notify backend of checkout/subscription upgrade
     createCheckoutSession: builder.mutation({
       query: (body: { plan_slug: string }) => ({
-        url: "subscription/create-checkout-session/",
+        url: "subscription/app-purchase/",
         method: "POST",
         body,
       }),
